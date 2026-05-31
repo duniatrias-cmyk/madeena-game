@@ -264,6 +264,33 @@
   border-color: var(--emas-border);
   color: var(--emas);
 }
+
+/* ── Ship bob ── */
+.kapal-icon.bobbing { animation: shipBob 2.6s ease-in-out infinite; }
+@keyframes shipBob { 0%,100%{transform:translateY(-60%)} 50%{transform:translateY(-72%)} }
+
+/* ── Mobile 01-voyage ── */
+@media (max-width: 640px) {
+  .ocean-map { min-height: 220px; }
+  .map-inner { height: 220px; padding: 18px 14px; }
+  .map-val { font-size: 15px; }
+  .info-grid { grid-template-columns: 1fr; gap: 8px; }
+  .tile-val { font-size: 18px; }
+  .tile-sub { font-size: 11px; }
+  .info-tile { padding: 12px 14px; }
+  .angin-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .angin-card { padding: 10px 8px; }
+  .angin-icon { font-size: 18px; }
+  .angin-nama { font-size: 11px; }
+  .toggle-row { gap: 6px; }
+  .toggle-btn { min-height: 40px; padding: 8px 10px; font-size: 10px; flex: 1; text-align: center; }
+  .chart-wrap { height: 160px; }
+  .chart-card { padding: 14px 12px; }
+  .konsep-box { padding: 16px; }
+  .konsep-judul { font-size: 15px; }
+  .konsep-isi { font-size: 13px; }
+  h1[style] { font-size: 22px !important; }
+}
 </style>
 </head>
 <body>
@@ -478,10 +505,12 @@ document.getElementById('map-sisa').textContent   = fmtB(c.gap);
 setTimeout(() => {
   const pct = Math.min(c.pctTempuh, 1);
   document.getElementById('rute-tempuh').style.width = (pct * 100) + '%';
-  // Kapal posisi: track dari 60px ke (trackWidth - 80px)
-  // Gunakan persentase CSS untuk fleksibilitas
   document.getElementById('kapal-icon').style.left =
     `calc(60px + ${(pct * (100 - 12))}% - 16px)`;
+  // Tambah bob animation setelah transisi selesai
+  setTimeout(() => {
+    document.getElementById('kapal-icon').classList.add('bobbing');
+  }, 1400);
 }, 200);
 
 // Angin markers
@@ -623,5 +652,26 @@ function chartOpts(ylabel, showBar) {
 
 buildChart();
 </script>
+
+<!-- Ocean waves -->
+<svg class="ocean-bg" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
+  <g class="wave-anim">
+    <path d="M0,70 C120,42 240,98 360,70 C480,42 600,98 720,70 C840,42 960,98 1080,70 C1200,42 1320,98 1440,70 C1560,42 1680,98 1800,70 C1920,42 2040,98 2160,70 C2280,42 2400,98 2520,70 C2640,42 2760,98 2880,70 L2880,160 L0,160 Z" fill="#7ab8d8" opacity="0.28"/>
+  </g>
+  <g class="wave-anim-slow">
+    <path d="M0,105 C180,68 360,142 540,105 C720,68 900,142 1080,105 C1260,68 1440,142 1620,105 C1800,68 1980,142 2160,105 C2340,68 2520,142 2700,105 C2880,68 2880,142 2880,105 L2880,160 L0,160 Z" fill="#3ecf7a" opacity="0.14"/>
+  </g>
+</svg>
+
+<!-- Bottom nav (mobile) -->
+<nav class="bottom-nav" aria-label="Navigasi">
+  <div class="bottom-nav-items">
+    <a href="../index.html"  class="bottom-nav-item">        <span class="bottom-nav-icon">🏠</span><span class="bottom-nav-lbl">Peta</span></a>
+    <a href="01-voyage.html" class="bottom-nav-item active"> <span class="bottom-nav-icon">⚓</span><span class="bottom-nav-lbl">Pelayaran</span></a>
+    <a href="02-misi.html"   class="bottom-nav-item">        <span class="bottom-nav-icon">🧭</span><span class="bottom-nav-lbl">Misi</span></a>
+    <a href="03-ombak.html"  class="bottom-nav-item">        <span class="bottom-nav-icon">🌊</span><span class="bottom-nav-lbl">Ombak</span></a>
+    <a href="04-muatan.html" class="bottom-nav-item">        <span class="bottom-nav-icon">📦</span><span class="bottom-nav-lbl">Muatan</span></a>
+  </div>
+</nav>
 </body>
 </html>

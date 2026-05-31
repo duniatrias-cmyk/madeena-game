@@ -93,6 +93,34 @@
 .score-lbl { font-family:var(--font-mono);font-size:10px;color:var(--teks-redup);letter-spacing:0.5px;margin-top:4px; }
 
 .target-sel { font-family:var(--font-mono);font-size:10px;padding:5px 10px;border-radius:var(--r-sm);border:1px solid var(--border-sedang);background:var(--laut-tengah);color:var(--teks-kedua);cursor:pointer; }
+
+/* ── Mobile 03-ombak ── */
+@media (max-width: 640px) {
+  .battle-grid { grid-template-columns: 1fr; gap: 12px; }
+  .score-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .score-tile { padding: 10px 12px; }
+  .score-val { font-size: 18px; }
+  .score-lbl { font-size: 9px; }
+  .log-row { min-height: 44px; padding: 10px 12px; }
+  .log-hdr { padding: 6px 12px; }
+  .log-scroll { max-height: 260px; }
+  .chart-wrap { height: 150px; }
+  .chart-card { padding: 14px 12px; }
+  .dmg-row { gap: 6px; }
+  .dmg-box { padding: 8px 6px; }
+  .dmg-val { font-size: 13px; }
+  .dmg-lbl { font-size: 9px; }
+  .wave-avatar { width: 42px; height: 42px; font-size: 22px; }
+  .wave-name { font-size: 15px; }
+  .result-banner { font-size: 10px; padding: 8px 10px; }
+  .arena-card { padding: 16px; }
+  .konsep-box { padding: 14px; }
+  .konsep-judul { font-size: 15px; }
+  .konsep-isi { font-size: 13px; }
+  h1[style] { font-size: 22px !important; }
+  .hp-outer { height: 14px; }
+  .log-pill { font-size: 8px; padding: 2px 4px; }
+}
 </style>
 </head>
 <body>
@@ -284,6 +312,15 @@ function recompute() {
   renderArena(targets);
   renderLog(targets);
   renderChart(targets);
+  // Flash/shake effect setelah arena dirender
+  const el = document.getElementById('arena-card');
+  if (el) {
+    const won = el.classList.contains('menang');
+    el.classList.remove('flash-menang', 'flash-kalah');
+    void el.offsetWidth; // force reflow
+    el.classList.add(won ? 'flash-menang' : 'flash-kalah');
+    setTimeout(() => el.classList.remove('flash-menang', 'flash-kalah'), 900);
+  }
 }
 
 function renderScore(targets) {
@@ -386,5 +423,26 @@ window.selectWeek = function(i) {
 
 recompute();
 </script>
+
+<!-- Ocean waves -->
+<svg class="ocean-bg" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
+  <g class="wave-anim">
+    <path d="M0,70 C120,42 240,98 360,70 C480,42 600,98 720,70 C840,42 960,98 1080,70 C1200,42 1320,98 1440,70 C1560,42 1680,98 1800,70 C1920,42 2040,98 2160,70 C2280,42 2400,98 2520,70 C2640,42 2760,98 2880,70 L2880,160 L0,160 Z" fill="#7ab8d8" opacity="0.26"/>
+  </g>
+  <g class="wave-anim-slow">
+    <path d="M0,105 C180,68 360,142 540,105 C720,68 900,142 1080,105 C1260,68 1440,142 1620,105 C1800,68 1980,142 2160,105 C2340,68 2520,142 2700,105 C2880,68 2880,142 2880,105 L2880,160 L0,160 Z" fill="#e05a3a" opacity="0.1"/>
+  </g>
+</svg>
+
+<!-- Bottom nav (mobile) -->
+<nav class="bottom-nav" aria-label="Navigasi">
+  <div class="bottom-nav-items">
+    <a href="../index.html"  class="bottom-nav-item">        <span class="bottom-nav-icon">🏠</span><span class="bottom-nav-lbl">Peta</span></a>
+    <a href="01-voyage.html" class="bottom-nav-item">        <span class="bottom-nav-icon">⚓</span><span class="bottom-nav-lbl">Pelayaran</span></a>
+    <a href="02-misi.html"   class="bottom-nav-item">        <span class="bottom-nav-icon">🧭</span><span class="bottom-nav-lbl">Misi</span></a>
+    <a href="03-ombak.html"  class="bottom-nav-item active"> <span class="bottom-nav-icon">🌊</span><span class="bottom-nav-lbl">Ombak</span></a>
+    <a href="04-muatan.html" class="bottom-nav-item">        <span class="bottom-nav-icon">📦</span><span class="bottom-nav-lbl">Muatan</span></a>
+  </div>
+</nav>
 </body>
 </html>

@@ -359,6 +359,28 @@ DATA.computed = (() => {
 @keyframes waveMove { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
 .wave-anim { animation: waveMove 8s linear infinite; }
 .wave-anim-slow { animation: waveMove 12s linear infinite; }
+
+/* ── Mobile index ── */
+@media (max-width: 640px) {
+  .hero { padding: 16px 16px 32px; min-height: unset; padding-top: calc(56px + 16px); }
+  .hero-title { font-size: clamp(28px, 9vw, 44px); letter-spacing: -0.5px; }
+  .hero-subtitle { font-size: clamp(15px, 4vw, 18px); }
+  .hero-meta { margin-bottom: 20px; font-size: 10px; }
+  .compass-nav { grid-template-columns: 1fr; max-width: 100%; gap: 10px; margin-bottom: 28px; }
+  .nav-card { padding: 16px 18px; }
+  .nav-card-title { font-size: 18px; }
+  .nav-card-sub { font-size: 12px; margin-bottom: 10px; }
+  .stat-strip {
+    display: flex; flex-wrap: nowrap; overflow-x: auto;
+    -webkit-overflow-scrolling: touch; justify-content: flex-start;
+    gap: 0; padding: 0 2px 2px; scrollbar-width: none; margin-bottom: 20px;
+  }
+  .stat-strip::-webkit-scrollbar { display: none; }
+  .stat-item { min-width: 120px; padding: 0 14px; flex-shrink: 0; }
+  .stat-val { font-size: 18px; }
+  .scroll-hint { margin-top: 12px; }
+  .hero-eyebrow { margin-bottom: 12px; }
+}
 </style>
 </head>
 <body>
@@ -498,5 +520,16 @@ document.getElementById('compass-nav').innerHTML = layers.map(l =>
   </a>`
 ).join('');
 </script>
+
+<!-- Bottom nav (mobile) -->
+<nav class="bottom-nav" aria-label="Navigasi">
+  <div class="bottom-nav-items">
+    <a href="index.html"            class="bottom-nav-item active"><span class="bottom-nav-icon">🏠</span><span class="bottom-nav-lbl">Peta</span></a>
+    <a href="layers/01-voyage.html" class="bottom-nav-item">       <span class="bottom-nav-icon">⚓</span><span class="bottom-nav-lbl">Pelayaran</span></a>
+    <a href="layers/02-misi.html"   class="bottom-nav-item">       <span class="bottom-nav-icon">🧭</span><span class="bottom-nav-lbl">Misi</span></a>
+    <a href="layers/03-ombak.html"  class="bottom-nav-item">       <span class="bottom-nav-icon">🌊</span><span class="bottom-nav-lbl">Ombak</span></a>
+    <a href="layers/04-muatan.html" class="bottom-nav-item">       <span class="bottom-nav-icon">📦</span><span class="bottom-nav-lbl">Muatan</span></a>
+  </div>
+</nav>
 </body>
 </html>

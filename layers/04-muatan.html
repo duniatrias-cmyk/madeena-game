@@ -83,6 +83,37 @@
 .sum-tile { background:var(--laut-tengah);border:1px solid var(--border-tipis);border-radius:var(--r-md);padding:14px;text-align:center; }
 .sum-val { font-family:var(--font-mono);font-size:18px;font-weight:500; }
 .sum-lbl { font-family:var(--font-mono);font-size:10px;color:var(--teks-redup);letter-spacing:0.5px;margin-top:4px; }
+
+/* ── Mobile 04-muatan ── */
+@media (max-width: 640px) {
+  .palka-grid { grid-template-columns: 1fr; gap: 10px; }
+  .detail-grid { grid-template-columns: 1fr; gap: 12px; }
+  .detail-stats { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .detail-panel { padding: 16px 14px; }
+  .detail-name { font-size: 20px; }
+  .detail-chart-wrap { height: 160px; }
+  .summary-strip {
+    display: flex; flex-wrap: nowrap; overflow-x: auto;
+    -webkit-overflow-scrolling: touch; gap: 8px;
+    padding-bottom: 4px; scrollbar-width: none;
+  }
+  .summary-strip::-webkit-scrollbar { display: none; }
+  .sum-tile { min-width: 130px; flex-shrink: 0; padding: 12px; }
+  .sum-val { font-size: 16px; }
+  .meter-box { padding: 8px 6px; }
+  .meter-val { font-size: 13px; }
+  .meter-lbl { font-size: 8px; }
+  .palka-ilus { height: 80px; }
+  .palka-body { padding: 10px 12px 12px; }
+  .palka-name { font-size: 15px; }
+  .palka-gmv-val { font-size: 13px; }
+  .konsep-box { padding: 14px; }
+  .konsep-judul { font-size: 15px; }
+  .konsep-isi { font-size: 13px; }
+  h1[style] { font-size: 22px !important; }
+  .ds { padding: 10px; }
+  .ds-val { font-size: 15px; }
+}
 </style>
 </head>
 <body>
@@ -317,6 +348,11 @@ function renderPalka() {
     ALL.forEach((m, idx) => {
       const spark4 = m.rows.filter(r=>r.w>=19&&r.w<=22).map(r=>r.gmv/1e6);
       if (spark4.length) drawSpark('spark-'+idx, spark4, m.color);
+      // Pulsing border untuk palka kritis (OOS risk)
+      if (m.health === 'kritis') {
+        const card = document.getElementById('palka-'+idx);
+        if (card) card.classList.add('kritis-pulse');
+      }
     });
   }, 120);
 }
@@ -363,5 +399,26 @@ function closeDetail() {
 renderSummary();
 renderPalka();
 </script>
+
+<!-- Ocean waves -->
+<svg class="ocean-bg" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
+  <g class="wave-anim">
+    <path d="M0,70 C120,42 240,98 360,70 C480,42 600,98 720,70 C840,42 960,98 1080,70 C1200,42 1320,98 1440,70 C1560,42 1680,98 1800,70 C1920,42 2040,98 2160,70 C2280,42 2400,98 2520,70 C2640,42 2760,98 2880,70 L2880,160 L0,160 Z" fill="#7ab8d8" opacity="0.24"/>
+  </g>
+  <g class="wave-anim-slow">
+    <path d="M0,105 C180,68 360,142 540,105 C720,68 900,142 1080,105 C1260,68 1440,142 1620,105 C1800,68 1980,142 2160,105 C2340,68 2520,142 2700,105 C2880,68 2880,142 2880,105 L2880,160 L0,160 Z" fill="#3ecf7a" opacity="0.13"/>
+  </g>
+</svg>
+
+<!-- Bottom nav (mobile) -->
+<nav class="bottom-nav" aria-label="Navigasi">
+  <div class="bottom-nav-items">
+    <a href="../index.html"  class="bottom-nav-item">        <span class="bottom-nav-icon">🏠</span><span class="bottom-nav-lbl">Peta</span></a>
+    <a href="01-voyage.html" class="bottom-nav-item">        <span class="bottom-nav-icon">⚓</span><span class="bottom-nav-lbl">Pelayaran</span></a>
+    <a href="02-misi.html"   class="bottom-nav-item">        <span class="bottom-nav-icon">🧭</span><span class="bottom-nav-lbl">Misi</span></a>
+    <a href="03-ombak.html"  class="bottom-nav-item">        <span class="bottom-nav-icon">🌊</span><span class="bottom-nav-lbl">Ombak</span></a>
+    <a href="04-muatan.html" class="bottom-nav-item active"> <span class="bottom-nav-icon">📦</span><span class="bottom-nav-lbl">Muatan</span></a>
+  </div>
+</nav>
 </body>
 </html>

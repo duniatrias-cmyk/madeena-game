@@ -239,3 +239,144 @@ body::before {
 .animate-wave  { animation: wave 3s ease-in-out infinite; }
 .animate-up    { animation: fadeUp 0.4s ease both; }
 .pulse-emas    { animation: pulse-emas 1.4s ease-in-out infinite; }
+
+/* ═══════════════════════════════════════════════════
+   VISUAL UPGRADE + MOBILE — Kapal Madeena
+   ═══════════════════════════════════════════════════ */
+
+/* ── Extended keyframes ── */
+@keyframes waveScroll    { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+@keyframes shipBob       { 0%,100%{transform:translateY(-60%)} 50%{transform:translateY(-72%)} }
+@keyframes captainRing   { 0%,100%{box-shadow:0 0 0 2px var(--emas),0 0 0 4px rgba(232,184,75,0.18)} 50%{box-shadow:0 0 0 2px var(--emas),0 0 0 7px rgba(232,184,75,0.38),0 0 10px rgba(232,184,75,0.15)} }
+@keyframes shimmerBorder { 0%,100%{box-shadow:0 0 0 1px rgba(232,184,75,0.2),0 0 0 rgba(232,184,75,0)} 50%{box-shadow:0 0 0 1px rgba(232,184,75,0.6),0 0 18px rgba(232,184,75,0.14)} }
+@keyframes pulseRedBorder{ 0%,100%{box-shadow:0 0 0 1px rgba(224,90,58,0.3),0 0 0 rgba(224,90,58,0)} 50%{box-shadow:0 0 0 2px rgba(224,90,58,0.75),0 0 16px rgba(224,90,58,0.28)} }
+@keyframes flashGreen    { 0%{background:var(--laut-tengah)} 35%{background:rgba(62,207,122,0.15)} 100%{background:var(--laut-tengah)} }
+@keyframes shakeRed      { 0%,100%{transform:none} 16%{transform:translateX(-7px)} 33%{transform:translateX(7px)} 50%{transform:translateX(-4px)} 67%{transform:translateX(4px)} 83%{transform:translateX(-1px)} }
+@keyframes slideInUp     { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fillBar       { from{width:0 !important} }
+@keyframes hpDrain       { from{width:100%} }
+@keyframes liquidRise    { from{height:0} }
+@keyframes routeGlow     { 0%,100%{box-shadow:0 0 5px 1px rgba(232,184,75,0.35)} 50%{box-shadow:0 0 12px 3px rgba(232,184,75,0.65),0 0 4px 1px rgba(122,184,216,0.35)} }
+
+/* ── Shared wave animation classes ── */
+.wave-anim      { animation: waveScroll  9s linear infinite; }
+.wave-anim-slow { animation: waveScroll 15s linear infinite; }
+
+/* ── Ocean wave background (shared) ── */
+.ocean-bg {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 160px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── Avatar captain ring animation ── */
+.avatar.kapten { animation: captainRing 2.4s ease-in-out infinite; }
+
+/* ── Badge subtle glow ── */
+.badge-hijau  { box-shadow: 0 0 8px rgba(62,207,122,0.2); }
+.badge-merah  { box-shadow: 0 0 8px rgba(224,90,58,0.2); }
+.badge-amber  { box-shadow: 0 0 6px rgba(232,184,75,0.15); }
+.badge-langit { box-shadow: 0 0 6px rgba(122,184,216,0.15); }
+
+/* ── Card hover glow ── */
+.card:hover { border-color: var(--border-sedang); box-shadow: 0 0 16px rgba(122,184,216,0.07); }
+
+/* ── Arena effects ── */
+.arena-card.flash-menang { animation: flashGreen 0.8s ease both; }
+.arena-card.flash-kalah  { animation: shakeRed   0.55s ease both; }
+
+/* ── Palka kritis pulse ── */
+.palka-card.kritis-pulse { animation: pulseRedBorder 1.6s ease-in-out infinite; }
+
+/* ── Misi card expanded shimmer ── */
+.misi-card.expanded { animation: shimmerBorder 2.2s ease-in-out infinite; }
+
+/* ── Detail panel slide-in ── */
+.detail-panel.visible { animation: slideInUp 0.28s ease both; }
+
+/* ── Route glow ── */
+.rute-tempuh { animation: routeGlow 3s ease-in-out infinite; }
+
+/* ── HP bar drain on render ── */
+.hp-inner { animation: hpDrain 0.9s cubic-bezier(0.4,0,0.2,1) both; }
+
+/* ── Progress fill load animation ── */
+.misi-card .progress-fill { animation: fillBar 1.1s ease both; }
+
+/* ── Liquid fill ── */
+.palka-muatan-bar { animation: liquidRise 1.3s cubic-bezier(0.4,0,0.2,1) both; }
+
+/* ── Bottom navigation ── */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 500;
+  background: rgba(10,15,26,0.96);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid var(--border-tipis);
+  padding: 6px 0 calc(6px + env(safe-area-inset-bottom,0px));
+}
+.bottom-nav-items { display: flex; justify-content: space-around; align-items: center; }
+.bottom-nav-item  {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  text-decoration: none; padding: 6px 10px;
+  min-width: 44px; min-height: 48px; justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  border-radius: var(--r-sm);
+  transition: background 0.12s;
+}
+.bottom-nav-item:active { background: rgba(255,255,255,0.06); }
+.bottom-nav-icon { font-size: 20px; line-height: 1; display: block; }
+.bottom-nav-lbl  { font-family: var(--font-mono); font-size: 9px; color: var(--teks-redup); letter-spacing: 0.2px; }
+.bottom-nav-item.active .bottom-nav-lbl  { color: var(--emas); }
+.bottom-nav-item.active .bottom-nav-icon { filter: drop-shadow(0 0 5px rgba(232,184,75,0.55)); }
+
+/* ── Global touch ── */
+a, button, [onclick], .btn, .nav-link, .nav-card, .misi-card,
+.log-row, .palka-card, .toggle-btn, .target-sel {
+  -webkit-tap-highlight-color: transparent;
+}
+.btn, .toggle-btn, select, button { touch-action: manipulation; }
+
+/* ── Horizontal snap scroll utility ── */
+.scroll-snap-x {
+  display: flex; overflow-x: auto; gap: 12px;
+  scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; -ms-overflow-style: none; padding-bottom: 2px;
+}
+.scroll-snap-x::-webkit-scrollbar { display: none; }
+.scroll-snap-x > * { scroll-snap-align: start; flex-shrink: 0; }
+
+/* ── Mobile layout (≤640px) ── */
+@media (max-width: 640px) {
+  .bottom-nav { display: block; }
+  .nav-links  { display: none; }
+  .nav { padding: 10px 16px; }
+  .shell { padding: 20px 14px 96px; }
+  .card  { padding: 14px; }
+  .card-sm { padding: 10px 12px; }
+  .btn { min-height: 44px; padding: 10px 14px; font-size: 12px; }
+  .section-lbl { font-size: 9px; letter-spacing: 1.5px; }
+}
+
+/* ── Reduced motion — override everything ── */
+@media (prefers-reduced-motion: reduce) {
+  .wave-anim, .wave-anim-slow,
+  .avatar.kapten,
+  .misi-card.expanded,
+  .palka-card.kritis-pulse,
+  .rute-tempuh,
+  .hp-inner,
+  .misi-card .progress-fill,
+  .palka-muatan-bar {
+    animation: none !important;
+  }
+  .avatar.kapten { box-shadow: 0 0 0 2px var(--emas); }
+  .detail-panel.visible { animation: none !important; }
+  .arena-card.flash-menang, .arena-card.flash-kalah { animation: none !important; }
+  * { transition-duration: 0.01ms !important; }
+}
