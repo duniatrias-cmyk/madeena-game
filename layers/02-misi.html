@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Misi Awak — Kapal Madeena</title>
+<link rel="stylesheet" href="../shared/style.css">
+<script src="../data/weekly.js"></script>
+<style>
+/* ── Concept ── */
+.konsep-box {
+  background: linear-gradient(135deg, rgba(167,139,250,0.06), rgba(122,184,216,0.04));
+  border: 1px solid rgba(167,139,250,0.25);
+  border-radius: var(--r-lg);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.konsep-judul {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-style: italic;
+  color: var(--ungu);
+  margin-bottom: 10px;
+}
+.konsep-isi {
+  font-size: 14px;
+  color: var(--teks-kedua);
+  line-height: 1.8;
+}
+.konsep-isi strong { color: var(--teks-primer); font-weight: 500; }
+
+/* ── Speed meter ── */
+.speedometer {
+  background: var(--laut-tengah);
+  border: 1px solid var(--border-tipis);
+  border-radius: var(--r-lg);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  align-items: center;
+}
+.speed-left {}
+.speed-label { font-family: var(--font-mono); font-size: 10px; color: var(--teks-redup); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+.speed-track {
+  height: 12px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border-tipis);
+  position: relative;
+  margin-bottom: 6px;
+}
+.speed-base {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: var(--langit);
+  border-radius: 6px;
+  transition: width 0.8s ease;
+}
+.speed-bonus {
+  position: absolute;
+  top: 0; bottom: 0;
+  background: var(--ungu);
+  transition: left 0.8s ease, width 0.8s ease;
+}
+.speed-sub {
+  font-size: 12px;
+  color: var(--teks-redup);
+  font-style: italic;
+}
+.speed-right { text-align: center; }
+.speed-knot {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--teks-primer);
+  display: block;
+}
+.speed-knot.boost { color: var(--ungu); }
+.speed-knot-lbl {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--teks-redup);
+  letter-spacing: 0.8px;
+}
+
+/* ── Misi cards ── */
+.misi-stack { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+
+.misi-card {
+  background: var(--laut-tengah);
+  border: 1px solid var(--border-tipis);
+  border-radius: var(--r-lg);
+  padding: 22px 24px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s;
+  cursor: pointer;
+}
+.misi-card:hover { border-color: var(--border-sedang); }
+.misi-card .accent { position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.misi-card.expanded { border-color: var(--border-sedang); }
+
+.misi-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 14px; }
+.misi-id-col { flex-shrink: 0; }
+.misi-id {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--teks-redup);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.misi-jalur {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--teks-kedua);
+}
+.misi-body { flex: 1; }
+.misi-judul { font-family: var(--font-serif); font-size: 18px; font-weight: 500; color: var(--teks-primer); margin-bottom: 5px; line-height: 1.3; }
+.misi-status-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.misi-dampak-col { text-align: right; flex-shrink: 0; }
+.dampak-val { font-family: var(--font-mono); font-size: 20px; font-weight: 500; }
+.dampak-lbl { font-family: var(--font-mono); font-size: 9px; color: var(--teks-redup); letter-spacing: 0.5px; }
+
+/* Progress */
+.misi-prog-row { margin-bottom: 14px; }
+.prog-label-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+.prog-label { font-family: var(--font-mono); font-size: 10px; color: var(--teks-redup); letter-spacing: 0.5px; }
+.prog-pct   { font-family: var(--font-mono); font-size: 10px; }
+
+/* Detail collapsible */
+.misi-detail {
+  display: none;
+  border-top: 1px solid var(--border-tipis);
+  padding-top: 16px;
+  margin-top: 4px;
+  animation: fadeUp 0.2s ease both;
+}
+.misi-detail.open { display: block; }
+
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.detail-section-lbl {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--teks-redup);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.awak-list { display: flex; flex-direction: column; gap: 8px; }
+.awak-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--laut-tepi);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-tipis);
+}
+.awak-nama { font-size: 13px; font-weight: 500; color: var(--teks-primer); }
+.awak-peran { font-size: 11px; color: var(--teks-kedua); }
+
+.dampak-visual {
+  background: var(--laut-tepi);
+  border-radius: var(--r-md);
+  padding: 16px;
+  border: 1px solid var(--border-tipis);
+}
+.dampak-explain {
+  font-size: 13px;
+  color: var(--teks-kedua);
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+.dampak-explain strong { color: var(--teks-primer); font-weight: 500; }
+.knot-bar-wrap { margin-top: 10px; }
+.knot-bar-label { font-family: var(--font-mono); font-size: 10px; color: var(--teks-redup); letter-spacing: 0.5px; margin-bottom: 5px; }
+
+/* Toggle misi bonus */
+.misi-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: var(--laut-tepi);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-tipis);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--teks-redup);
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+  user-select: none;
+}
+.misi-toggle.on { border-color: rgba(167,139,250,0.4); background: rgba(167,139,250,0.08); color: var(--ungu); }
+.toggle-ind {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--teks-redup);
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.misi-toggle.on .toggle-ind { background: var(--ungu); }
+
+/* ── Summary footer ── */
+.summary-bar {
+  background: var(--laut-tengah);
+  border: 1px solid var(--emas-border);
+  border-radius: var(--r-lg);
+  padding: 18px 22px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.sum-col { text-align: center; }
+.sum-val { font-family: var(--font-mono); font-size: 20px; font-weight: 500; color: var(--teks-primer); }
+.sum-lbl { font-family: var(--font-mono); font-size: 10px; color: var(--teks-redup); letter-spacing: 0.5px; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="../index.html" class="nav-brand">⚓ Kapal <em>Madeena</em></a>
+  <div class="nav-links">
+    <a href="../index.html"  class="nav-link">Peta</a>
+    <a href="01-voyage.html" class="nav-link">Pelayaran</a>
+    <a href="02-misi.html"   class="nav-link active">Misi Awak</a>
+    <a href="03-ombak.html"  class="nav-link">Ombak Mingguan</a>
+    <a href="04-muatan.html" class="nav-link">Muatan</a>
+  </div>
+</nav>
+
+<div class="shell">
+
+  <div style="margin-bottom:24px;padding-top:8px">
+    <div class="section-lbl">Layer 02 · Misi Awak</div>
+    <h1 style="font-family:var(--font-serif);font-size:32px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px">
+      Apa yang sedang dikerjakan awak?
+    </h1>
+    <p style="color:var(--teks-kedua);font-size:15px;max-width:620px;line-height:1.7">
+      Kecepatan kapal bukan hanya ditentukan oleh angin alam.
+      <strong style="color:var(--teks-primer)">Awak kapal yang aktif mengerjakan misi</strong>
+      bisa menambah kecepatan — seperti mendayung lebih keras saat angin lemah.
+    </p>
+  </div>
+
+  <!-- Konsep -->
+  <div class="konsep-box">
+    <div class="konsep-judul">"Setiap misi yang selesai = kapal melaju lebih kencang."</div>
+    <div class="konsep-isi">
+      Ada <strong id="k-jumlah">3</strong> misi aktif saat ini.
+      Kalau semua misi selesai, kapal mendapat tambahan kecepatan total
+      <strong id="k-total-dampak">—</strong> per minggu —
+      cukup untuk menutup <strong id="k-penutup">—</strong> dari gap yang tersisa.
+      <br><br>
+      Klik tiap misi untuk lihat siapa yang bertanggung jawab dan apa dampaknya ke perjalanan kapal.
+      Aktifkan toggle bonus untuk lihat efeknya ke speedometer di atas.
+    </div>
+  </div>
+
+  <!-- Speedometer -->
+  <div class="section-lbl">Kecepatan Kapal — basis + bonus misi aktif</div>
+  <div class="speedometer">
+    <div class="speed-left">
+      <div class="speed-label">Kecepatan saat ini (run-rate 4W) + bonus misi aktif</div>
+      <div class="speed-track">
+        <div class="speed-base" id="speed-base" style="width:0%"></div>
+        <div class="speed-bonus" id="speed-bonus" style="left:0%;width:0%"></div>
+      </div>
+      <div class="speed-sub">
+        Hijau = kecepatan aktual · Ungu = tambahan dari misi ·
+        Garis putus = pace OKR
+      </div>
+    </div>
+    <div class="speed-right">
+      <span class="speed-knot" id="speed-knot-val">—</span>
+      <div class="speed-knot-lbl">per minggu</div>
+      <div style="margin-top:8px;font-family:var(--font-mono);font-size:10px;color:var(--teks-redup)">
+        Pace OKR: <span id="speed-pace">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Misi cards -->
+  <div class="section-lbl">Papan Misi — <span id="misi-aktif-count">0</span> misi aktif</div>
+  <div class="misi-stack" id="misi-stack"></div>
+
+  <!-- Summary -->
+  <div class="summary-bar" id="summary-bar"></div>
+
+  <!-- Nav -->
+  <div style="display:flex;justify-content:space-between">
+    <a href="01-voyage.html" class="btn">← Peta Pelayaran</a>
+    <a href="03-ombak.html"  class="btn btn-emas">Lanjut: Ombak Mingguan →</a>
+  </div>
+
+</div>
+
+<script>
+const c  = DATA.computed;
+const m  = DATA.meta;
+const fmtB   = v => Math.abs(v) >= 1e9 ? `Rp ${(v/1e9).toFixed(2)}B` : `Rp ${Math.round(v/1e6)}jt`;
+const fmtPct = v => `${Math.round(v * 100)}%`;
+
+// State: which misi bonuses are active
+const bonusActive = DATA.misiAwak.map(misi => misi.status === 'Sedang Berlangsung');
+const expandedIdx = [null];
+
+// ── Compute speed with bonuses ──
+function totalBonus() {
+  return DATA.misiAwak.reduce((s, misi, i) => s + (bonusActive[i] ? misi.dampakKnot * 1e6 : 0), 0);
+}
+function updateSpeed() {
+  const maxRef = c.paceOkr * 2;
+  const basePct = Math.min(c.runRate4W / maxRef, 1) * 100;
+  const bonus   = totalBonus();
+  const bonusPct= Math.min(bonus / maxRef, 1 - c.runRate4W/maxRef) * 100;
+  document.getElementById('speed-base').style.width = basePct + '%';
+  document.getElementById('speed-bonus').style.left  = basePct + '%';
+  document.getElementById('speed-bonus').style.width = bonusPct + '%';
+
+  const total = c.runRate4W + bonus;
+  const el = document.getElementById('speed-knot-val');
+  el.textContent = fmtB(total) + '/mgg';
+  el.className   = 'speed-knot' + (bonus > 0 ? ' boost' : '');
+  document.getElementById('speed-pace').textContent = fmtB(c.paceOkr) + '/mgg';
+}
+
+// ── Konsep ──
+const totalDampak = DATA.misiAwak.reduce((s, misi) => s + misi.dampakKnot * 1e6, 0);
+document.getElementById('k-jumlah').textContent    = DATA.misiAwak.length;
+document.getElementById('k-total-dampak').textContent = fmtB(totalDampak);
+document.getElementById('k-penutup').textContent =
+  fmtPct(totalDampak / Math.max(c.gap, 1)) + ' gap sisa';
+
+// ── Misi cards ──
+function renderMisi() {
+  const stack = document.getElementById('misi-stack');
+  stack.innerHTML = DATA.misiAwak.map((misi, idx) => {
+    const isOpen   = expandedIdx[0] === idx;
+    const isBonus  = bonusActive[idx];
+    const statusCls = misi.status === 'Sedang Berlangsung' ? 'badge-amber' :
+                      misi.status === 'Selesai'            ? 'badge-hijau' : 'badge-langit';
+
+    const awakHtml = misi.anakBuah.map(a =>
+      `<div class="awak-row">
+        <div class="avatar ${a.kapten?'kapten':''} ${a.perhatian?'perhatian':''}" title="${a.nama}">${a.inisial}</div>
+        <div>
+          <div class="awak-nama">${a.nama}${a.kapten?' <span style="color:var(--emas);font-size:10px">Penanggung Jawab</span>':''}</div>
+          <div class="awak-peran">${a.peran}${a.perhatian?' · <span style="color:var(--merah-badai)">⚠ perlu perhatian</span>':''}</div>
+        </div>
+      </div>`
+    ).join('');
+
+    const dampakPct = Math.min(misi.dampakKnot * 1e6 / (c.paceOkr * 2), 1) * 100;
+
+    return `<div class="misi-card${isOpen?' expanded':''}" id="misi-card-${idx}">
+      <div class="accent" style="background:${misi.warna}"></div>
+
+      <div class="misi-header" onclick="toggleExpand(${idx})">
+        <div class="misi-id-col">
+          <div class="misi-id">${misi.id}</div>
+          <div class="misi-jalur">${misi.jalur}</div>
+        </div>
+        <div class="misi-body">
+          <div class="misi-judul">${misi.judul}</div>
+          <div class="misi-status-row">
+            <span class="badge ${statusCls}">${misi.status}</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--teks-redup)">
+              ${misi.anakBuah.length + 1} awak · ${isOpen ? '▲ tutup' : '▼ lihat detail'}
+            </span>
+          </div>
+        </div>
+        <div class="misi-dampak-col">
+          <div class="dampak-val" style="color:${misi.warna}">+${fmtB(misi.dampakKnot * 1e6)}</div>
+          <div class="dampak-lbl">Bonus kecepatan</div>
+        </div>
+      </div>
+
+      <div class="misi-prog-row">
+        <div class="prog-label-row">
+          <span class="prog-label">Progress misi</span>
+          <span class="prog-pct" style="color:${misi.warna}">${misi.progres}%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width:${misi.progres}%;background:${misi.warna}"></div>
+        </div>
+      </div>
+
+      <div class="misi-detail${isOpen?' open':''}" id="misi-detail-${idx}">
+        <div class="detail-grid">
+          <div>
+            <div class="detail-section-lbl">Awak yang bertugas</div>
+            <div class="awak-list">${awakHtml}</div>
+          </div>
+          <div>
+            <div class="detail-section-lbl">Dampak ke kecepatan kapal</div>
+            <div class="dampak-visual">
+              <div class="dampak-explain">
+                ${misi.deskripsi}
+                <br><br>
+                Jika misi ini selesai, kapal mendapat tambahan kecepatan
+                <strong>+${fmtB(misi.dampakKnot * 1e6)}</strong> per minggu —
+                setara dengan mendayung <strong>${Math.round(misi.dampakKnot/43.75)}×</strong> lebih keras di jalur ini.
+              </div>
+              <div class="knot-bar-wrap">
+                <div class="knot-bar-label">Kontribusi ke pace OKR</div>
+                <div class="progress-track">
+                  <div class="progress-fill" style="width:${Math.round(dampakPct)}%;background:${misi.warna}"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="misi-toggle${isBonus?' on':''}" onclick="toggleBonus(${idx})" id="toggle-${idx}">
+          <div class="toggle-ind"></div>
+          ${isBonus
+            ? `BONUS AKTIF — kecepatan +${fmtB(misi.dampakKnot*1e6)}/mgg masuk ke speedometer`
+            : 'Aktifkan: lihat efek misi ini ke kecepatan kapal'}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleExpand(idx) {
+  expandedIdx[0] = expandedIdx[0] === idx ? null : idx;
+  renderMisi();
+}
+
+function toggleBonus(idx) {
+  bonusActive[idx] = !bonusActive[idx];
+  renderMisi();
+  updateSpeed();
+  renderSummary();
+}
+
+// ── Summary ──
+function renderSummary() {
+  const aktif  = bonusActive.filter(Boolean).length;
+  const bonusTotal = totalBonus();
+  const speedTotal = c.runRate4W + bonusTotal;
+  const weeksLeft  = 52 - m.mingguTerakhir;
+  const proj = c.ytd + speedTotal * weeksLeft;
+  document.getElementById('misi-aktif-count').textContent = aktif;
+  document.getElementById('summary-bar').innerHTML = [
+    { val: aktif + ' misi',     lbl: 'Bonus aktif' },
+    { val: fmtB(bonusTotal)+'/mgg', lbl: 'Tambahan kecepatan' },
+    { val: fmtB(proj),          lbl: proj >= m.okr ? '✓ Proyeksi: Tiba di pelabuhan' : 'Proyeksi akhir tahun' }
+  ].map(s =>
+    `<div class="sum-col">
+      <div class="sum-val">${s.val}</div>
+      <div class="sum-lbl">${s.lbl}</div>
+    </div>`
+  ).join('');
+}
+
+// ── Init ──
+setTimeout(updateSpeed, 200);
+renderMisi();
+renderSummary();
+</script>
+</body>
+</html>

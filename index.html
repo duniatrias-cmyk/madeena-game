@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapal Madeena — Game Bisnis 2026</title>
+<link rel="stylesheet" href="shared/style.css">
+<script src="data/weekly.js"></script>
+<style>
+/* INDEX-SPECIFIC */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 24px;
+  position: relative;
+}
+
+/* Ombak SVG dekoratif */
+.ocean-bg {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 200px;
+  z-index: 0;
+  opacity: 0.15;
+}
+
+.hero-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--teks-redup);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hero-eyebrow::before,
+.hero-eyebrow::after {
+  content: '';
+  width: 40px;
+  height: 1px;
+  background: var(--border-sedang);
+}
+
+.hero-title {
+  font-family: var(--font-serif);
+  font-size: clamp(36px, 6vw, 64px);
+  font-weight: 700;
+  color: var(--teks-primer);
+  letter-spacing: -1.5px;
+  line-height: 1.05;
+  margin-bottom: 8px;
+}
+.hero-title em { font-style: italic; color: var(--emas); }
+
+.hero-subtitle {
+  font-family: var(--font-serif);
+  font-size: clamp(18px, 3vw, 26px);
+  font-weight: 300;
+  font-style: italic;
+  color: var(--teks-kedua);
+  margin-bottom: 12px;
+}
+
+.hero-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--teks-redup);
+  letter-spacing: 1px;
+  margin-bottom: 48px;
+}
+
+/* Kompas navigasi */
+.compass-nav {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  max-width: 700px;
+  width: 100%;
+  margin: 0 auto 48px;
+}
+
+.nav-card {
+  background: var(--laut-tengah);
+  border: 1px solid var(--border-tipis);
+  border-radius: var(--r-lg);
+  padding: 24px;
+  text-decoration: none;
+  text-align: left;
+  display: block;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s, transform 0.15s;
+  cursor: pointer;
+}
+.nav-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  transition: opacity 0.2s;
+}
+.nav-card:hover { transform: translateY(-2px); border-color: var(--border-sedang); }
+.nav-card.prioritas-1::before { background: var(--emas); }
+.nav-card.prioritas-2::before { background: var(--ungu); }
+.nav-card.prioritas-3::before { background: var(--merah-badai); }
+.nav-card.prioritas-4::before { background: var(--hijau-laut); }
+
+.nav-card-num {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--teks-redup);
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+.nav-card-icon {
+  font-size: 32px;
+  margin-bottom: 10px;
+  display: block;
+  line-height: 1;
+}
+.nav-card-title {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--teks-primer);
+  margin-bottom: 5px;
+  line-height: 1.2;
+}
+.nav-card-sub {
+  font-size: 13px;
+  color: var(--teks-kedua);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+.nav-card-bisnis {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--teks-redup);
+  letter-spacing: 0.5px;
+}
+.nav-card-status {
+  position: absolute;
+  top: 16px; right: 16px;
+}
+
+/* Progress bar mini di nav card */
+.nav-progress {
+  margin-top: 12px;
+  height: 3px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.nav-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+/* Stat strip bawah */
+.stat-strip {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+.stat-item { text-align: center; }
+.stat-val {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--teks-primer);
+  display: block;
+}
+.stat-val.c-emas   { color: var(--emas); }
+.stat-val.c-hijau  { color: var(--hijau-laut); }
+.stat-val.c-langit { color: var(--langit); }
+.stat-lbl {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--teks-redup);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-top: 3px;
+  display: block;
+}
+
+/* Scroll prompt */
+.scroll-hint {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--teks-redup);
+  letter-spacing: 1px;
+  animation: pulse-emas 2s infinite;
+}
+
+/* Ocean wave SVG animation */
+@keyframes waveMove { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.wave-anim { animation: waveMove 8s linear infinite; }
+.wave-anim-slow { animation: waveMove 12s linear infinite; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="index.html" class="nav-brand">⚓ Kapal <em>Madeena</em></a>
+  <div class="nav-links">
+    <a href="index.html"            class="nav-link active">Peta</a>
+    <a href="layers/01-voyage.html" class="nav-link">Pelayaran</a>
+    <a href="layers/02-misi.html"   class="nav-link">Misi Awak</a>
+    <a href="layers/03-ombak.html"  class="nav-link">Ombak Mingguan</a>
+    <a href="layers/04-muatan.html" class="nav-link">Muatan</a>
+  </div>
+</nav>
+
+<!-- Ocean background -->
+<svg class="ocean-bg" viewBox="0 0 1440 200" preserveAspectRatio="none" aria-hidden="true">
+  <g class="wave-anim">
+    <path d="M0,100 C180,60 360,140 540,100 C720,60 900,140 1080,100 C1260,60 1440,140 1620,100 C1800,60 1980,140 2160,100 C2340,60 2520,140 2700,100 C2880,60 2880,140 2880,100 L2880,200 L0,200 Z" fill="#7ab8d8" opacity="0.4"/>
+  </g>
+  <g class="wave-anim-slow">
+    <path d="M0,130 C240,90 480,170 720,130 C960,90 1200,170 1440,130 C1680,90 1920,170 2160,130 C2400,90 2640,170 2880,130 L2880,200 L0,200 Z" fill="#3ecf7a" opacity="0.2"/>
+  </g>
+</svg>
+
+<div class="hero">
+
+  <div class="hero-eyebrow">Tahun 2026</div>
+
+  <h1 class="hero-title">Kapal <em>Madeena</em></h1>
+  <p class="hero-subtitle">sedang berlayar menuju Pelabuhan 40 Milyar</p>
+  <div class="hero-meta" id="hero-meta">Memuat data pelayaran...</div>
+
+  <!-- Stat strip -->
+  <div class="stat-strip" id="stat-strip"></div>
+
+  <!-- Compass nav -->
+  <div class="compass-nav" id="compass-nav"></div>
+
+  <div class="scroll-hint">↓ Pilih bagian untuk dijelajahi</div>
+
+</div>
+
+<script>
+const c = DATA.computed;
+const m = DATA.meta;
+
+// Format helpers
+const fmtB  = v => v >= 1e9 ? `Rp ${(v/1e9).toFixed(2)}B` : `Rp ${Math.round(v/1e6)}jt`;
+const fmtPct= v => `${Math.round(v*100)}%`;
+
+// Hero meta
+document.getElementById('hero-meta').textContent =
+  `W${m.mingguTerakhir} / 52 · Data per ${m.tanggalUpdate} · OKR ${fmtB(m.okr)}`;
+
+// Stat strip
+const stats = [
+  { val: fmtB(c.ytd),        cls: 'c-emas',  lbl: 'Jarak Ditempuh' },
+  { val: fmtPct(c.pctTempuh),cls: 'c-langit', lbl: 'Menuju Pelabuhan' },
+  { val: fmtB(c.runRate4W)+'/mgg', cls: '',   lbl: 'Kecepatan (4W)' },
+  { val: fmtB(c.gap),        cls: 'c-redup',  lbl: 'Sisa Jarak' }
+];
+document.getElementById('stat-strip').innerHTML = stats.map(s =>
+  `<div class="stat-item">
+    <span class="stat-val ${s.cls}">${s.val}</span>
+    <span class="stat-lbl">${s.lbl}</span>
+  </div>`
+).join('');
+
+// Nav cards
+const layers = [
+  {
+    href: 'layers/01-voyage.html',
+    prioritas: 1,
+    num: 'PRIORITAS 01',
+    icon: '⚓',
+    title: 'Peta Pelayaran',
+    sub: 'Sejauh mana kapal sudah berlayar, seberapa kencang angin, dan kapan angin buritan berikutnya tiba.',
+    bisnis: 'OKR TRACKER · GMV KUMULATIF · RUN-RATE',
+    status: 'JELAJAHI',
+    statusCls: 'badge-amber',
+    prog: Math.round(c.pctTempuh * 100),
+    progColor: '#e8b84b'
+  },
+  {
+    href: 'layers/02-misi.html',
+    prioritas: 2,
+    num: 'PRIORITAS 02',
+    icon: '🧭',
+    title: 'Misi Awak',
+    sub: 'Tiga misi yang sedang dijalankan awak. Setiap misi selesai menambah kecepatan kapal.',
+    bisnis: 'INITIATIVES · QUEST BOARD · TEAM',
+    status: 'JELAJAHI',
+    statusCls: 'badge-amber',
+    prog: Math.round(DATA.misiAwak.reduce((s,m)=>s+m.progres,0)/DATA.misiAwak.length),
+    progColor: '#a78bfa'
+  },
+  {
+    href: 'layers/03-ombak.html',
+    prioritas: 3,
+    num: 'PRIORITAS 03',
+    icon: '🌊',
+    title: 'Ombak Mingguan',
+    sub: 'Setiap minggu ada ombak yang harus ditembus. Lihat rekam jejak kapal melawan ombak W1–W22.',
+    bisnis: 'WEEKLY TARGET · WIN/LOSS · BATTLE LOG',
+    status: 'JELAJAHI',
+    statusCls: 'badge-langit',
+    prog: Math.round(DATA.mingguanTotal.length / 52 * 100),
+    progColor: '#e05a3a'
+  },
+  {
+    href: 'layers/04-muatan.html',
+    prioritas: 4,
+    num: 'PRIORITAS 04',
+    icon: '📦',
+    title: 'Palka Muatan',
+    sub: 'Status muatan tiap series. Kapal tidak bisa berlayar jauh kalau palka mulai kosong.',
+    bisnis: 'INVENTORY · STOCK COVER · OOS RISK',
+    status: 'JELAJAHI',
+    statusCls: 'badge-hijau',
+    prog: 100,
+    progColor: '#3ecf7a'
+  }
+];
+
+document.getElementById('compass-nav').innerHTML = layers.map(l =>
+  `<a href="${l.href}" class="nav-card prioritas-${l.prioritas}" style="animation-delay:${(l.prioritas-1)*0.1}s">
+    <div class="nav-card-num">${l.num}</div>
+    <span class="nav-card-icon">${l.icon}</span>
+    <div class="nav-card-title">${l.title}</div>
+    <div class="nav-card-sub">${l.sub}</div>
+    <div class="nav-card-bisnis">${l.bisnis}</div>
+    <div class="nav-progress">
+      <div class="nav-progress-fill" style="width:${l.prog}%;background:${l.progColor}"></div>
+    </div>
+    <div class="nav-card-status"><span class="badge ${l.statusCls}">${l.status}</span></div>
+  </a>`
+).join('');
+</script>
+</body>
+</html>

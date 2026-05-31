@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ombak Mingguan — Kapal Madeena</title>
+<link rel="stylesheet" href="../shared/style.css">
+<script src="../data/weekly.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+.konsep-box {
+  background: linear-gradient(135deg,rgba(224,90,58,0.06),rgba(122,184,216,0.04));
+  border: 1px solid rgba(224,90,58,0.2);
+  border-radius: var(--r-lg);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.konsep-judul { font-family:var(--font-serif);font-size:18px;font-style:italic;color:var(--merah-badai);margin-bottom:10px; }
+.konsep-isi { font-size:14px;color:var(--teks-kedua);line-height:1.8; }
+.konsep-isi strong { color:var(--teks-primer);font-weight:500; }
+
+.battle-grid { display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px; }
+
+/* Arena */
+.arena-card {
+  background:var(--laut-tengah);
+  border:1px solid var(--border-tipis);
+  border-radius:var(--r-lg);
+  padding:22px;
+  transition:border-color 0.3s;
+}
+.arena-card.menang { border-color:rgba(62,207,122,0.3); }
+.arena-card.kalah  { border-color:rgba(224,90,58,0.3); }
+
+.wave-header { display:flex;align-items:center;gap:12px;margin-bottom:16px; }
+.wave-avatar {
+  width:52px;height:52px;
+  border-radius:10px;
+  background:var(--laut-surface);
+  border:1px solid var(--border-sedang);
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;flex-shrink:0;
+}
+.wave-name { font-family:var(--font-serif);font-size:17px;font-weight:700;color:var(--teks-primer); }
+.wave-meta { font-family:var(--font-mono);font-size:10px;color:var(--teks-redup);margin-top:3px; }
+
+.hp-section { margin-bottom:14px; }
+.hp-top { display:flex;justify-content:space-between;margin-bottom:5px; }
+.hp-lbl { font-family:var(--font-mono);font-size:9px;color:var(--teks-redup);letter-spacing:1px; }
+.hp-num { font-family:var(--font-mono);font-size:11px;color:var(--teks-kedua); }
+.hp-outer { height:16px;background:rgba(255,255,255,0.04);border-radius:4px;overflow:hidden;border:1px solid var(--border-tipis); }
+.hp-inner { height:100%;border-radius:3px;transition:width 0.7s ease; }
+.hp-stripe { position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 8px,rgba(255,255,255,0.06) 8px,rgba(255,255,255,0.06) 9px); }
+
+.dmg-row { display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px; }
+.dmg-box { background:var(--laut-tepi);border:1px solid var(--border-tipis);border-radius:var(--r-sm);padding:10px;text-align:center; }
+.dmg-val { font-family:var(--font-mono);font-size:14px;font-weight:500;color:var(--teks-primer); }
+.dmg-lbl { font-size:10px;color:var(--teks-redup);margin-top:3px; }
+
+.result-banner { border-radius:var(--r-sm);padding:10px 14px;font-family:var(--font-mono);font-size:11px;border:1px solid;letter-spacing:0.3px; }
+.result-banner.menang { background:var(--hijau-redup);border-color:rgba(62,207,122,0.3);color:var(--hijau-laut); }
+.result-banner.kalah  { background:var(--merah-redup);border-color:rgba(224,90,58,0.3); color:var(--merah-badai); }
+
+/* Log */
+.log-card { background:var(--laut-tengah);border:1px solid var(--border-tipis);border-radius:var(--r-lg);overflow:hidden; }
+.log-header { padding:14px 16px;border-bottom:1px solid var(--border-tipis);background:var(--laut-tepi);display:flex;justify-content:space-between;align-items:center; }
+.log-scroll { overflow-y:auto;max-height:380px; }
+.log-scroll::-webkit-scrollbar { width:3px; }
+.log-scroll::-webkit-scrollbar-thumb { background:var(--border-sedang);border-radius:2px; }
+.log-hdr { display:grid;grid-template-columns:36px 1fr 72px 72px 70px;gap:6px;padding:6px 14px;border-bottom:1px solid var(--border-tipis); }
+.log-hdr span { font-family:var(--font-mono);font-size:9px;color:var(--teks-redup);letter-spacing:0.5px;text-transform:uppercase; }
+.log-hdr span:not(:nth-child(2)) { text-align:right; }
+.log-row {
+  display:grid;grid-template-columns:36px 1fr 72px 72px 70px;gap:6px;
+  padding:8px 14px;border-bottom:1px solid var(--border-tipis);align-items:center;
+  cursor:pointer;transition:background 0.1s;
+}
+.log-row:last-child { border-bottom:none; }
+.log-row:hover { background:var(--laut-tepi); }
+.log-row.active { background:rgba(255,255,255,0.03);border-left:2px solid var(--emas);padding-left:12px; }
+.log-w { font-family:var(--font-mono);font-size:10px;color:var(--teks-redup); }
+.log-name { font-size:11px;color:var(--teks-primer); }
+.log-minibar { height:2px;margin-top:3px;border-radius:1px; }
+.log-gmv,.log-gap { font-family:var(--font-mono);font-size:10px;text-align:right; }
+.log-gmv { color:var(--teks-primer); }
+.log-pill { font-family:var(--font-mono);font-size:9px;padding:2px 6px;border-radius:3px;border:1px solid;text-align:center;letter-spacing:0.5px; }
+
+.chart-card { background:var(--laut-tengah);border:1px solid var(--border-tipis);border-radius:var(--r-lg);padding:20px 22px;margin-bottom:20px; }
+.chart-wrap { height:180px; }
+
+.score-row { display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px; }
+.score-tile { background:var(--laut-tengah);border:1px solid var(--border-tipis);border-radius:var(--r-md);padding:14px;text-align:center; }
+.score-val { font-family:var(--font-mono);font-size:20px;font-weight:500; }
+.score-lbl { font-family:var(--font-mono);font-size:10px;color:var(--teks-redup);letter-spacing:0.5px;margin-top:4px; }
+
+.target-sel { font-family:var(--font-mono);font-size:10px;padding:5px 10px;border-radius:var(--r-sm);border:1px solid var(--border-sedang);background:var(--laut-tengah);color:var(--teks-kedua);cursor:pointer; }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="../index.html" class="nav-brand">⚓ Kapal <em>Madeena</em></a>
+  <div class="nav-links">
+    <a href="../index.html"  class="nav-link">Peta</a>
+    <a href="01-voyage.html" class="nav-link">Pelayaran</a>
+    <a href="02-misi.html"   class="nav-link">Misi Awak</a>
+    <a href="03-ombak.html"  class="nav-link active">Ombak Mingguan</a>
+    <a href="04-muatan.html" class="nav-link">Muatan</a>
+  </div>
+</nav>
+
+<div class="shell">
+  <div style="margin-bottom:24px;padding-top:8px">
+    <div class="section-lbl">Layer 03 · Ombak Mingguan</div>
+    <h1 style="font-family:var(--font-serif);font-size:32px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px">Minggu ini kita tembus ombak atau dihempas?</h1>
+    <p style="color:var(--teks-kedua);font-size:15px;max-width:620px;line-height:1.7">
+      Setiap minggu, kapal menghadapi <strong style="color:var(--teks-primer)">ombak target</strong>.
+      Kalau GMV melampaui target, kapal menembus ombak dan melaju. Kalau tidak — kapal terdorong mundur.
+    </p>
+  </div>
+
+  <div class="konsep-box">
+    <div class="konsep-judul">"Laut tidak pernah diam. Tiap minggu ada ombaknya."</div>
+    <div class="konsep-isi">
+      Target mingguan bukan angka sembarangan — ini adalah <strong>ombak nyata</strong> yang harus ditembus supaya kapal tetap di jalur menuju pelabuhan.
+      Klik baris mana pun di log untuk melihat detail ombak minggu itu.
+      <br><br>
+      <strong>Warna hijau</strong> = kapal berhasil menembus ombak ·
+      <strong>Warna merah</strong> = ombak berhasil menghempas kapal.
+    </div>
+  </div>
+
+  <!-- Score row -->
+  <div class="score-row" id="score-row"></div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+    <div class="section-lbl" style="margin-bottom:0;flex:1">Arena Ombak — klik log untuk ganti minggu</div>
+    <select class="target-sel" id="target-mode" onchange="recompute()">
+      <option value="wma">Target: WMA-8</option>
+      <option value="okr">Target: Pace OKR</option>
+      <option value="flat">Target: Rata-rata flat</option>
+    </select>
+  </div>
+
+  <div class="battle-grid">
+    <div class="arena-card" id="arena-card"></div>
+    <div class="log-card">
+      <div class="log-header">
+        <span style="font-family:var(--font-mono);font-size:10px;color:var(--teks-redup);letter-spacing:0.5px">BATTLE LOG W1–W22</span>
+        <span style="font-family:var(--font-mono);font-size:9px;color:var(--teks-redup)">KLIK BARIS → DETAIL</span>
+      </div>
+      <div class="log-hdr"><span>MG</span><span style="text-align:left">Ombak</span><span>GMV</span><span>Target</span><span>Hasil</span></div>
+      <div class="log-scroll" id="log-scroll"></div>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <div style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--teks-redup);letter-spacing:1px;text-transform:uppercase">GMV vs Target — W1–W22</div>
+      <div style="display:flex;gap:14px;font-size:11px;color:var(--teks-redup);font-family:var(--font-mono)">
+        <span>■ <span style="color:var(--hijau-laut)">tembus</span></span>
+        <span>■ <span style="color:var(--merah-badai)">hempas</span></span>
+        <span>--- target</span>
+      </div>
+    </div>
+    <div class="chart-wrap"><canvas id="bar-chart"></canvas></div>
+  </div>
+
+  <div style="display:flex;justify-content:space-between">
+    <a href="02-misi.html"   class="btn">← Misi Awak</a>
+    <a href="04-muatan.html" class="btn btn-emas">Lanjut: Palka Muatan →</a>
+  </div>
+</div>
+
+<script>
+const total = DATA.mingguanTotal;
+const fmtB  = v => Math.abs(v)>=1e9?`Rp ${(v/1e9).toFixed(2)}B`:`Rp ${Math.round(v/1e6)}jt`;
+const fmtS  = v => Math.abs(v)>=1e9?(v/1e9).toFixed(2)+'B':Math.round(v/1e6)+'jt';
+
+const OMBAK = [
+  '"Ombak Pertama"','Sang Penggiling','Ombak Dingin','Penegak Kuota',
+  '"Penjaga Momentum"','Badai Flash Sale','Aftermath','Angin Pra-Ramadan',
+  'Nyala Ramadan','Puncak Ramadan I','Puncak Ramadan II','Tenang Sebelum Badai',
+  '"Kebangkitan Pasca-Eid"','Badai Lebaran I','Badai Lebaran II','Badai Lebaran III',
+  '"Surut Pasca-Eid"','Mode Pemulihan','Kebangkitan Mei','Ujian Konsistensi',
+  '"Surut Akhir Mei"','Ombak W22 (parsial)'
+];
+const OMBAK_ICON = ['🌊','⚙','❄','📋','💨','⚡','🌙','☀','🔥','👑','🏆','👁','🚀','❤','🛡','💎','👻','🔄','🌿','🎯','📉','⏳'];
+
+let activeIdx = 7;
+let chartInst = null;
+
+function getTargets(mode) {
+  const gmvs = total.map(d=>d.gmv);
+  return gmvs.map((_, i) => {
+    if (mode === 'flat') return gmvs.reduce((a,b)=>a+b,0)/gmvs.length;
+    if (mode === 'okr')  return DATA.meta.okr/52;
+    const n = Math.min(8, i<1?1:i);
+    const sl = gmvs.slice(Math.max(0,i-n),i);
+    if (!sl.length) return gmvs[0];
+    let w=0,ws=0; sl.forEach((v,j)=>{w+=v*(j+1);ws+=(j+1);}); return w/ws;
+  });
+}
+
+function recompute() {
+  const mode = document.getElementById('target-mode').value;
+  const targets = getTargets(mode);
+  renderScore(targets);
+  renderArena(targets);
+  renderLog(targets);
+  renderChart(targets);
+}
+
+function renderScore(targets) {
+  const wins = total.filter((d,i)=>d.gmv>=targets[i]).length;
+  const el   = document.getElementById('score-row');
+  el.innerHTML = [
+    {val:wins+'',            cls:'c-hijau', lbl:'Ombak Ditembus'},
+    {val:(total.length-wins)+'', cls:'c-merah', lbl:'Ombak Menghempas'},
+    {val:Math.round(wins/total.length*100)+'%', cls:'', lbl:'Win rate'},
+    {val:fmtS(total.reduce((s,d)=>s+d.gmv,0)), cls:'c-emas', lbl:'Total damage (YTD)'}
+  ].map(s=>`<div class="score-tile"><div class="score-val ${s.cls}">${s.val}</div><div class="score-lbl">${s.lbl}</div></div>`).join('');
+}
+
+function renderArena(targets) {
+  const d    = total[activeIdx];
+  const t    = targets[activeIdx];
+  const won  = d.gmv >= t;
+  const hp   = Math.max(0, 1 - d.gmv/t);
+  const diff = d.gmv - t;
+  const el   = document.getElementById('arena-card');
+  el.className = 'arena-card ' + (won?'menang':'kalah');
+  const barColor = won ? '#3ecf7a' : hp>0.3 ? '#e05a3a' : '#e8a825';
+  el.innerHTML =
+    `<div style="font-family:var(--font-mono);font-size:9px;color:var(--teks-redup);letter-spacing:0.8px;margin-bottom:14px">OMBAK AKTIF — W${d.w}/52</div>
+    <div class="wave-header">
+      <div class="wave-avatar">${OMBAK_ICON[activeIdx]}</div>
+      <div>
+        <div class="wave-name">${OMBAK[activeIdx]}</div>
+        <div class="wave-meta">Minggu ${d.w} · Target: ${fmtB(t)}</div>
+        <div style="margin-top:5px"><span class="badge ${won?'badge-hijau':'badge-merah'}">${won?'DITEMBUS':'MENGHEMPAS'}</span></div>
+      </div>
+    </div>
+    <div class="hp-section">
+      <div class="hp-top"><span class="hp-lbl">TINGGI OMBAK TERSISA</span><span class="hp-num">${Math.round(hp*100)}% · ${fmtB(Math.max(t-d.gmv,0))} lagi</span></div>
+      <div class="hp-outer" style="position:relative">
+        <div class="hp-inner" style="width:${Math.round(hp*100)}%;background:${barColor};position:relative"><div class="hp-stripe"></div></div>
+      </div>
+    </div>
+    <div class="dmg-row">
+      <div class="dmg-box"><div class="dmg-val">${fmtS(d.gmv)}</div><div class="dmg-lbl">Kekuatan kapal (GMV)</div></div>
+      <div class="dmg-box"><div class="dmg-val" style="color:${won?'var(--hijau-laut)':'var(--merah-badai)'}">${diff>=0?'+':''}${fmtS(diff)}</div><div class="dmg-lbl">${won?'Surplus':'Kekurangan'}</div></div>
+      <div class="dmg-box"><div class="dmg-val">W${d.w}/52</div><div class="dmg-lbl">Posisi di tahun ini</div></div>
+    </div>
+    <div class="result-banner ${won?'menang':'kalah'}">
+      ${won?`✓ Kapal menembus ombak — GMV ${fmtB(d.gmv)} melampaui target ${fmtB(t)}`:`✗ Ombak menghempas — kurang ${fmtB(Math.abs(diff))} untuk menembus`}
+    </div>`;
+}
+
+function renderLog(targets) {
+  const el = document.getElementById('log-scroll');
+  el.innerHTML = total.map((d,i) => {
+    const t   = targets[i];
+    const won = d.gmv >= t;
+    const pct = Math.min(d.gmv/t,1);
+    const barColor = won?'#3ecf7a':pct>0.7?'#e8a825':'#e05a3a';
+    const active = i === activeIdx;
+    return `<div class="log-row${active?' active':''}" onclick="selectWeek(${i})">
+      <div class="log-w">W${d.w}</div>
+      <div><div class="log-name">${OMBAK[i]}</div><div class="log-minibar" style="width:${Math.round(pct*100)}%;background:${barColor}"></div></div>
+      <div class="log-gmv">${fmtS(d.gmv)}</div>
+      <div class="log-gmv" style="color:var(--teks-redup)">${fmtS(t)}</div>
+      <div><span class="log-pill" style="background:${won?'rgba(62,207,122,0.1)':'rgba(224,90,58,0.1)'};border-color:${won?'rgba(62,207,122,0.3)':'rgba(224,90,58,0.3)'};color:${won?'var(--hijau-laut)':'var(--merah-badai)'}">${won?'TEMBUS':'HEMPAS'}</span></div>
+    </div>`;
+  }).join('');
+  const active = el.querySelector('.active');
+  if (active) active.scrollIntoView({block:'nearest'});
+}
+
+function renderChart(targets) {
+  if (chartInst) chartInst.destroy();
+  const ctx = document.getElementById('bar-chart').getContext('2d');
+  chartInst = new Chart(ctx, {
+    data: {
+      labels: total.map(d=>'W'+d.w),
+      datasets: [
+        { type:'bar', label:'GMV', data:total.map(d=>Math.round(d.gmv/1e6)),
+          backgroundColor:total.map((d,i)=>i===activeIdx?(d.gmv>=targets[i]?'#3ecf7a':'#e05a3a'):(d.gmv>=targets[i]?'rgba(62,207,122,0.5)':'rgba(224,90,58,0.45)')),
+          borderRadius:3, order:2 },
+        { type:'line', label:'Target', data:targets.map(t=>Math.round(t/1e6)),
+          borderColor:'rgba(255,255,255,0.18)', borderWidth:1.5, borderDash:[4,3], pointRadius:0, fill:false, order:1 }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{backgroundColor:'rgba(10,15,26,0.95)',borderColor:'rgba(232,184,75,0.2)',borderWidth:1,titleColor:'#f0e8d0',bodyColor:'#9ba8b5'} },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{font:{size:10,family:'DM Mono'},color:'#4a5a6a'}},
+        y:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{font:{size:10,family:'DM Mono'},color:'#4a5a6a',callback:v=>v>=1000?(v/1000).toFixed(1)+'B':v+'jt'}}
+      },
+      onClick:(_,els)=>{ if(els.length) selectWeek(els[0].index); },
+      onHover:(_,els,chart)=>{ chart.canvas.style.cursor=els.length?'pointer':'default'; }
+    }
+  });
+}
+
+window.selectWeek = function(i) {
+  activeIdx = i;
+  recompute();
+};
+
+recompute();
+</script>
+</body>
+</html>

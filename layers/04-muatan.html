@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Palka Muatan — Kapal Madeena</title>
+<link rel="stylesheet" href="../shared/style.css">
+<script src="../data/weekly.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+.konsep-box { background:linear-gradient(135deg,rgba(62,207,122,0.06),rgba(122,184,216,0.04));border:1px solid rgba(62,207,122,0.2);border-radius:var(--r-lg);padding:24px;margin-bottom:24px; }
+.konsep-judul { font-family:var(--font-serif);font-size:18px;font-style:italic;color:var(--hijau-laut);margin-bottom:10px; }
+.konsep-isi { font-size:14px;color:var(--teks-kedua);line-height:1.8; }
+.konsep-isi strong { color:var(--teks-primer);font-weight:500; }
+
+/* Palka grid */
+.palka-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px; }
+
+.palka-card {
+  background:var(--laut-tengah);
+  border:1px solid var(--border-tipis);
+  border-radius:var(--r-lg);
+  overflow:hidden;
+  cursor:pointer;
+  transition:border-color 0.2s, transform 0.15s;
+}
+.palka-card:hover { transform:translateY(-2px);border-color:var(--border-sedang); }
+.palka-card.selected { border-color:rgba(255,220,150,0.35); }
+
+/* Palka illustration */
+.palka-ilus {
+  height:72px;
+  position:relative;
+  overflow:hidden;
+  display:flex;
+  align-items:flex-end;
+  padding:0 14px 8px;
+}
+.palka-muatan-bar {
+  position:absolute;
+  bottom:0;left:0;right:0;
+  transition:height 0.8s ease;
+}
+.palka-icon-big { position:relative;z-index:2;font-size:22px; }
+.palka-status-tag { position:absolute;top:8px;right:10px;z-index:3; }
+
+/* Palka body */
+.palka-body { padding:12px 14px 14px; }
+.palka-name { font-family:var(--font-serif);font-size:16px;font-weight:700;color:var(--teks-primer);margin-bottom:3px; }
+.palka-share { font-family:var(--font-mono);font-size:10px;color:var(--teks-redup);margin-bottom:10px; }
+
+.palka-meters { display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:10px; }
+.meter-box { background:var(--laut-tepi);border:1px solid var(--border-tipis);border-radius:var(--r-sm);padding:6px 7px;text-align:center; }
+.meter-lbl { font-family:var(--font-mono);font-size:8px;color:var(--teks-redup);letter-spacing:0.4px;margin-bottom:3px; }
+.meter-val { font-family:var(--font-mono);font-size:12px;font-weight:500; }
+
+.palka-bar-wrap { margin-bottom:8px; }
+.palka-bar-lbl { display:flex;justify-content:space-between;margin-bottom:4px; }
+.palka-bar-lbl span { font-family:var(--font-mono);font-size:9px;color:var(--teks-redup); }
+.palka-spark-wrap { height:28px;position:relative; }
+
+.palka-gmv { display:flex;align-items:baseline;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border-tipis); }
+.palka-gmv-val { font-family:var(--font-mono);font-size:14px;font-weight:500;color:var(--teks-primer); }
+.palka-gmv-lbl { font-family:var(--font-mono);font-size:9px;color:var(--teks-redup); }
+
+.oos-banner { margin-top:7px;background:var(--merah-redup);border:1px solid rgba(224,90,58,0.3);border-radius:var(--r-sm);padding:5px 8px;font-family:var(--font-mono);font-size:9px;color:var(--merah-badai);letter-spacing:0.3px; }
+
+/* Detail panel */
+.detail-panel { display:none;background:var(--laut-tengah);border:1px solid var(--border-sedang);border-radius:var(--r-lg);padding:22px;margin-bottom:24px; }
+.detail-panel.visible { display:block;animation:fadeUp 0.2s ease both; }
+.detail-hdr { display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap; }
+.detail-name { font-family:var(--font-serif);font-size:24px;font-weight:700; }
+.detail-sub  { font-family:var(--font-mono);font-size:10px;color:var(--teks-redup);margin-top:4px; }
+.detail-grid { display:grid;grid-template-columns:1fr 1fr;gap:16px; }
+.detail-chart-wrap { height:180px; }
+.detail-stats { display:grid;grid-template-columns:1fr 1fr;gap:8px; }
+.ds { background:var(--laut-tepi);border:1px solid var(--border-tipis);border-radius:var(--r-sm);padding:11px 13px; }
+.ds-lbl { font-family:var(--font-mono);font-size:9px;color:var(--teks-redup);letter-spacing:0.5px;margin-bottom:5px; }
+.ds-val { font-family:var(--font-mono);font-size:17px;font-weight:500; }
+.ds-sub { font-size:11px;color:var(--teks-kedua);margin-top:3px;font-style:italic; }
+
+/* Summary strip */
+.summary-strip { display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px; }
+.sum-tile { background:var(--laut-tengah);border:1px solid var(--border-tipis);border-radius:var(--r-md);padding:14px;text-align:center; }
+.sum-val { font-family:var(--font-mono);font-size:18px;font-weight:500; }
+.sum-lbl { font-family:var(--font-mono);font-size:10px;color:var(--teks-redup);letter-spacing:0.5px;margin-top:4px; }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="../index.html" class="nav-brand">⚓ Kapal <em>Madeena</em></a>
+  <div class="nav-links">
+    <a href="../index.html"  class="nav-link">Peta</a>
+    <a href="01-voyage.html" class="nav-link">Pelayaran</a>
+    <a href="02-misi.html"   class="nav-link">Misi Awak</a>
+    <a href="03-ombak.html"  class="nav-link">Ombak Mingguan</a>
+    <a href="04-muatan.html" class="nav-link active">Muatan</a>
+  </div>
+</nav>
+
+<div class="shell">
+  <div style="margin-bottom:24px;padding-top:8px">
+    <div class="section-lbl">Layer 04 · Palka Muatan</div>
+    <h1 style="font-family:var(--font-serif);font-size:32px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px">Muatan kapal masih cukup untuk berlayar?</h1>
+    <p style="color:var(--teks-kedua);font-size:15px;max-width:620px;line-height:1.7">
+      Kapal tidak bisa menjual apa yang tidak ada di palka.
+      Tiap series produk = satu palka di lambung kapal.
+      <strong style="color:var(--teks-primer)">Kalau palka kosong, jalur itu tertutup.</strong>
+    </p>
+  </div>
+
+  <div class="konsep-box">
+    <div class="konsep-judul">"Muatan habis = kapal tidak bisa berlayar di jalur itu."</div>
+    <div class="konsep-isi">
+      <strong>Stock cover</strong> = berapa minggu lagi muatan di palka ini bisa bertahan dengan kecepatan jual saat ini.
+      Kalau stock cover di bawah 4 minggu, kita dalam bahaya OOS (Out of Stock) —
+      artinya kapal akan kehilangan revenue dari jalur itu sampai muatan baru tiba.
+      <br><br>
+      Klik palka mana pun untuk lihat tren penjualan 22 minggu terakhir dan estimasi kapan muatan habis.
+    </div>
+  </div>
+
+  <div class="summary-strip" id="summary-strip"></div>
+
+  <div class="section-lbl">Status Palka — <span id="palka-count">9</span> series · klik untuk detail</div>
+  <div class="detail-panel" id="detail-panel">
+    <div class="detail-hdr">
+      <div><div class="detail-name" id="dp-name">—</div><div class="detail-sub" id="dp-sub">—</div></div>
+      <button class="btn" onclick="closeDetail()">✕ Tutup</button>
+    </div>
+    <div class="detail-grid">
+      <div><div style="font-family:var(--font-mono);font-size:9px;color:var(--teks-redup);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">GMV per minggu — W1–W22</div><div class="detail-chart-wrap"><canvas id="detail-chart"></canvas></div></div>
+      <div class="detail-stats" id="dp-stats"></div>
+    </div>
+  </div>
+
+  <div class="palka-grid" id="palka-grid"></div>
+
+  <div style="display:flex;justify-content:space-between">
+    <a href="03-ombak.html" class="btn">← Ombak Mingguan</a>
+    <a href="../index.html" class="btn btn-emas">Kembali ke Peta ⚓</a>
+  </div>
+</div>
+
+<script>
+const fmtB = v => Math.abs(v)>=1e9?`Rp ${(v/1e9).toFixed(2)}B`:`Rp ${Math.round(v/1e6)}jt`;
+const fmtN = v => v.toLocaleString('id-ID');
+
+// Compute per-series metrics
+const SERI_NAMES = ['Reeyana','Heekaya','Airees','Zhafira Signature','Abbasy','Najma','Al Mutqin Florish','Raheela','Lainnya'];
+const SERI_ICONS = { 'Reeyana':'📖','Heekaya':'📚','Airees':'✨','Zhafira Signature':'💎','Abbasy':'🌿','Raheela':'🌸','Al Mutqin Florish':'🌺','Najma':'⭐','Lainnya':'🌾' };
+
+function buildMetrics() {
+  const totalYTD = DATA.seriMinggu.reduce((s,r)=>s+r.gmv,0);
+  return SERI_NAMES.map(name => {
+    const rows = DATA.seriMinggu.filter(r=>r.s===name).sort((a,b)=>a.w-b.w);
+    const ytd  = rows.reduce((s,r)=>s+r.gmv,0);
+    const stok = DATA.seriStok[name];
+    const cover= stok.stok / stok.demandPerMinggu;
+    const trend4 = rows.filter(r=>r.w>=18&&r.w<=21).map(r=>r.gmv);
+    const prev4  = rows.filter(r=>r.w>=14&&r.w<=17).map(r=>r.gmv);
+    const t4avg  = trend4.length ? trend4.reduce((a,b)=>a+b,0)/trend4.length : 0;
+    const p4avg  = prev4.length  ? prev4.reduce((a,b)=>a+b,0)/prev4.length  : 0;
+    const delta  = p4avg>0 ? (t4avg-p4avg)/p4avg : 0;
+    const health = cover>=8?'penuh':cover>=4?'menipis':'kritis';
+    const hColor = cover>=8?'#3ecf7a':cover>=4?'#e8a825':'#e05a3a';
+    const soilPct= Math.round(Math.min(cover/12,1)*60 + Math.min(Math.max(delta+0.5,0),1)*40);
+    return { name, rows, ytd, stok, cover, delta, health, hColor, soilPct, share:ytd/totalYTD, icon:SERI_ICONS[name], color:stok.warna };
+  }).sort((a,b)=>b.ytd-a.ytd);
+}
+
+const ALL = buildMetrics();
+const TOTAL_YTD = ALL.reduce((s,m)=>s+m.ytd,0);
+let openIdx = -1;
+const sparkCharts = {};
+let detailChart = null;
+
+// Summary
+function renderSummary() {
+  const penuh   = ALL.filter(m=>m.health==='penuh').length;
+  const menipis = ALL.filter(m=>m.health==='menipis').length;
+  const kritis  = ALL.filter(m=>m.health==='kritis').length;
+  const best    = ALL.reduce((b,m)=>m.delta>b.delta?m:b, ALL[0]);
+  document.getElementById('summary-strip').innerHTML = [
+    {val:penuh+' palka',   cls:'c-hijau', lbl:'Muatan penuh (≥8 mgg)'},
+    {val:menipis+' palka', cls:'c-emas',  lbl:'Muatan menipis (4–8 mgg)'},
+    {val:kritis+' palka',  cls:'c-merah', lbl:'OOS risk (<4 mgg)'},
+    {val:best.name,        cls:'',        lbl:'Trend terbaik 4W'}
+  ].map(s=>`<div class="sum-tile"><div class="sum-val ${s.cls}">${s.val}</div><div class="sum-lbl">${s.lbl}</div></div>`).join('');
+}
+
+// Sparkline
+function drawSpark(canvasId, vals, color) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  if (sparkCharts[canvasId]) sparkCharts[canvasId].destroy();
+  const mn = Math.min(...vals), mx = Math.max(...vals);
+  sparkCharts[canvasId] = new Chart(canvas.getContext('2d'), {
+    type:'line',
+    data:{ labels:vals.map((_,i)=>'W'+(i+1)), datasets:[{ data:vals, borderColor:color, borderWidth:1.5, pointRadius:0, fill:true, backgroundColor:color+'18', tension:0.35 }] },
+    options:{ responsive:true,maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{enabled:false}}, scales:{x:{display:false},y:{display:false,min:mn*0.8,max:mx*1.1}}, animation:{duration:500} }
+  });
+}
+
+// Palka grid
+function renderPalka() {
+  const grid = document.getElementById('palka-grid');
+  grid.innerHTML = ALL.map((m, idx) => {
+    const trendArrow = m.delta>=0.05?'↑':m.delta<=-0.05?'↓':'→';
+    const trendColor = m.delta>=0.05?'var(--hijau-laut)':m.delta<=-0.05?'var(--merah-badai)':'var(--emas)';
+    const share = (m.share*100).toFixed(1);
+    const oosBanner = m.health==='kritis'
+      ? `<div class="oos-banner">⚠ OOS Risk — ${Math.round(m.cover*10)/10} mgg tersisa</div>` : '';
+    const isSelected = idx===openIdx;
+    return `<div class="palka-card${isSelected?' selected':''}" id="palka-${idx}" onclick="openDetail(${idx})" style="animation-delay:${idx*0.05}s">
+      <div class="palka-ilus" style="background:linear-gradient(180deg,${m.hColor}10,${m.hColor}28)">
+        <div class="palka-muatan-bar" style="height:${m.soilPct}%;background:linear-gradient(180deg,transparent,${m.hColor}40)"></div>
+        <div class="palka-icon-big">${m.icon}</div>
+        <div class="palka-status-tag"><span class="badge ${m.health==='penuh'?'badge-hijau':m.health==='menipis'?'badge-amber':'badge-merah'}">${m.health==='penuh'?'PENUH':m.health==='menipis'?'MENIPIS':'KRITIS'}</span></div>
+      </div>
+      <div class="palka-body">
+        <div class="palka-name" style="color:${m.color}">${m.name}</div>
+        <div class="palka-share">${share}% dari total muatan terjual · #${idx+1}</div>
+        <div class="palka-meters">
+          <div class="meter-box"><div class="meter-lbl">STOCK COVER</div><div class="meter-val" style="color:${m.hColor}">${Math.round(m.cover*10)/10}<span style="font-size:9px;color:var(--teks-redup)">mgg</span></div></div>
+          <div class="meter-box"><div class="meter-lbl">TREND 4W</div><div class="meter-val" style="color:${trendColor}">${trendArrow}${Math.abs(Math.round(m.delta*100))}<span style="font-size:9px;color:var(--teks-redup)">%</span></div></div>
+          <div class="meter-box"><div class="meter-lbl">KESEHATAN</div><div class="meter-val" style="color:${m.hColor}">${m.soilPct}<span style="font-size:9px;color:var(--teks-redup)">/100</span></div></div>
+        </div>
+        <div class="palka-bar-wrap">
+          <div class="palka-bar-lbl"><span>Kesehatan palka</span><span style="color:${m.hColor}">${m.soilPct}%</span></div>
+          <div class="progress-track"><div class="progress-fill" style="width:${m.soilPct}%;background:${m.hColor}"></div></div>
+        </div>
+        <div class="palka-spark-wrap"><canvas id="spark-${idx}"></canvas></div>
+        <div class="palka-gmv"><div class="palka-gmv-val">${fmtB(m.ytd)}</div><div class="palka-gmv-lbl">YTD</div></div>
+        ${oosBanner}
+      </div>
+    </div>`;
+  }).join('');
+
+  setTimeout(() => {
+    ALL.forEach((m, idx) => {
+      const spark4 = m.rows.filter(r=>r.w>=19&&r.w<=22).map(r=>r.gmv/1e6);
+      if (spark4.length) drawSpark('spark-'+idx, spark4, m.color);
+    });
+  }, 120);
+}
+
+function openDetail(idx) {
+  openIdx = idx;
+  const m = ALL[idx];
+  document.getElementById('detail-panel').classList.add('visible');
+  document.getElementById('detail-panel').scrollIntoView({behavior:'smooth',block:'nearest'});
+  document.getElementById('dp-name').textContent  = m.name;
+  document.getElementById('dp-name').style.color  = m.color;
+  document.getElementById('dp-sub').textContent   =
+    `${m.health==='penuh'?'Muatan penuh':m.health==='menipis'?'Muatan menipis':'⚠ OOS Risk'} · Stock cover ${Math.round(m.cover*10)/10} mgg · Demand ${fmtN(m.stok.demandPerMinggu)} unit/mgg`;
+
+  const gmvAll = [];
+  for (let w=1;w<=22;w++) { const r=m.rows.find(r=>r.w===w); gmvAll.push(r?Math.round(r.gmv/1e6):0); }
+  if (detailChart) detailChart.destroy();
+  detailChart = new Chart(document.getElementById('detail-chart').getContext('2d'), {
+    type:'bar',
+    data:{ labels:gmvAll.map((_,i)=>'W'+(i+1)), datasets:[{ data:gmvAll, backgroundColor:gmvAll.map((_,i)=>i>=18?m.color:m.color+'66'), borderRadius:3 }] },
+    options:{ responsive:true,maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(10,15,26,0.95)',borderColor:'rgba(232,184,75,0.2)',borderWidth:1,titleColor:'#f0e8d0',bodyColor:'#9ba8b5',callbacks:{label:c=>c.raw+'jt'}}},
+      scales:{x:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{font:{size:9,family:'DM Mono'},color:'#4a5a6a'}},y:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{font:{size:9,family:'DM Mono'},color:'#4a5a6a',callback:v=>v+'jt'}}} }
+  });
+
+  const last = m.rows[m.rows.length-1]?.gmv||0;
+  const prev = m.rows[m.rows.length-2]?.gmv||0;
+  const wow  = prev>0?(last-prev)/prev:0;
+  document.getElementById('dp-stats').innerHTML = [
+    {lbl:'Panen YTD',          val:fmtB(m.ytd),         sub:`${(m.share*100).toFixed(1)}% dari total kapal`},
+    {lbl:'Stock cover',        val:Math.round(m.cover*10)/10+' minggu', sub:m.health==='kritis'?'⚠ Restock segera':m.health==='menipis'?'Pantau ketat':'Aman'},
+    {lbl:'Rata-rata 4W',       val:fmtB(m.rows.filter(r=>r.w>=18&&r.w<=21).reduce((s,r)=>s+r.gmv,0)/Math.max(m.rows.filter(r=>r.w>=18&&r.w<=21).length,1)), sub:(m.delta>=0?'+':'')+Math.round(m.delta*100)+'% vs 4W sebelumnya'},
+    {lbl:'Stok unit',          val:fmtN(m.stok.stok)+' unit', sub:'Estimasi per 24 Mei 2026'}
+  ].map(s=>`<div class="ds"><div class="ds-lbl">${s.lbl}</div><div class="ds-val" style="color:${m.color}">${s.val}</div><div class="ds-sub">${s.sub}</div></div>`).join('');
+
+  document.querySelectorAll('.palka-card').forEach((c,i)=>c.classList.toggle('selected',i===idx));
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('visible');
+  document.querySelectorAll('.palka-card').forEach(c=>c.classList.remove('selected'));
+  openIdx = -1;
+}
+
+renderSummary();
+renderPalka();
+</script>
+</body>
+</html>

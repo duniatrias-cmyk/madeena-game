@@ -1,0 +1,241 @@
+/* ═══════════════════════════════════════════════════
+   KAPAL MADEENA — Shared Design System
+   Import di setiap layer: <link rel="stylesheet" href="../shared/style.css">
+   ═══════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,300;1,9..144,500&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+/* ── Tokens ── */
+:root {
+  /* Warna laut */
+  --laut-dalam:   #0a0f1a;
+  --laut-tengah:  #0f1825;
+  --laut-tepi:    #162030;
+  --laut-surface: #1c2a3a;
+  --laut-muda:    #234258;
+
+  /* Aksen */
+  --emas:         #e8b84b;
+  --emas-redup:   rgba(232,184,75,0.15);
+  --emas-border:  rgba(232,184,75,0.3);
+  --hijau-laut:   #3ecf7a;
+  --hijau-redup:  rgba(62,207,122,0.12);
+  --merah-badai:  #e05a3a;
+  --merah-redup:  rgba(224,90,58,0.12);
+  --langit:       #7ab8d8;
+  --langit-redup: rgba(122,184,216,0.12);
+  --ungu:         #a78bfa;
+
+  /* Border */
+  --border-tipis:  rgba(255,255,255,0.06);
+  --border-sedang: rgba(255,255,255,0.12);
+  --border-tebal:  rgba(255,255,255,0.2);
+
+  /* Teks */
+  --teks-primer:  #f0e8d0;
+  --teks-kedua:   #9ba8b5;
+  --teks-redup:   #4a5a6a;
+
+  /* Font */
+  --font-serif: 'Fraunces', Georgia, serif;
+  --font-sans:  'DM Sans', sans-serif;
+  --font-mono:  'DM Mono', monospace;
+
+  /* Radius */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--laut-dalam);
+  color: var(--teks-primer);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Atmosfer laut ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 0%,   rgba(122,184,216,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(62,207,122,0.04)  0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%,  rgba(10,15,26,0.8)     0%, transparent 80%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Shell ── */
+.shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 24px 80px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Card ── */
+.card {
+  background: var(--laut-tengah);
+  border: 1px solid var(--border-tipis);
+  border-radius: var(--r-lg);
+  padding: 20px 22px;
+}
+.card-sm {
+  background: var(--laut-tepi);
+  border: 1px solid var(--border-tipis);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+}
+
+/* ── Section label ── */
+.section-lbl {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--teks-redup);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-lbl::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-tipis);
+}
+
+/* ── Nav bar (dipakai index + semua layer) ── */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  background: rgba(10,15,26,0.9);
+  border-bottom: 1px solid var(--border-tipis);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+}
+.nav-brand {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--teks-primer);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav-brand em { font-style: italic; color: var(--emas); }
+.nav-links { display: flex; gap: 4px; }
+.nav-link {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 5px 12px;
+  border-radius: var(--r-sm);
+  text-decoration: none;
+  color: var(--teks-kedua);
+  letter-spacing: 0.5px;
+  transition: background 0.15s, color 0.15s;
+  border: 1px solid transparent;
+}
+.nav-link:hover  { background: var(--laut-surface); color: var(--teks-primer); }
+.nav-link.active { background: var(--emas-redup); border-color: var(--emas-border); color: var(--emas); }
+
+/* ── Tombol ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 7px 14px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-sedang);
+  background: transparent;
+  color: var(--teks-kedua);
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+.btn:hover { background: var(--laut-surface); color: var(--teks-primer); border-color: var(--border-tebal); }
+.btn-emas  { background: var(--emas-redup); border-color: var(--emas-border); color: var(--emas); }
+.btn-emas:hover { background: rgba(232,184,75,0.25); }
+
+/* ── Badge ── */
+.badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px solid;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  display: inline-block;
+}
+.badge-hijau  { background: var(--hijau-redup);  border-color: rgba(62,207,122,0.3);  color: var(--hijau-laut); }
+.badge-merah  { background: var(--merah-redup);  border-color: rgba(224,90,58,0.3);   color: var(--merah-badai); }
+.badge-amber  { background: var(--emas-redup);   border-color: var(--emas-border);    color: var(--emas); }
+.badge-langit { background: var(--langit-redup); border-color: rgba(122,184,216,0.3); color: var(--langit); }
+
+/* ── Avatar awak ── */
+.avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  border: 1px solid var(--border-sedang);
+  background: var(--laut-surface);
+  color: var(--teks-kedua);
+  flex-shrink: 0;
+}
+.avatar.kapten    { border-color: var(--emas); color: var(--emas); }
+.avatar.perhatian { border-color: var(--merah-badai); color: var(--merah-badai); }
+
+/* ── Utility ── */
+.mono  { font-family: var(--font-mono); }
+.serif { font-family: var(--font-serif); }
+.c-emas   { color: var(--emas); }
+.c-hijau  { color: var(--hijau-laut); }
+.c-merah  { color: var(--merah-badai); }
+.c-langit { color: var(--langit); }
+.c-redup  { color: var(--teks-kedua); }
+
+/* ── Progress bar ── */
+.progress-track {
+  height: 6px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid var(--border-tipis);
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 1s ease;
+}
+
+/* ── Animasi gelombang (dekoratif) ── */
+@keyframes wave { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes pulse-emas { 0%,100%{opacity:1} 50%{opacity:0.5} }
+.animate-wave  { animation: wave 3s ease-in-out infinite; }
+.animate-up    { animation: fadeUp 0.4s ease both; }
+.pulse-emas    { animation: pulse-emas 1.4s ease-in-out infinite; }

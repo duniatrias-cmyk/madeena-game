@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peta Pelayaran — Kapal Madeena</title>
+<link rel="stylesheet" href="../shared/style.css">
+<script src="../data/weekly.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ── Ocean map canvas ── */
+.ocean-map {
+  background: linear-gradient(180deg, #061220 0%, #0a1e35 60%, #0d2540 100%);
+  border: 1px solid var(--border-tipis);
+  border-radius: var(--r-lg);
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+  min-height: 340px;
+  margin-bottom: 20px;
+}
+
+/* Grid garis laut */
+.ocean-map::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(122,184,216,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(122,184,216,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.map-inner {
+  position: relative;
+  padding: 28px 24px;
+  height: 340px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Garis rute */
+.rute-track {
+  position: absolute;
+  top: 50%; left: 60px; right: 80px;
+  transform: translateY(-50%);
+  height: 2px;
+  background: rgba(122,184,216,0.15);
+  border-radius: 1px;
+}
+.rute-tempuh {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: linear-gradient(90deg, var(--langit), var(--emas));
+  border-radius: 1px;
+  transition: width 1.2s ease;
+}
+
+/* Titik-titik rute */
+.waypoint {
+  position: absolute;
+  top: 50%; transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.waypoint-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid;
+}
+.waypoint-lbl {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+
+/* Kapal */
+.kapal-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-60%);
+  font-size: 28px;
+  transition: left 1.2s ease;
+  filter: drop-shadow(0 0 8px rgba(232,184,75,0.6));
+  z-index: 10;
+}
+
+/* Pelabuhan tujuan */
+.pelabuhan {
+  position: absolute;
+  top: 50%; right: 28px;
+  transform: translateY(-50%);
+  text-align: center;
+}
+.pelabuhan-icon { font-size: 28px; display: block; }
+.pelabuhan-lbl {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--emas);
+  letter-spacing: 0.8px;
+  margin-top: 4px;
+  white-space: nowrap;
+}
+
+/* Angin buritan markers */
+.angin-marker {
+  position: absolute;
+  top: 30%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  transform: translateX(-50%);
+}
+.angin-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  border: 1px solid;
+}
+.angin-lbl {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+.angin-line {
+  position: absolute;
+  top: 50%; bottom: auto;
+  width: 1px;
+  background: currentColor;
+  opacity: 0.3;
+}
+
+/* Info cards map overlay */
+.map-info-top {
+  position: absolute;
+  top: 16px; left: 20px;
+}
+.map-info-bottom {
+  position: absolute;
+  bottom: 16px; right: 20px;
+}
+.map-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--teks-redup);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.map-val {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 500;
+}
+
+/* ── Info grid ── */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.info-tile {
+  background: var(--laut-tengah);
+  border: 1px solid var(--border-tipis);
+  border-radius: var(--r-md);
+  padding: 16px 18px;
+  position: relative;
+  overflow: hidden;
+}
+.info-tile::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.info-tile.t-emas::before   { background: var(--emas); }
+.info-tile.t-langit::before { background: var(--langit); }
+.info-tile.t-hijau::before  { background: var(--hijau-laut); }
+.info-tile.t-merah::before  { background: var(--merah-badai); }
+
+.tile-lbl { font-family: var(--font-mono); font-size: 10px; color: var(--teks-redup); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 8px; }
+.tile-val { font-family: var(--font-mono); font-size: 22px; font-weight: 500; color: var(--teks-primer); }
+.tile-val.c-emas   { color: var(--emas); }
+.tile-val.c-langit { color: var(--langit); }
+.tile-val.c-hijau  { color: var(--hijau-laut); }
+.tile-val.c-merah  { color: var(--merah-badai); }
+.tile-sub { font-size: 12px; color: var(--teks-kedua); margin-top: 5px; font-style: italic; }
+
+/* ── Angin buritan section ── */
+.angin-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.angin-card {
+  background: var(--laut-tengah);
+  border: 1px solid var(--border-tipis);
+  border-radius: var(--r-md);
+  padding: 14px;
+  text-align: center;
+  opacity: 0.5;
+  transition: opacity 0.2s, border-color 0.2s;
+}
+.angin-card.selesai { opacity: 1; }
+.angin-card.mendatang { opacity: 0.7; border-style: dashed; }
+.angin-icon { font-size: 22px; margin-bottom: 6px; display: block; }
+.angin-nama { font-size: 12px; font-weight: 500; color: var(--teks-primer); margin-bottom: 3px; }
+.angin-minggu { font-family: var(--font-mono); font-size: 10px; color: var(--teks-redup); letter-spacing: 0.5px; }
+.angin-mult { font-family: var(--font-mono); font-size: 13px; font-weight: 500; margin-top: 6px; }
+
+/* ── Chart ── */
+.chart-card {
+  background: var(--laut-tengah);
+  border: 1px solid var(--border-tipis);
+  border-radius: var(--r-lg);
+  padding: 20px 22px;
+  margin-bottom: 20px;
+}
+.chart-wrap { height: 200px; position: relative; }
+
+/* ── Naratif konsep ── */
+.konsep-box {
+  background: linear-gradient(135deg, rgba(232,184,75,0.06), rgba(122,184,216,0.06));
+  border: 1px solid var(--emas-border);
+  border-radius: var(--r-lg);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.konsep-judul {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-style: italic;
+  color: var(--emas);
+  margin-bottom: 12px;
+}
+.konsep-isi {
+  font-size: 14px;
+  color: var(--teks-kedua);
+  line-height: 1.8;
+}
+.konsep-isi strong { color: var(--teks-primer); font-weight: 500; }
+
+/* ── Proyeksi toggle ── */
+.toggle-row {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;
+}
+.toggle-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 5px 12px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-sedang);
+  background: transparent;
+  color: var(--teks-kedua);
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: all 0.15s;
+}
+.toggle-btn.active {
+  background: var(--emas-redup);
+  border-color: var(--emas-border);
+  color: var(--emas);
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="../index.html" class="nav-brand">⚓ Kapal <em>Madeena</em></a>
+  <div class="nav-links">
+    <a href="../index.html"           class="nav-link">Peta</a>
+    <a href="01-voyage.html"          class="nav-link active">Pelayaran</a>
+    <a href="02-misi.html"            class="nav-link">Misi Awak</a>
+    <a href="03-ombak.html"           class="nav-link">Ombak Mingguan</a>
+    <a href="04-muatan.html"          class="nav-link">Muatan</a>
+  </div>
+</nav>
+
+<div class="shell">
+
+  <!-- Page header -->
+  <div style="margin-bottom:24px;padding-top:8px">
+    <div class="section-lbl">Layer 01 · Peta Pelayaran</div>
+    <h1 style="font-family:var(--font-serif);font-size:32px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px">
+      Di mana kapal kita sekarang?
+    </h1>
+    <p style="color:var(--teks-kedua);font-size:15px;max-width:600px;line-height:1.7">
+      Kapal Madeena berlayar menuju <strong style="color:var(--emas)">Pelabuhan 40 Milyar</strong>.
+      Setiap rupiah GMV yang masuk adalah satu langkah lebih dekat ke pelabuhan itu.
+    </p>
+  </div>
+
+  <!-- Concept box -->
+  <div class="konsep-box">
+    <div class="konsep-judul">"Kita sedang di tengah laut lepas."</div>
+    <div class="konsep-isi">
+      Kapal Madeena sudah menempuh <strong id="konsep-ytd">—</strong> dari total perjalanan <strong>Rp 40 Milyar</strong> —
+      artinya sudah <strong id="konsep-pct">—</strong> jarak ke pelabuhan.
+      Dengan kecepatan saat ini (<strong id="konsep-knot">—</strong> per minggu),
+      kita akan tiba di pelabuhan sekitar <strong id="konsep-proj">akhir tahun</strong>.
+      <br><br>
+      Tapi laut tidak selalu tenang. Ada <strong>angin buritan</strong> yang bisa mendorong kapal melesat —
+      dan ada <strong>badai</strong> yang bisa memperlambat perjalanan.
+      Tugas kita: jaga kecepatan, tangkap setiap angin yang datang.
+    </div>
+  </div>
+
+  <!-- Ocean map -->
+  <div class="section-lbl">Peta Rute — W1 sampai Pelabuhan 40 Milyar</div>
+  <div class="ocean-map">
+    <div class="map-inner">
+      <div class="map-info-top">
+        <div class="map-label">Posisi saat ini</div>
+        <div class="map-val c-emas" id="map-posisi">—</div>
+      </div>
+      <div class="map-info-bottom">
+        <div class="map-label">Sisa jarak</div>
+        <div class="map-val" style="color:var(--teks-kedua)" id="map-sisa">—</div>
+      </div>
+
+      <!-- Rute -->
+      <div class="rute-track" id="rute-track">
+        <div class="rute-tempuh" id="rute-tempuh" style="width:0%"></div>
+      </div>
+
+      <!-- Kapal -->
+      <div class="kapal-icon" id="kapal-icon" style="left:60px">⛵</div>
+
+      <!-- Angin markers injected by JS -->
+      <div id="angin-markers"></div>
+
+      <!-- Pelabuhan -->
+      <div class="pelabuhan">
+        <span class="pelabuhan-icon">🏝️</span>
+        <div class="pelabuhan-lbl">PELABUHAN<br>40 MILYAR</div>
+      </div>
+
+      <!-- Waypoints -->
+      <div id="waypoints"></div>
+    </div>
+  </div>
+
+  <!-- Info tiles -->
+  <div class="info-grid" id="info-grid"></div>
+
+  <!-- Angin buritan -->
+  <div class="section-lbl">Angin Buritan — event yang mendorong kapal melesat</div>
+  <div class="angin-grid" id="angin-grid"></div>
+
+  <!-- Chart: GMV per minggu + proyeksi -->
+  <div class="chart-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+      <div>
+        <div class="section-lbl" style="margin-bottom:4px">Kecepatan Kapal — GMV per minggu</div>
+        <div style="font-size:13px;color:var(--teks-kedua)">Batang tinggi = kapal melaju kencang. Garis putus-putus = target pace OKR.</div>
+      </div>
+      <div class="toggle-row">
+        <button class="toggle-btn active" onclick="setChart('aktual')"   id="btn-aktual">Aktual W1–W22</button>
+        <button class="toggle-btn"        onclick="setChart('proyeksi')" id="btn-proyeksi">+ Proyeksi</button>
+        <button class="toggle-btn"        onclick="setChart('kumulatif')" id="btn-kumulatif">Kumulatif</button>
+      </div>
+    </div>
+    <div class="chart-wrap"><canvas id="main-chart"></canvas></div>
+  </div>
+
+  <!-- Navigation footer -->
+  <div style="display:flex;justify-content:flex-end">
+    <a href="02-misi.html" class="btn btn-emas">Lanjut: Misi Awak →</a>
+  </div>
+
+</div>
+
+<script>
+const c = DATA.computed;
+const m = DATA.meta;
+const total = DATA.mingguanTotal;
+
+// Format
+const fmtB   = v => v >= 1e9 ? `Rp ${(v/1e9).toFixed(2)}B` : `Rp ${Math.round(v/1e6)}jt`;
+const fmtPct = v => `${Math.round(v * 100)}%`;
+const fmtKnot= v => `${fmtB(v)}/mgg`;
+
+// ── Konsep box ──
+document.getElementById('konsep-ytd').textContent  = fmtB(c.ytd);
+document.getElementById('konsep-pct').textContent  = fmtPct(c.pctTempuh);
+document.getElementById('konsep-knot').textContent = fmtB(c.runRate4W);
+
+const weeksLeft = 52 - m.mingguTerakhir;
+const proj = c.ytd + c.runRate4W * weeksLeft;
+document.getElementById('konsep-proj').textContent =
+  proj >= m.okr ? 'tepat waktu (akhir 2026)' : `diperkirakan ${fmtB(proj)} — masih perlu tambahan kecepatan`;
+
+// ── Map ──
+document.getElementById('map-posisi').textContent = fmtB(c.ytd) + ` (${fmtPct(c.pctTempuh)})`;
+document.getElementById('map-sisa').textContent   = fmtB(c.gap);
+
+// Rute fill & kapal
+setTimeout(() => {
+  const pct = Math.min(c.pctTempuh, 1);
+  document.getElementById('rute-tempuh').style.width = (pct * 100) + '%';
+  // Kapal posisi: track dari 60px ke (trackWidth - 80px)
+  // Gunakan persentase CSS untuk fleksibilitas
+  document.getElementById('kapal-icon').style.left =
+    `calc(60px + ${(pct * (100 - 12))}% - 16px)`;
+}, 200);
+
+// Angin markers
+const trackLeftPx   = 60;
+const trackRightPx  = 80;
+document.getElementById('angin-markers').innerHTML = DATA.anginBuritan.map(a => {
+  const wPct = (a.minggu[0] - 1) / 52;
+  const leftCss = `calc(${trackLeftPx}px + ${wPct * (100 - 12)}% - 16px)`;
+  const selesai = a.selesai;
+  const col = selesai ? a.warna : 'rgba(255,255,255,0.3)';
+  return `<div class="angin-marker" style="left:${leftCss};top:28%">
+    <span style="font-size:14px;${selesai?'filter:drop-shadow(0 0 4px '+a.warna+'80)':''}">${a.ikon}</span>
+    <div class="angin-lbl" style="color:${col};text-align:center">${a.nama}<br>
+      <span style="color:var(--teks-redup)">${a.minggu[0]>22?'W'+a.minggu[0]:'W'+a.minggu[0]+'–W'+a.minggu[a.minggu.length-1]}</span>
+    </div>
+  </div>`;
+}).join('');
+
+// Waypoints
+const waypoints = [
+  { label: 'Start', pct: 0,    color: 'var(--teks-redup)', above: false },
+  { label: 'W13',   pct: 0.25, color: 'var(--langit)',     above: true  },
+  { label: 'W26',   pct: 0.5,  color: 'var(--emas)',       above: false },
+  { label: 'W39',   pct: 0.75, color: 'var(--emas)',       above: true  }
+];
+document.getElementById('waypoints').innerHTML = waypoints.map(wp => {
+  const leftCss = `calc(${trackLeftPx}px + ${wp.pct * (100 - 12)}%)`;
+  return `<div class="waypoint" style="left:${leftCss}">
+    <div class="waypoint-lbl" style="color:${wp.color};margin-top:${wp.above?'-44px':'28px'}">${wp.label}</div>
+    <div class="waypoint-dot" style="border-color:${wp.color};background:${wp.pct<=c.pctTempuh?wp.color:'transparent'}"></div>
+  </div>`;
+}).join('');
+
+// ── Info tiles ──
+const fuelLabel = c.fuelPct >= 1.1 ? 'Angin kencang 💨' : c.fuelPct >= 0.8 ? 'Angin sedang' : 'Angin lemah ⚠';
+const fuelColor = c.fuelPct >= 1.0 ? 'c-hijau' : c.fuelPct >= 0.8 ? 'c-emas' : 'c-merah';
+const tiles = [
+  { lbl: 'Jarak ditempuh (YTD)', val: fmtB(c.ytd), cls: 'c-emas', sub: `${fmtPct(c.pctTempuh)} menuju Pelabuhan 40 Milyar`, tile: 't-emas' },
+  { lbl: 'Kecepatan (run-rate 4W)', val: fmtKnot(c.runRate4W), cls: fuelColor, sub: fuelLabel + ` · pace OKR: ${fmtB(c.paceOkr)}/mgg`, tile: 't-langit' },
+  { lbl: 'Proyeksi akhir tahun', val: fmtB(proj), cls: proj >= m.okr ? 'c-hijau' : 'c-merah', sub: proj >= m.okr ? '✓ Akan tiba tepat waktu' : `Kurang ${fmtB(m.okr - proj)} dari target`, tile: proj >= m.okr ? 't-hijau' : 't-merah' }
+];
+document.getElementById('info-grid').innerHTML = tiles.map(t =>
+  `<div class="info-tile ${t.tile}">
+    <div class="tile-lbl">${t.lbl}</div>
+    <div class="tile-val ${t.cls}">${t.val}</div>
+    <div class="tile-sub">${t.sub}</div>
+  </div>`
+).join('');
+
+// ── Angin buritan cards ──
+document.getElementById('angin-grid').innerHTML = DATA.anginBuritan.map(a => {
+  const cls = a.selesai ? 'selesai' : 'mendatang';
+  return `<div class="angin-card ${cls}" style="border-color:${a.selesai ? a.warna+'44' : 'rgba(255,255,255,0.08)'}">
+    <span class="angin-icon">${a.ikon}</span>
+    <div class="angin-nama">${a.nama}</div>
+    <div class="angin-minggu">${a.minggu[0] > 22 ? 'Mendatang · W'+a.minggu[0] : 'Sudah berlalu'}</div>
+    <div class="angin-mult" style="color:${a.warna}">${a.mult}</div>
+    <div style="margin-top:6px">
+      <span class="badge ${a.selesai ? 'badge-hijau' : 'badge-langit'}">${a.selesai ? 'Selesai' : 'Menunggu'}</span>
+    </div>
+  </div>`;
+}).join('');
+
+// ── Chart ──
+let chartMode = 'aktual';
+let chartInst = null;
+
+function setChart(mode) {
+  chartMode = mode;
+  ['aktual','proyeksi','kumulatif'].forEach(m => {
+    document.getElementById('btn-'+m).classList.toggle('active', m === mode);
+  });
+  buildChart();
+}
+
+function buildChart() {
+  if (chartInst) chartInst.destroy();
+  const ctx = document.getElementById('main-chart').getContext('2d');
+  const paceOkr = Math.round(c.paceOkr / 1e6);
+  const aktualVals = total.map(d => Math.round(d.gmv / 1e6));
+
+  if (chartMode === 'kumulatif') {
+    let cum = 0;
+    const cumVals = total.map(d => { cum += d.gmv; return Math.round(cum / 1e6); });
+    const okrLine = total.map((_, i) => Math.round((i + 1) * c.paceOkr / 1e6));
+    chartInst = new Chart(ctx, {
+      data: {
+        labels: total.map(d => 'W' + d.w),
+        datasets: [
+          { type: 'line', label: 'Kumulatif aktual', data: cumVals, borderColor: '#e8b84b', borderWidth: 2, pointRadius: 0, fill: false, tension: 0.3 },
+          { type: 'line', label: 'Pace OKR', data: okrLine, borderColor: 'rgba(255,255,255,0.2)', borderWidth: 1.5, borderDash: [4, 3], pointRadius: 0, fill: false }
+        ]
+      },
+      options: chartOpts('Kumulatif GMV (jt)', false)
+    });
+    return;
+  }
+
+  // Proyeksi
+  const labels  = total.map(d => 'W' + d.w);
+  const projVals = [];
+  if (chartMode === 'proyeksi') {
+    for (let w = m.mingguTerakhir + 1; w <= 52; w++) labels.push('W' + w);
+    for (let i = 0; i < 52 - m.mingguTerakhir; i++) projVals.push(Math.round(c.runRate4W / 1e6));
+  }
+  const paceArr = labels.map(() => paceOkr);
+
+  chartInst = new Chart(ctx, {
+    data: {
+      labels,
+      datasets: [
+        { type: 'bar', label: 'GMV aktual', data: aktualVals, backgroundColor: aktualVals.map(v => v >= paceOkr ? 'rgba(62,207,122,0.7)' : 'rgba(122,184,216,0.5)'), borderRadius: 3 },
+        ...(chartMode === 'proyeksi' ? [{ type: 'bar', label: 'Proyeksi', data: [...aktualVals.map(() => null), ...projVals], backgroundColor: 'rgba(232,184,75,0.25)', borderRadius: 3 }] : []),
+        { type: 'line', label: 'Pace OKR', data: paceArr, borderColor: 'rgba(255,255,255,0.2)', borderWidth: 1.5, borderDash: [4, 3], pointRadius: 0, fill: false }
+      ]
+    },
+    options: chartOpts('GMV (jt)', true)
+  });
+}
+
+function chartOpts(ylabel, showBar) {
+  return {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: 'rgba(10,15,26,0.95)',
+        borderColor: 'rgba(232,184,75,0.3)', borderWidth: 1,
+        titleColor: '#f0e8d0', bodyColor: '#9ba8b5',
+        callbacks: { label: c => c.raw != null ? c.dataset.label + ': Rp ' + c.raw + 'jt' : '' }
+      }
+    },
+    scales: {
+      x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { font: { size: 10, family: 'DM Mono' }, color: '#4a5a6a' } },
+      y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { font: { size: 10, family: 'DM Mono' }, color: '#4a5a6a', callback: v => v >= 1000 ? (v/1000).toFixed(1)+'B' : v+'jt' } }
+    }
+  };
+}
+
+buildChart();
+</script>
+</body>
+</html>
