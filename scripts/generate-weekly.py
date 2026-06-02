@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Generate data/weekly.js dari PostgreSQL database.
-Jalankan setelah SSH tunnel aktif: ssh -L 5432:db-host:5432 ...
+Jalankan setelah SSH tunnel aktif: ssh -L 5433:db-host:5432 ...
 Usage: python scripts/generate-weekly.py
 """
 
@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 load_dotenv()
 DB_CONFIG = {
     "host": os.getenv("DB_HOST", "localhost"),
-    "port": int(os.getenv("DB_PORT", "5432")),
+    "port": int(os.getenv("DB_PORT", "5433")),
     "user": os.getenv("DB_USER", "appuser"),
     "password": os.getenv("DB_PASSWORD", ""),
     "dbname": os.getenv("DB_NAME", "dwh"),
@@ -241,9 +241,9 @@ def generate_js(mingguan, seri_minggu, seri_stok, minggu_terakhir, tanggal_updat
     # ── anginBuritan (hardcoded) ──
     lines.append("  // -- Angin buritan (event boosts) --")
     lines.append("  anginBuritan: [")
-    lines.append("    { nama: 'Ramadan & Lebaran', minggu: [6,7,8,9,10,14], warna: '#f5a623', ikon: '\u{1F319}', multiplier: '3-4x', selesai: true },")
+    lines.append("    { nama: 'Ramadan & Lebaran', minggu: [6,7,8,9,10,14], warna: '#f5a623', ikon: '🌙', multiplier: '3-4x', selesai: true },")
     lines.append("    { nama: '6.6 Sale',          minggu: [23],             warna: '#5b9cf6', ikon: '⚡', multiplier: '2-3x', selesai: false },")
-    lines.append("    { nama: 'Idul Adha',         minggu: [24],             warna: '#3ecf7a', ikon: '\u{1F33F}', multiplier: '2-3x', selesai: false },")
+    lines.append("    { nama: 'Idul Adha',         minggu: [24],             warna: '#3ecf7a', ikon: '🌿', multiplier: '2-3x', selesai: false },")
     lines.append("    { nama: '7.7 Sale',          minggu: [27],             warna: '#a78bfa', ikon: '⚡', multiplier: '2-3x', selesai: false }")
     lines.append("  ],")
     lines.append("")
