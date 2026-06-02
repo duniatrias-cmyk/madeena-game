@@ -152,6 +152,21 @@ body::before {
 }
 .nav-link:hover  { background: var(--laut-surface); color: var(--teks-primer); }
 .nav-link.active { background: var(--emas-redup); border-color: var(--emas-border); color: var(--emas); }
+.nav-baru {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 7px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  background: var(--hijau-redup);
+  border: 1px solid rgba(62,207,122,0.45);
+  color: var(--hijau-laut);
+  border-radius: 3px;
+  padding: 1px 4px;
+  margin-left: 5px;
+  vertical-align: middle;
+  line-height: 1;
+}
 
 /* ── Tombol ── */
 .btn {

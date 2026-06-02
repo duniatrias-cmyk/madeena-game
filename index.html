@@ -110,6 +110,7 @@
 .nav-card.prioritas-2::before { background: var(--ungu); }
 .nav-card.prioritas-3::before { background: var(--merah-badai); }
 .nav-card.prioritas-4::before { background: var(--hijau-laut); }
+.nav-card.prioritas-5::before { background: var(--langit); }
 
 .nav-card-num {
   font-family: var(--font-mono);
@@ -238,6 +239,7 @@
     <a href="layers/02-misi.html"   class="nav-link">Misi Awak</a>
     <a href="layers/03-ombak.html"  class="nav-link">Ombak Mingguan</a>
     <a href="layers/04-muatan.html" class="nav-link">Muatan</a>
+    <a href="layers/05-tiktok.html" class="nav-link">Mesin TikTok<span class="nav-baru">BARU</span></a>
   </div>
 </nav>
 
@@ -348,6 +350,19 @@ const layers = [
     statusCls: 'badge-hijau',
     prog: 100,
     progColor: '#3ecf7a'
+  },
+  {
+    href: 'layers/05-tiktok.html',
+    prioritas: 5,
+    num: 'PRIORITAS 05',
+    icon: '⚙️',
+    title: 'Ruang Mesin TikTok',
+    sub: 'Mesin pertumbuhan utama kapal. Lihat 4 sumber tenaga GMV dan produk mana yang sedang berlayar di TikTok.',
+    bisnis: 'TIKTOK ENGINE · GMV SOURCES · RADAR PRODUK',
+    status: 'BARU',
+    statusCls: 'badge-hijau',
+    prog: 100,
+    progColor: '#7ab8d8'
   }
 ];
 
@@ -374,6 +389,7 @@ document.getElementById('compass-nav').innerHTML = layers.map(l =>
     <a href="layers/02-misi.html"   class="bottom-nav-item">       <span class="bottom-nav-icon">🧭</span><span class="bottom-nav-lbl">Misi</span></a>
     <a href="layers/03-ombak.html"  class="bottom-nav-item">       <span class="bottom-nav-icon">🌊</span><span class="bottom-nav-lbl">Ombak</span></a>
     <a href="layers/04-muatan.html" class="bottom-nav-item">       <span class="bottom-nav-icon">📦</span><span class="bottom-nav-lbl">Muatan</span></a>
+    <a href="layers/05-tiktok.html" class="bottom-nav-item">       <span class="bottom-nav-icon">⚙️</span><span class="bottom-nav-lbl">Mesin</span></a>
   </div>
 </nav>
 </body>

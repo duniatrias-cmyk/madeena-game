@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ruang Mesin — TikTok Engine · Kapal Madeena</title>
+<link rel="stylesheet" href="../shared/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+/* ── Konsep box ── */
+.konsep-box { background:linear-gradient(135deg,rgba(167,139,250,0.07),rgba(232,184,75,0.04));border:1px solid rgba(167,139,250,0.22);border-radius:var(--r-lg);padding:24px;margin-bottom:24px; }
+.konsep-judul { font-family:var(--font-serif);font-size:18px;font-style:italic;color:var(--ungu);margin-bottom:10px; }
+.konsep-isi { font-size:14px;color:var(--teks-kedua);line-height:1.8; }
+.konsep-isi strong { color:var(--teks-primer);font-weight:500; }
+
+/* ── KPI strip ── */
+.kpi-strip { display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:28px; }
+.kpi-tile { background:var(--laut-tengah);border:1px solid var(--border-tipis);border-radius:var(--r-md);padding:16px;text-align:center; }
+.kpi-val { font-family:var(--font-mono);font-size:19px;font-weight:500; }
+.kpi-lbl { font-family:var(--font-mono);font-size:10px;color:var(--teks-redup);letter-spacing:0.5px;margin-top:5px; }
+
+/* ── Diagram mesin ── */
+.mesin-wrap { display:grid;grid-template-columns:300px 1fr;gap:22px;margin-bottom:24px;align-items:center; }
+.mesin-core { background:var(--laut-tengah);border:1px solid var(--border-tipis);border-radius:var(--r-lg);padding:20px;position:relative; }
+.mesin-core-title { font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;color:var(--teks-redup);text-transform:uppercase;text-align:center;margin-bottom:8px; }
+.mesin-chart-wrap { height:220px;position:relative; }
+.mesin-core-center { position:absolute;top:54%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none; }
+.mesin-core-center .big { font-family:var(--font-mono);font-size:18px;font-weight:500;color:var(--teks-primer); }
+.mesin-core-center .sml { font-family:var(--font-mono);font-size:8px;color:var(--teks-redup);letter-spacing:1px; }
+
+.mesin-komponen { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+.komp-card { background:var(--laut-tengah);border:1px solid var(--border-tipis);border-left-width:3px;border-radius:var(--r-md);padding:14px 16px; }
+.komp-head { display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:3px; }
+.komp-meta { font-family:var(--font-serif);font-size:15px;font-weight:700; }
+.komp-pct { font-family:var(--font-mono);font-size:15px;font-weight:500; }
+.komp-gmv { font-family:var(--font-mono);font-size:11px;color:var(--teks-kedua);margin-bottom:10px; }
+.komp-gauge { height:7px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;border:1px solid var(--border-tipis);margin-bottom:10px; }
+.komp-gauge-fill { height:100%;border-radius:4px;animation:fillBar 1.1s ease both; }
+.komp-desc { font-size:11.5px;color:var(--teks-kedua);line-height:1.65; }
+.komp-desc strong { color:var(--teks-primer);font-weight:500; }
+
+/* ── Radar produk ── */
+.radar-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px; }
+.prod-card { background:var(--laut-tengah);border:1px solid var(--border-tipis);border-radius:var(--r-lg);padding:16px;transition:border-color 0.2s,transform 0.15s; }
+.prod-card:hover { transform:translateY(-2px);border-color:var(--border-sedang); }
+.prod-head { display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px; }
+.prod-rank { font-family:var(--font-mono);font-size:9px;color:var(--teks-redup);flex-shrink:0; }
+.prod-name { font-family:var(--font-serif);font-size:14px;font-weight:500;line-height:1.35;color:var(--teks-primer);min-height:38px; }
+.prod-gmv { font-family:var(--font-mono);font-size:18px;font-weight:500;color:var(--emas);margin-bottom:2px; }
+.prod-gmv-lbl { font-family:var(--font-mono);font-size:9px;color:var(--teks-redup);margin-bottom:12px; }
+
+.bd-bar { height:10px;display:flex;border-radius:4px;overflow:hidden;margin-bottom:8px;border:1px solid var(--border-tipis); }
+.bd-seg { height:100%; }
+.bd-legend { display:flex;flex-wrap:wrap;gap:6px 10px;margin-bottom:12px; }
+.bd-leg-item { display:flex;align-items:center;gap:4px;font-family:var(--font-mono);font-size:8.5px;color:var(--teks-kedua); }
+.bd-dot { width:7px;height:7px;border-radius:2px;flex-shrink:0; }
+
+.prod-foot { display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:10px;border-top:1px solid var(--border-tipis); }
+.prod-stats { display:flex;gap:14px; }
+.prod-stat-val { font-family:var(--font-mono);font-size:13px;color:var(--teks-primer); }
+.prod-stat-lbl { font-family:var(--font-mono);font-size:8px;color:var(--teks-redup);letter-spacing:0.3px; }
+
+/* ── Produk tertambat ── */
+.tambat-note { background:var(--laut-tepi);border:1px solid var(--border-tipis);border-radius:var(--r-md);padding:14px 16px;margin-bottom:14px;font-size:12.5px;color:var(--teks-kedua);line-height:1.7; }
+.tambat-note strong { color:var(--teks-primer); }
+.tambat-list { display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:28px; }
+.tambat-row { display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--laut-tepi);border:1px solid var(--border-tipis);border-radius:var(--r-sm);padding:9px 12px; }
+.tambat-name { font-size:12px;color:var(--teks-kedua);line-height:1.4; }
+.tambat-row:hover .tambat-name { color:var(--teks-primer); }
+
+/* ── Insight ── */
+.insight-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px; }
+.insight-card { border-radius:var(--r-lg);padding:20px;border:1px solid; }
+.insight-icon { font-size:24px;margin-bottom:10px;display:block; }
+.insight-title { font-family:var(--font-serif);font-size:16px;font-weight:700;margin-bottom:8px;line-height:1.3; }
+.insight-body { font-size:13px;color:var(--teks-kedua);line-height:1.7;margin-bottom:12px; }
+.insight-body strong { color:var(--teks-primer);font-weight:500; }
+.insight-aksi { font-family:var(--font-mono);font-size:10.5px;line-height:1.6;padding-top:10px;border-top:1px solid var(--border-tipis); }
+.insight-aksi span { color:var(--teks-redup);letter-spacing:0.5px; }
+.ins-merah  { background:var(--merah-redup);border-color:rgba(224,90,58,0.28); }
+.ins-merah  .insight-title { color:var(--merah-badai); }
+.ins-emas   { background:var(--emas-redup);border-color:var(--emas-border); }
+.ins-emas   .insight-title { color:var(--emas); }
+.ins-langit { background:var(--langit-redup);border-color:rgba(122,184,216,0.28); }
+.ins-langit .insight-title { color:var(--langit); }
+
+/* ── Upload ── */
+.upload-box { background:linear-gradient(135deg,rgba(122,184,216,0.05),rgba(167,139,250,0.04));border:1px dashed var(--border-sedang);border-radius:var(--r-lg);padding:26px;text-align:center;margin-bottom:24px; }
+.upload-title { font-family:var(--font-serif);font-size:18px;font-weight:700;margin-bottom:6px; }
+.upload-sub { font-size:13px;color:var(--teks-kedua);max-width:520px;margin:0 auto 16px;line-height:1.7; }
+.upload-note { font-family:var(--font-mono);font-size:10px;color:var(--teks-redup);margin-top:14px;letter-spacing:0.3px;line-height:1.6; }
+.upload-status { font-family:var(--font-mono);font-size:11px;margin-top:12px;min-height:16px; }
+.periode-tag { display:inline-block;font-family:var(--font-mono);font-size:11px;color:var(--langit);background:var(--langit-redup);border:1px solid rgba(122,184,216,0.3);border-radius:var(--r-sm);padding:4px 12px;margin-bottom:18px;letter-spacing:0.5px; }
+
+/* Nav badge BARU */
+.nav-baru { display:inline-block;font-family:var(--font-mono);font-size:7px;font-weight:500;letter-spacing:0.5px;background:var(--hijau-redup);border:1px solid rgba(62,207,122,0.45);color:var(--hijau-laut);border-radius:3px;padding:1px 4px;margin-left:5px;vertical-align:middle;line-height:1; }
+
+/* ── Mobile ── */
+@media (max-width: 640px) {
+  .kpi-strip { display:flex;flex-wrap:nowrap;overflow-x:auto;gap:8px;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch; }
+  .kpi-strip::-webkit-scrollbar { display:none; }
+  .kpi-tile { min-width:130px;flex-shrink:0;padding:13px; }
+  .kpi-val { font-size:16px; }
+  .mesin-wrap { grid-template-columns:1fr;gap:16px; }
+  .mesin-komponen { grid-template-columns:1fr; }
+  .radar-grid { grid-template-columns:1fr;gap:10px; }
+  .tambat-list { grid-template-columns:1fr; }
+  .insight-grid { grid-template-columns:1fr;gap:10px; }
+  .konsep-box { padding:16px; }
+  .konsep-judul { font-size:15px; }
+  .konsep-isi { font-size:13px; }
+  .upload-box { padding:18px; }
+  h1[style] { font-size:23px !important; }
+  .mesin-chart-wrap { height:200px; }
+}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="../index.html" class="nav-brand">⚓ Kapal <em>Madeena</em></a>
+  <div class="nav-links">
+    <a href="../index.html"  class="nav-link">Peta</a>
+    <a href="01-voyage.html" class="nav-link">Pelayaran</a>
+    <a href="02-misi.html"   class="nav-link">Misi Awak</a>
+    <a href="03-ombak.html"  class="nav-link">Ombak Mingguan</a>
+    <a href="04-muatan.html" class="nav-link">Muatan</a>
+    <a href="05-tiktok.html" class="nav-link active">Mesin TikTok<span class="nav-baru">BARU</span></a>
+  </div>
+</nav>
+
+<div class="shell">
+  <!-- ══ SECTION 1 — HERO ══ -->
+  <div style="margin-bottom:22px;padding-top:8px">
+    <div class="section-lbl">Layer 05 · Ruang Mesin — TikTok Engine</div>
+    <h1 style="font-family:var(--font-serif);font-size:32px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px">Seberapa kuat mesin yang sedang kita bangun?</h1>
+    <p id="hero-narasi" style="color:var(--teks-kedua);font-size:15px;max-width:660px;line-height:1.7"></p>
+  </div>
+
+  <div class="periode-tag" id="periode-tag">Data periode: —</div>
+  <div class="kpi-strip" id="kpi-strip"></div>
+
+  <div class="konsep-box">
+    <div class="konsep-judul">"TikTok adalah mesin kapal. Tanpa mesin, kita hanya mengandalkan angin."</div>
+    <div class="konsep-isi">
+      Selama ini kapal melaju karena <strong>angin event</strong> (spike musiman). Tapi angin tidak bisa diatur.
+      <strong>Mesin TikTok</strong> dibangun supaya kapal bisa melaju kencang kapan saja — tidak menunggu angin.
+      Mesin ini punya 4 sumber tenaga. Tugas tim: membuat keempatnya bekerja seimbang, bukan bergantung pada satu saja.
+    </div>
+  </div>
+
+  <!-- ══ SECTION 2 — DIAGRAM MESIN ══ -->
+  <div class="section-lbl">Diagram Mesin · 4 sumber tenaga GMV</div>
+  <div class="mesin-wrap">
+    <div class="mesin-core">
+      <div class="mesin-core-title">Komposisi Mesin</div>
+      <div class="mesin-chart-wrap"><canvas id="mesin-chart"></canvas>
+        <div class="mesin-core-center"><div class="big" id="core-total">—</div><div class="sml">TOTAL GMV</div></div>
+      </div>
+    </div>
+    <div class="mesin-komponen" id="mesin-komponen"></div>
+  </div>
+
+  <!-- ══ SECTION 3 — RADAR PRODUK ══ -->
+  <div class="section-lbl">Radar Produk · <span id="aktif-count">0</span> produk berlayar</div>
+  <p style="color:var(--teks-kedua);font-size:13px;margin-bottom:16px;max-width:620px;line-height:1.7">
+    Produk yang menghasilkan GMV periode ini, diurutkan dari kontribusi terbesar. Bar warna menunjukkan dari sumber mana penjualannya datang.
+  </p>
+  <div class="radar-grid" id="radar-grid"></div>
+
+  <div class="section-lbl">Produk Tertambat · <span id="tidur-count">0</span> belum menghasilkan</div>
+  <div class="tambat-note">
+    <strong>Produk ini ada di TikTok tapi belum menghasilkan penjualan periode ini.</strong>
+    Perlu diaktifkan via Live atau konten afiliasi. Setengah muatan kapal masih belum dijual di mesin TikTok — ini cadangan tenaga yang belum dinyalakan.
+  </div>
+  <div class="tambat-list" id="tambat-list"></div>
+
+  <!-- ══ SECTION 4 — INSIGHT & TINDAKAN ══ -->
+  <div class="section-lbl">Insight & Tindakan · dibaca otomatis dari data</div>
+  <div class="insight-grid" id="insight-grid"></div>
+
+  <!-- ══ SECTION 5 — UPLOAD ══ -->
+  <div class="section-lbl">Muat Data Baru · update mandiri</div>
+  <div class="upload-box">
+    <div class="upload-title">⚙ Perbarui kondisi mesin</div>
+    <div class="upload-sub">
+      Punya data periode terbaru? Upload file Excel dari TikTok Seller Center, dan seluruh halaman ini akan langsung dihitung ulang dengan angka baru.
+    </div>
+    <button class="btn btn-emas" onclick="document.getElementById('file-input').click()">📤 Muat Data Baru</button>
+    <input type="file" id="file-input" accept=".xlsx,.xls" style="display:none">
+    <div class="upload-status" id="upload-status"></div>
+    <div class="upload-note">Export dari TikTok Seller Center › Analitik › Produk › Download semua kolom (.xlsx)</div>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;gap:10px">
+    <a href="04-muatan.html" class="btn">← Palka Muatan</a>
+    <a href="../index.html" class="btn btn-emas">Kembali ke Peta ⚓</a>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+//  DATA AWAL — di-embed dari product_list_20260504.xlsx
+//  Periode: 04/05/2026 – 02/06/2026
+//  n=nama g=gmv li=live vi=video af=afiliasi ka=kartu or=pesanan sl=terjual st=status
+// ════════════════════════════════════════════
+const DEFAULT_PRODUCTS = [
+  {n:"Mushaf Al Quran Madinaquran Aesthetic Reeyana dengan Risleting Kuat dan Label Original",g:83257776,li:23392850,vi:2681434,af:51056072,ka:6127420,or:633,sl:658,st:"Aktif"},
+  {n:"Madinaquran Al Quran Seserahan Estetik Reeyana Hard Cover Premium Design A6 & A5 Kertas QPP Penanda Tajwid Warna Khat Utsmani Indonesia Terjemah Standar Depag RI - Mushaf",g:75855807,li:17251048,vi:7395394,af:45954382,ka:5254983,or:823,sl:860,st:"Aktif"},
+  {n:"Dzikir Pagi Petang Aesthetic Muslimah Square 9.5 x 9.5 Cm Format Handy Desain Premium Elegan Dan Praktis Cocok Sebagai Hadiah",g:25646028,li:1699686,vi:552900,af:19097443,ka:4295999,or:1069,sl:1211,st:"Aktif"},
+  {n:"Bukudoa Sehari-hari dan Dzikir Pagi Petang",g:13758478,li:1403521,vi:1175502,af:10303669,ka:875786,or:143,sl:147,st:"Aktif"},
+  {n:"Madinaquran -  Alquran Custom Nama Reeyana Bisa Tulis Nama di Cover Ukuran A5 15x21 cm Non Terjemah Customized Name Quran",g:11661990,li:6595035,vi:106005,af:4409086,ka:551864,or:96,sl:100,st:"Aktif"},
+  {n:"Mushaf Alquran Madinaquran Heekaya Hardcover dengan QR Code dan Audio Bacaan Per Blok Warna",g:10660883,li:1371508,vi:206545,af:7773924,ka:1308906,or:64,sl:67,st:"Aktif"},
+  {n:"Mushaf Alquran Zhafira Signature Coquette Aesthetic",g:5469591,li:1125118,vi:296597,af:2649811,ka:1398065,or:45,sl:45,st:"Aktif"},
+  {n:"Madinaquran -  Mushaf Alquran Terjemahan QRCode Heekaya Resleting Aesthetic",g:3316324,li:1132377,vi:0,af:1486391,ka:697556,or:20,sl:20,st:"Aktif"},
+  {n:"Madeena - Tasbih Mutiara 99 Butir (Bisa Custom Inisial)",g:3149622,li:575563,vi:489749,af:1773722,ka:310588,or:27,sl:32,st:"Aktif"},
+  {n:"Al quran Seserahan Estetik by Madina Quran",g:2915607,li:485732,vi:241773,af:1862511,ka:325591,or:23,sl:23,st:"Aktif"},
+  {n:"Madinaquran - Al Quran Aesthetic Alamee Quran A5 Terjemahan dan Tajwid",g:1859499,li:978250,vi:144400,af:445448,ka:291401,or:11,sl:13,st:"Aktif"},
+  {n:"Alquran Custom Nama (Bisa Tulis Nama di Cover) Heekaya by Madina Quran",g:1466221,li:1333921,vi:0,af:132300,ka:0,or:9,sl:9,st:"Aktif"},
+  {n:"Madina Quran - Gelang Tasbih Mutiara Wanita Muslim",g:1246526,li:237004,vi:54805,af:602163,ka:352554,or:59,sl:65,st:"Aktif"},
+  {n:"Buku Set Doa Custom Nama - Lengkap (Doa Harian, Dzikir Pagi Petang, Doa dalam al Quran, Doa untuk orang tersayang)",g:1244885,li:725888,vi:0,af:186175,ka:332822,or:11,sl:14,st:"Aktif"},
+  {n:"Madinaquran - Abbasy For Men Quran Kecil Saku Keren Travelling Size Alquran Mushaf",g:958415,li:322830,vi:0,af:314555,ka:321030,or:9,sl:9,st:"Aktif"},
+  {n:"Madinaquran - Alquran Saku / Quran Kecil ukuran A7 tanpa terjemah",g:531889,li:0,vi:0,af:531889,ka:0,or:5,sl:6,st:"Aktif"},
+  {n:"Madinaquran - Al Matsurat Pagi dan Petang Square Ringkas Audible",g:443563,li:162012,vi:42839,af:193564,ka:45148,or:19,sl:19,st:"Aktif"},
+  {n:"Madinaquran - Lumee Quran Quotes Box Hampers Islami Premium Gift Muslimah Aesthetic 200 Ayat Kurasi Mood",g:420786,li:198086,vi:0,af:222700,ka:0,or:2,sl:2,st:"Aktif"},
+  {n:"Mushaf Al Quran Terjemahan Al Mutqin Hafalan By Madina Quran alquran",g:416006,li:0,vi:0,af:0,ka:416006,or:2,sl:2,st:"Aktif"},
+  {n:"Madina Quran - Custom Nama Buku Dzikir Pagi & Petang Rekomendasi Ramadan 2025 Ukuran 9,5x9,5 cm Laminasi Doff Finishing Spot UV Kertas Book Paper Penulisan Doa Arab Latin Terjemah",g:237154,li:160992,vi:0,af:48262,ka:27900,or:7,sl:9,st:"Aktif"},
+  {n:"Madeena - Sajadah Reeyana Sajadah Travel Motif Florish Sajadah Lipat Premium Muslim & Muslimah",g:230987,li:230987,vi:0,af:0,ka:0,or:2,sl:2,st:"Aktif"},
+  {n:"Madinaquran - Hampers al Quran Bright Package (Mushaf ukuran standar A5)",g:211600,li:211600,vi:0,af:0,ka:0,or:1,sl:1,st:"Aktif"},
+  {n:"Alquran A4 Mushaf Al Quran Reeyana Ukuran Besar Dengan Cover Cantik, Elegant & Exclusive Cocok Untuk Orang Tua",g:206646,li:206646,vi:0,af:0,ka:0,or:1,sl:1,st:"Aktif"},
+  {n:"Madinaquran - Gift Box Kotak Hadiah Kado Aesthetic Premium",g:174165,li:174165,vi:0,af:0,ka:0,or:1,sl:5,st:"Aktif"},
+  {n:"Juz Amma Lengkap dilengkapi Audio Bacaan by Madina Quran",g:154961,li:32583,vi:0,af:79846,ka:42532,or:5,sl:5,st:"Aktif"},
+  {n:"Alquran Travel Resleting Terjemah & Non Terjemah by Madinaquran",g:120100,li:0,vi:0,af:120100,ka:0,or:1,sl:1,st:"Aktif"},
+  {n:"Madina Quran - Sajadah Muslim Zhafira Signature Sajadah Traveling Desain Motif Eksklusif",g:114776,li:0,vi:0,af:114776,ka:0,or:1,sl:1,st:"Aktif"},
+  {n:"Al Quran Terjemahan Ar Rayyan B6 Madina Quran Dengan Cover Bagus alquran",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Nonaktif"},
+  {n:"Madinaquran - Hampers al Quran & Sajadah Bright Package (Mushaf ukuran A5 & Sajadah)",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Aktif"},
+  {n:"Alquran Kecil A6 | Al Quran Aesthetic Tajwid Warna Terjemah",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Aktif"},
+  {n:"Madinaquran - Hampers al Quran & Sajadah & Tasbih Bright Package (Mushaf ukuran kecil A6)",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Aktif"},
+  {n:"Madinaquran - Hampers Set buku doa, Sajadah & Tasbih Bright Package",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Aktif"},
+  {n:"Madinaquran - Alquran Per Juz Tajwid Terjemahan Per Kata Ukuran A5",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Aktif"},
+  {n:"Kado Pernikahan Bermanfaat Hampers al Quran & Eau de Toilette Shine Package",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Aktif"},
+  {n:"Mushaf Al Quran Zhafira Signature ukuran A4 Alquran",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Nonaktif"},
+  {n:"Madinaquran - Hampers Shine al Quran saku A7, Buku Dzikir, dan Tasbih",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Aktif"},
+  {n:"Alquran Mini Aesthetic Pocket Zipper ukuran A7",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Nonaktif"},
+  {n:"Hampers al Quran Rubby Package (Ukuran Saku A7) by Madina Quran",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Aktif"},
+  {n:"Mushaf Al Quran Terjemahan Zhafira Twotone By Madina Cover Cantik Unik Bagus alquran",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Nonaktif"},
+  {n:"Madeena - Gelang Tasbih Aesthetic 33 Butir Reeyana Swarovski",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Nonaktif"},
+  {n:"Mushaf Alquran Zhafira Signature Hardcover Coquette Aesthetic",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Aktif"},
+  {n:"Mushaf Al Quran Terjemahan Zhafira Zipper By Madina Cover Cantik, Unik, Bagus alquran",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Nonaktif"},
+  {n:"Madina Quran - Extra Greeting Card",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Nonaktif"},
+  {n:"Madina Quran - Prayer Set Muslim Atasan Bawahan Zhafira Signature Mukena Fit Dewasa Kain Silky Daily 2in1 Premium Laser Cut",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Nonaktif"},
+  {n:"Madeena - Mukena Travel Terusan Abaya Raheela",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Aktif"},
+  {n:"Tajwid Bergambar karya Dr. Aiman Rusydi Suwaid Cetakan Terbaru",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Nonaktif"},
+  {n:"Madina Quran - Shine Package Premium Wedding Gift kado pernikahan unik bermanfaat souvenir pernikahan aesthetic hadiah pernikahan seserahan pernikahan kado ultah cewek aesthetic",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Nonaktif"},
+  {n:"Madinaquran - Mushaf Alquran Custom Nama (Bisa Tulis Nama di Cover) Hardcover & Kain",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Nonaktif"},
+  {n:"Souvenir Buku Dzikir Pagi Petang Motif & Tasbih Aesthetic Swarovski - Aksesoris Islami Muslim Umroh Haji Hitam",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Nonaktif"},
+  {n:"Juz Amma Custom Nama (Bisa Tulis Nama) QR Code - Quran Juz 30",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Aktif"},
+  {n:"Mushaf Alquran Terjemahan Zhafira/ Shafana B6 Madina Cover Cantik Unik Bagus quran muslimah",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Nonaktif"},
+  {n:"Al Quran Terjemahan Zhafira & Mukena Prayer Set Cover Cantik, Lucu muslim motif",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Nonaktif"},
+  {n:"Mushaf Alquran Tahsin Terjemahan Ar Rayyan Eksklusif Madina Quran Dengan Cover Yang Keren & Stylish",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Nonaktif"},
+  {n:"Alquran Terjemah ar Rayhan ukuran B6 Madinaquran",g:0,li:0,vi:0,af:0,ka:0,or:0,sl:0,st:"Nonaktif"}
+];
+
+let PRODUCTS = DEFAULT_PRODUCTS;
+let PERIODE  = '04/05/2026 – 02/06/2026';
+
+// ── Sumber: metafora + warna ──
+const SUMBER = [
+  { key:'af', nama:'Afiliasi', metafora:'Layar utama dari angin luar', warna:'#a78bfa',
+    desc:'<strong>Angin dari luar</strong> — kencang, tapi tidak selalu bisa kita kendalikan. Kreator eksternal yang promote produk kita. Strateginya: rekrut lebih banyak kreator yang tepat.' },
+  { key:'li', nama:'Live', metafora:'Mesin diesel kapal', warna:'#e8b84b',
+    desc:'<strong>Mesin yang bisa kita kontrol penuh.</strong> Livestream oleh tim sendiri — butuh awak aktif dan jadwal konsisten. Di sinilah pertumbuhan paling bisa kita atur.' },
+  { key:'vi', nama:'Video', metafora:'Layar cadangan', warna:'#7ab8d8',
+    desc:'<strong>Potensi besar yang belum dimanfaatkan.</strong> Konten video pendek bisa viral organik. Sekali meledak, bisa menggeser ketergantungan pada afiliasi.' },
+  { key:'ka', nama:'Kartu Produk', metafora:'Arus bawah yang tenang', warna:'#3ecf7a',
+    desc:'<strong>Pasif tapi stabil.</strong> Organic search di TikTok Shop — orang menemukan produk sendiri. Tenang mengalir di bawah, tidak butuh effort harian.' }
+];
+
+// ── Formatters ──
+const fmtFull = v => 'Rp ' + Math.round(v).toLocaleString('id-ID');
+const fmtJt = v => Math.abs(v) >= 1e9 ? `Rp ${(v/1e9).toFixed(2)} M` : Math.abs(v) >= 1e6 ? `Rp ${(v/1e6).toFixed(1)} jt` : `Rp ${Math.round(v/1e3)} rb`;
+const fmtN = v => v.toLocaleString('id-ID');
+const shortName = n => { n = n.replace(/\s+/g,' ').trim(); return n.length > 40 ? n.slice(0,40).trim() + '…' : n; };
+
+let mesinChart = null;
+
+function computeStats() {
+  const total = PRODUCTS.reduce((s,p)=>s+p.g,0);
+  const aktif = PRODUCTS.filter(p=>p.g>0).sort((a,b)=>b.g-a.g);
+  const tidur = PRODUCTS.filter(p=>p.g===0);
+  const src = {};
+  SUMBER.forEach(s => { src[s.key] = PRODUCTS.reduce((sum,p)=>sum+(p[s.key]||0),0); });
+  return { total, aktif, tidur, src };
+}
+
+function render() {
+  const { total, aktif, tidur, src } = computeStats();
+
+  // ── HERO narasi + KPI ──
+  const afPct = total ? (src.af/total*100) : 0;
+  document.getElementById('hero-narasi').innerHTML =
+    `Mesin TikTok menyumbang <strong style="color:var(--teks-primer)">${fmtFull(total)}</strong> GMV periode ini. ` +
+    `Tapi <strong style="color:var(--ungu)">${afPct.toFixed(1)}% di antaranya datang dari afiliasi</strong> — angin dari luar yang tidak sepenuhnya bisa kita kendalikan. ` +
+    `Mesin yang bisa kita kontrol sendiri (Live & Video) masih ${(((src.li+src.vi)/total)*100).toFixed(1)}%.`;
+  document.getElementById('periode-tag').textContent = 'Data periode: ' + PERIODE;
+  document.getElementById('kpi-strip').innerHTML = [
+    { val: fmtJt(total),         lbl:'Total GMV TikTok', cls:'c-emas' },
+    { val: aktif.length+' produk', lbl:'Produk aktif',    cls:'c-hijau' },
+    { val: tidur.length+' produk', lbl:'Produk tidur',    cls:'c-merah' },
+    { val: PERIODE.split('–')[0].trim(), lbl:'Mulai periode', cls:'c-langit' }
+  ].map(k=>`<div class="kpi-tile"><div class="kpi-val ${k.cls}">${k.val}</div><div class="kpi-lbl">${k.lbl}</div></div>`).join('');
+
+  // ── SECTION 2 — Diagram mesin ──
+  document.getElementById('core-total').textContent = fmtJt(total);
+  const comp = SUMBER.map(s => ({ ...s, val: src[s.key], pct: total ? src[s.key]/total*100 : 0 }))
+                     .sort((a,b)=>b.val-a.val);
+  if (mesinChart) mesinChart.destroy();
+  mesinChart = new Chart(document.getElementById('mesin-chart').getContext('2d'), {
+    type:'doughnut',
+    data:{ labels:comp.map(c=>c.nama), datasets:[{ data:comp.map(c=>c.val), backgroundColor:comp.map(c=>c.warna), borderColor:'#0f1825', borderWidth:3, hoverOffset:6 }] },
+    options:{ responsive:true, maintainAspectRatio:false, cutout:'68%',
+      plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'rgba(10,15,26,0.95)', borderColor:'rgba(232,184,75,0.2)', borderWidth:1, titleColor:'#f0e8d0', bodyColor:'#9ba8b5',
+        callbacks:{ label:c=>` ${c.label}: ${fmtJt(c.raw)} (${(c.raw/total*100).toFixed(1)}%)` } } },
+      animation:{ duration:800 } }
+  });
+  document.getElementById('mesin-komponen').innerHTML = comp.map(c=>`
+    <div class="komp-card" style="border-left-color:${c.warna}">
+      <div class="komp-head">
+        <div class="komp-meta" style="color:${c.warna}">${c.nama}</div>
+        <div class="komp-pct" style="color:${c.warna}">${c.pct.toFixed(1)}%</div>
+      </div>
+      <div class="komp-gmv">${fmtFull(c.val)} · <span style="color:var(--teks-redup)">${c.metafora}</span></div>
+      <div class="komp-gauge"><div class="komp-gauge-fill" style="width:${c.pct}%;background:${c.warna}"></div></div>
+      <div class="komp-desc">${c.desc}</div>
+    </div>`).join('');
+
+  // ── SECTION 3 — Radar produk aktif ──
+  document.getElementById('aktif-count').textContent = aktif.length;
+  document.getElementById('radar-grid').innerHTML = aktif.map((p,idx)=>{
+    const segs = SUMBER.map(s=>({ warna:s.warna, nama:s.nama, val:p[s.key]||0 })).filter(x=>x.val>0);
+    const dom = segs.reduce((a,b)=>b.val>a.val?b:a, {val:0,nama:'—',warna:'#9ba8b5'});
+    const bar = SUMBER.map(s=>{ const v=p[s.key]||0; const w=p.g?v/p.g*100:0; return w>0?`<div class="bd-seg" style="width:${w}%;background:${s.warna}" title="${s.nama}: ${fmtFull(v)}"></div>`:''; }).join('');
+    const legend = segs.sort((a,b)=>b.val-a.val).map(s=>`<div class="bd-leg-item"><span class="bd-dot" style="background:${s.warna}"></span>${s.nama} ${(s.val/p.g*100).toFixed(0)}%</div>`).join('');
+    return `<div class="prod-card" style="animation-delay:${idx*0.03}s">
+      <div class="prod-head">
+        <div class="prod-name">${shortName(p.n)}</div>
+        <div class="prod-rank">#${idx+1}</div>
+      </div>
+      <div class="prod-gmv">${fmtJt(p.g)}</div>
+      <div class="prod-gmv-lbl">GMV · ${fmtFull(p.g)}</div>
+      <div class="bd-bar">${bar}</div>
+      <div class="bd-legend">${legend}</div>
+      <div class="prod-foot">
+        <div class="prod-stats">
+          <div><div class="prod-stat-val">${fmtN(p.or)}</div><div class="prod-stat-lbl">PESANAN</div></div>
+          <div><div class="prod-stat-val">${fmtN(p.sl)}</div><div class="prod-stat-lbl">TERJUAL</div></div>
+        </div>
+        <span class="badge" style="background:${dom.warna}22;border:1px solid ${dom.warna}55;color:${dom.warna}">${dom.nama}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // ── Produk tertambat ──
+  document.getElementById('tidur-count').textContent = tidur.length;
+  document.getElementById('tambat-list').innerHTML = tidur.map(p=>`
+    <div class="tambat-row">
+      <span class="tambat-name">${shortName(p.n)}</span>
+      <span class="badge badge-merah" style="flex-shrink:0">Belum aktif</span>
+    </div>`).join('');
+
+  // ── SECTION 4 — Insight ──
+  // Insight 2: berapa produk teratas yg menyumbang Y% (top-5 atau sampai 80%)
+  let cum=0, nTop=0; const sorted=[...aktif];
+  for (const p of sorted){ cum+=p.g; nTop++; if (cum/total>=0.8) break; }
+  const topPct = total ? (cum/total*100) : 0;
+  const vidPct = total ? (src.vi/total*100) : 0;
+  document.getElementById('insight-grid').innerHTML = [
+    { cls:'ins-merah', icon:'🌪️', title:'Mesin terlalu bergantung pada angin luar',
+      body:`<strong>${afPct.toFixed(1)}% GMV berasal dari afiliasi.</strong> Ini bagus — tapi berisiko. Kalau kreator utama berhenti promote, mesin bisa mati mendadak karena kita tidak mengontrol sumber ini.`,
+      aksi:'TINDAKAN › Diversifikasi ke Live (mesin sendiri) + rekrut lebih banyak afiliasi agar tidak bergantung pada satu kreator.' },
+    { cls:'ins-emas', icon:'⭐', title:'Sedikit produk menggerakkan hampir semua mesin',
+      body:`<strong>${nTop} produk teratas menghasilkan ${topPct.toFixed(0)}% dari total GMV TikTok.</strong> Sisanya menyumbang sedikit. Tenaga mesin terkonsentrasi di segelintir produk bintang.`,
+      aksi:'TINDAKAN › Fokuskan jadwal Live dan konten video pada produk bintang ini dulu — return-nya paling cepat terasa.' },
+    { cls:'ins-langit', icon:'🎬', title:'Video nyaris tidak berkontribusi',
+      body:`<strong>Video hanya ${vidPct.toFixed(1)}% dari GMV.</strong> Ini "layar cadangan" yang belum dikembangkan — sekaligus peluang terbesar yang belum dimanfaatkan.`,
+      aksi:'TINDAKAN › Satu video viral bisa menggeser ketergantungan pada afiliasi. Mulai produksi konten video rutin untuk produk bintang.' }
+  ].map(i=>`<div class="insight-card ${i.cls}">
+      <span class="insight-icon">${i.icon}</span>
+      <div class="insight-title">${i.title}</div>
+      <div class="insight-body">${i.body}</div>
+      <div class="insight-aksi"><span>${i.aksi}</span></div>
+    </div>`).join('');
+}
+
+// ════════════════════════════════════════════
+//  UPLOAD — parse TikTok Seller Center Excel
+// ════════════════════════════════════════════
+function parseNum(v){ if(v==null) return 0; if(typeof v==='number') return Math.round(v); const s=String(v).replace(/[^0-9-]/g,''); return s&&s!=='-'?parseInt(s,10):0; }
+
+document.getElementById('file-input').addEventListener('change', e=>{
+  const file = e.target.files[0]; if(!file) return;
+  const status = document.getElementById('upload-status');
+  status.style.color = 'var(--teks-kedua)'; status.textContent = '⏳ Membaca file…';
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    try{
+      const wb = XLSX.read(new Uint8Array(ev.target.result), {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:false, defval:null});
+      // Cari baris periode + baris header 'Nama'
+      let hdr = -1, periode = PERIODE;
+      for(let i=0;i<rows.length;i++){
+        const c0 = rows[i][0]?String(rows[i][0]):'';
+        if(c0.includes('Tanggal analisis')){ const m=c0.match(/([\d\/]+)\s*[~–-]\s*([\d\/]+)/); if(m) periode = m[1]+' – '+m[2]; }
+        if(c0.trim()==='Nama'){ hdr=i; break; }
+      }
+      if(hdr<0) throw new Error('Kolom "Nama" tidak ditemukan — pastikan file dari TikTok Seller Center.');
+      // Kolom (0-indexed): 0 Nama, 3 status, 4 GMV, 5 Live, 8 Video, 11 Afiliasi(kreator), 18 Kartu, 19 Pesanan, 21 Terjual
+      const out = [];
+      for(let i=hdr+1;i<rows.length;i++){
+        const r = rows[i]; if(!r || !r[0]) continue;
+        out.push({ n:String(r[0]), st:String(r[3]||''), g:parseNum(r[4]), li:parseNum(r[5]), vi:parseNum(r[8]), af:parseNum(r[11]), ka:parseNum(r[18]), or:parseNum(r[19]), sl:parseNum(r[21]) });
+      }
+      if(!out.length) throw new Error('Tidak ada baris produk terbaca.');
+      PRODUCTS = out; PERIODE = periode;
+      render();
+      status.style.color = 'var(--hijau-laut)';
+      status.textContent = `✓ Berhasil — ${out.length} produk dimuat ulang. Periode: ${periode}`;
+      document.querySelector('.shell').scrollIntoView({behavior:'smooth'});
+    }catch(err){
+      status.style.color = 'var(--merah-badai)';
+      status.textContent = '✕ Gagal: ' + err.message;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+render();
+</script>
+
+<!-- Ocean waves -->
+<svg class="ocean-bg" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
+  <g class="wave-anim">
+    <path d="M0,70 C120,42 240,98 360,70 C480,42 600,98 720,70 C840,42 960,98 1080,70 C1200,42 1320,98 1440,70 C1560,42 1680,98 1800,70 C1920,42 2040,98 2160,70 C2280,42 2400,98 2520,70 C2640,42 2760,98 2880,70 L2880,160 L0,160 Z" fill="#a78bfa" opacity="0.18"/>
+  </g>
+  <g class="wave-anim-slow">
+    <path d="M0,105 C180,68 360,142 540,105 C720,68 900,142 1080,105 C1260,68 1440,142 1620,105 C1800,68 1980,142 2160,105 C2340,68 2520,142 2700,105 C2880,68 2880,142 2880,105 L2880,160 L0,160 Z" fill="#e8b84b" opacity="0.10"/>
+  </g>
+</svg>
+
+<!-- Bottom nav (mobile) -->
+<nav class="bottom-nav" aria-label="Navigasi">
+  <div class="bottom-nav-items">
+    <a href="../index.html"  class="bottom-nav-item">        <span class="bottom-nav-icon">🏠</span><span class="bottom-nav-lbl">Peta</span></a>
+    <a href="01-voyage.html" class="bottom-nav-item">        <span class="bottom-nav-icon">⚓</span><span class="bottom-nav-lbl">Pelayaran</span></a>
+    <a href="02-misi.html"   class="bottom-nav-item">        <span class="bottom-nav-icon">🧭</span><span class="bottom-nav-lbl">Misi</span></a>
+    <a href="03-ombak.html"  class="bottom-nav-item">        <span class="bottom-nav-icon">🌊</span><span class="bottom-nav-lbl">Ombak</span></a>
+    <a href="05-tiktok.html" class="bottom-nav-item active"> <span class="bottom-nav-icon">⚙️</span><span class="bottom-nav-lbl">Mesin</span></a>
+  </div>
+</nav>
+</body>
+</html>
