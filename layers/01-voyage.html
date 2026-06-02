@@ -492,7 +492,7 @@ document.getElementById('angin-grid').innerHTML = DATA.anginBuritan.map(a => {
     <span class="angin-icon">${a.ikon}</span>
     <div class="angin-nama">${a.nama}</div>
     <div class="angin-minggu">${a.minggu[0] > 22 ? 'Mendatang · W'+a.minggu[0] : 'Sudah berlalu'}</div>
-    <div class="angin-mult" style="color:${a.warna}">${a.mult}</div>
+    <div class="angin-mult" style="color:${a.warna}">${a.multiplier}</div>
     <div style="margin-top:6px">
       <span class="badge ${a.selesai ? 'badge-hijau' : 'badge-langit'}">${a.selesai ? 'Selesai' : 'Menunggu'}</span>
     </div>
