@@ -152,7 +152,7 @@
 
   <div class="summary-strip" id="summary-strip"></div>
 
-  <div class="section-lbl">Status Palka — <span id="palka-count">9</span> series · klik untuk detail</div>
+  <div class="section-lbl">Status Palka — <span id="palka-count">12</span> series · klik untuk detail</div>
   <div class="detail-panel" id="detail-panel">
     <div class="detail-hdr">
       <div><div class="detail-name" id="dp-name">—</div><div class="detail-sub" id="dp-sub">—</div></div>
@@ -175,20 +175,52 @@
 <script src="../data/weekly.js"></script>
 
 <script>
+// Debug: verifikasi struktur DATA yang dimuat
+console.log('DATA keys:', Object.keys(DATA));
+console.log('seriStok keys:', Object.keys(DATA.seriStok));
+console.log('seriMinggu sample:', JSON.stringify(DATA.seriMinggu[0]));
+
 const fmtB = v => Math.abs(v)>=1e9?`Rp ${(v/1e9).toFixed(2)}B`:`Rp ${Math.round(v/1e6)}jt`;
 const fmtN = v => v.toLocaleString('id-ID');
 
-// Compute per-series metrics
-const SERI_NAMES = ['Reeyana','Heekaya','Airees','Zhafira Signature','Abbasy','Najma','Al Mutqin Florish','Raheela','Lainnya'];
-const SERI_ICONS = { 'Reeyana':'📖','Heekaya':'📚','Airees':'✨','Zhafira Signature':'💎','Abbasy':'🌿','Raheela':'🌸','Al Mutqin Florish':'🌺','Najma':'⭐','Lainnya':'🌾' };
+// SERI_NAMES: derive langsung dari DATA.seriStok (tidak hardcoded)
+// Fix: sebelumnya hardcoded nama lama ('Reeyana','Heekaya',dll) → tidak ada di seriStok baru
+const SERI_NAMES = Object.keys(DATA.seriStok);
+
+// Icon mapping — mencakup semua series granular yang ada di data baru
+const SERI_ICONS = {
+  'Reeyana Jaket':                '📖',
+  'Reeyana HC':                   '📗',
+  'Reeyana BDDA':                 '📘',
+  'Reeyana':                      '📙',
+  'Reeyana Prayer Mat':           '🕌',
+  'Reeyana DPP':                  '📄',
+  'Reeyana DPP Non Audible (NA)': '📄',
+  'Reeyana Tasbih':               '📿',
+  'Heekaya HC':                   '📚',
+  'Heekaya Jaket':                '📕',
+  'Heekaya DPP':                  '📰',
+  'Heekaya per Juz':              '🗂️',
+  'Heekaya Juz Amma':             '🗂️',
+  'Airees DPP':                   '✨',
+  'Abbasy':                       '🌿',
+  'Zhafira Signature Tasbih New': '💎',
+  'Raheela Prayer Set':           '🌸',
+  'Al Mutqin Florish':            '🌺',
+  'Najma':                        '⭐',
+};
+const DEFAULT_ICON = '📦';
 
 function buildMetrics() {
   const totalYTD = DATA.seriMinggu.reduce((s,r)=>s+r.gmv,0);
   return SERI_NAMES.map(name => {
-    const rows = DATA.seriMinggu.filter(r=>r.s===name).sort((a,b)=>a.w-b.w);
-    const ytd  = rows.reduce((s,r)=>s+r.gmv,0);
-    const stok = DATA.seriStok[name];
-    const cover= stok.stok / stok.demandPerMinggu;
+    const rows  = DATA.seriMinggu.filter(r=>r.s===name).sort((a,b)=>a.w-b.w);
+    const ytd   = rows.reduce((s,r)=>s+r.gmv,0);
+    const stok  = DATA.seriStok[name];
+    // Guard: demandPerMinggu=0 → cover tidak terbatas → anggap penuh
+    const cover = stok.demandPerMinggu > 0
+      ? stok.stok / stok.demandPerMinggu
+      : stok.stok > 0 ? 999 : 0;
     const trend4 = rows.filter(r=>r.w>=18&&r.w<=21).map(r=>r.gmv);
     const prev4  = rows.filter(r=>r.w>=14&&r.w<=17).map(r=>r.gmv);
     const t4avg  = trend4.length ? trend4.reduce((a,b)=>a+b,0)/trend4.length : 0;
@@ -196,13 +228,17 @@ function buildMetrics() {
     const delta  = p4avg>0 ? (t4avg-p4avg)/p4avg : 0;
     const health = cover>=8?'penuh':cover>=4?'menipis':'kritis';
     const hColor = cover>=8?'#3ecf7a':cover>=4?'#e8a825':'#e05a3a';
-    const soilPct= Math.round(Math.min(cover/12,1)*60 + Math.min(Math.max(delta+0.5,0),1)*40);
-    return { name, rows, ytd, stok, cover, delta, health, hColor, soilPct, share:ytd/totalYTD, icon:SERI_ICONS[name], color:stok.warna };
+    const coverCapped = Math.min(cover, 52); // cap untuk soilPct agar tidak 999
+    const soilPct= Math.round(Math.min(coverCapped/12,1)*60 + Math.min(Math.max(delta+0.5,0),1)*40);
+    return { name, rows, ytd, stok, cover, delta, health, hColor, soilPct,
+             share:ytd/totalYTD, icon:SERI_ICONS[name]||DEFAULT_ICON, color:stok.warna };
   }).sort((a,b)=>b.ytd-a.ytd);
 }
 
 const ALL = buildMetrics();
 const TOTAL_YTD = ALL.reduce((s,m)=>s+m.ytd,0);
+// Update jumlah series dinamis
+document.getElementById('palka-count').textContent = ALL.length;
 let openIdx = -1;
 const sparkCharts = {};
 let detailChart = null;
