@@ -6,6 +6,8 @@
 <title>Kapal Madeena — Game Bisnis 2026</title>
 <link rel="stylesheet" href="shared/style.css">
 <script src="data/weekly.js"></script>
+<script src="data/kr-config.js"></script>
+<script src="data/kr-actual.js"></script>
 <style>
 /* INDEX-SPECIFIC */
 .hero {
@@ -111,6 +113,7 @@
 .nav-card.prioritas-3::before { background: var(--merah-badai); }
 .nav-card.prioritas-4::before { background: var(--hijau-laut); }
 .nav-card.prioritas-5::before { background: var(--langit); }
+.nav-card.prioritas-6::before { background: linear-gradient(90deg, var(--langit), var(--emas)); }
 
 .nav-card-num {
   font-family: var(--font-mono);
@@ -203,8 +206,73 @@
 
 /* Ocean wave SVG animation */
 @keyframes waveMove { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
-.wave-anim { animation: waveMove 8s linear infinite; }
-.wave-anim-slow { animation: waveMove 12s linear infinite; }
+.wave-anim { animation: waveMove 4s linear infinite; }
+.wave-anim-slow { animation: waveMove 6s linear infinite; }
+
+/* ── STORM EFFECTS ── */
+#storm-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Storm overlay — langit gelap */
+#storm-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(10,15,30,0.55) 0%, rgba(5,8,20,0.75) 100%);
+}
+
+/* Kilat / lightning flash */
+@keyframes lightning-flash {
+  0%   { opacity: 0; }
+  2%   { opacity: 0.85; }
+  4%   { opacity: 0; }
+  6%   { opacity: 0.6; }
+  8%   { opacity: 0; }
+  100% { opacity: 0; }
+}
+#lightning-el {
+  position: fixed;
+  inset: 0;
+  background: rgba(160, 200, 255, 0.18);
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+}
+
+/* Teks peringatan badai */
+.storm-warning {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(224, 90, 58, 0.12);
+  border: 1px solid rgba(224, 90, 58, 0.35);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #e05a3a;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  animation: pulse-storm 2.5s ease-in-out infinite;
+}
+@keyframes pulse-storm {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(224,90,58,0); }
+  50%       { opacity: 0.7; box-shadow: 0 0 12px 2px rgba(224,90,58,0.25); }
+}
+.storm-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #e05a3a;
+  animation: blink-dot 1s step-end infinite;
+}
+@keyframes blink-dot { 0%,100%{opacity:1} 50%{opacity:0} }
 
 /* ── Mobile index ── */
 @media (max-width: 640px) {
@@ -231,6 +299,11 @@
 </head>
 <body>
 
+<!-- Storm layers -->
+<div id="storm-overlay"></div>
+<canvas id="storm-canvas"></canvas>
+<div id="lightning-el"></div>
+
 <nav class="nav">
   <a href="index.html" class="nav-brand">⚓ Kapal <em>Madeena</em></a>
   <div class="nav-links">
@@ -239,7 +312,8 @@
     <a href="layers/02-misi.html"   class="nav-link">Misi Awak</a>
     <a href="layers/03-ombak.html"  class="nav-link">Ombak Mingguan</a>
     <a href="layers/04-muatan.html" class="nav-link">Muatan</a>
-    <a href="layers/05-tiktok.html" class="nav-link">Mesin TikTok<span class="nav-baru">BARU</span></a>
+    <a href="layers/05-tiktok.html" class="nav-link">Mesin TikTok</a>
+    <a href="layers/06-kr-tracker.html" class="nav-link">Kamar Mesin<span class="nav-baru">BARU</span></a>
   </div>
 </nav>
 
@@ -255,6 +329,7 @@
 
 <div class="hero">
 
+  <div class="storm-warning"><span class="storm-dot"></span>⚠ SIAGA BADAI — KONDISI PELAYARAN KRITIS</div>
   <div class="hero-eyebrow">Tahun 2026</div>
 
   <h1 class="hero-title">Kapal <em>Madeena</em></h1>
@@ -359,10 +434,33 @@ const layers = [
     title: 'Ruang Mesin TikTok',
     sub: 'Mesin pertumbuhan utama kapal. Lihat 4 sumber tenaga GMV dan produk mana yang sedang berlayar di TikTok.',
     bisnis: 'TIKTOK ENGINE · GMV SOURCES · RADAR PRODUK',
-    status: 'BARU',
-    statusCls: 'badge-hijau',
+    status: 'JELAJAHI',
+    statusCls: 'badge-langit',
     prog: 100,
     progColor: '#7ab8d8'
+  },
+  {
+    href: 'layers/06-kr-tracker.html',
+    prioritas: 6,
+    num: 'PRIORITAS 06',
+    icon: '⚙️',
+    title: 'Kamar Mesin',
+    sub: 'Pantau status setiap mesin kapal — channel aktif, sprint actions, dan sinyal peringatan.',
+    bisnis: 'CHANNEL KR · SPRINT ACTIONS · SINYAL MESIN',
+    status: 'BARU',
+    statusCls: 'badge-hijau',
+    prog: (() => {
+      if (typeof krConfig === 'undefined' || typeof krActual === 'undefined') return 0;
+      const vals = krConfig.channels.map(ch => {
+        const t = ch.targetBulanan[krActual.bulanAktif] || 0;
+        const a = krActual.data.find(
+          r => r.channel === ch.dbName && r.bulan === krActual.bulanAktif && r.tahun === krActual.tahun
+        );
+        return t > 0 ? Math.min((a ? a.gmvNet : 0) / t, 1) : 0;
+      });
+      return Math.round(vals.reduce((s, v) => s + v, 0) / vals.length * 100);
+    })(),
+    progColor: '#3ecf7a'
   }
 ];
 
@@ -381,6 +479,110 @@ document.getElementById('compass-nav').innerHTML = layers.map(l =>
 ).join('');
 </script>
 
+<!-- ── STORM ENGINE ── -->
+<script>
+(function() {
+  const canvas = document.getElementById('storm-canvas');
+  const ctx    = canvas.getContext('2d');
+  const lt     = document.getElementById('lightning-el');
+
+  let W, H, drops = [], splashes = [];
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // Inisialisasi tetes hujan
+  const DROP_COUNT = Math.min(window.innerWidth < 640 ? 160 : 320, 320);
+  for (let i = 0; i < DROP_COUNT; i++) {
+    drops.push(newDrop(true));
+  }
+
+  function newDrop(randomY) {
+    const speed = 14 + Math.random() * 18;
+    return {
+      x:      Math.random() * W,
+      y:      randomY ? Math.random() * H : -20,
+      len:    18 + Math.random() * 28,
+      speed:  speed,
+      vx:     speed * 0.22,        // angin ke kanan
+      alpha:  0.25 + Math.random() * 0.45,
+      width:  0.7 + Math.random() * 0.8
+    };
+  }
+
+  function newSplash(x, y) {
+    return { x, y, r: 0, maxR: 3 + Math.random() * 5, alpha: 0.6, vr: 1.2 + Math.random() };
+  }
+
+  // Kilat timer
+  function scheduleLightning() {
+    const delay = 3000 + Math.random() * 9000;
+    setTimeout(() => {
+      triggerLightning();
+      scheduleLightning();
+    }, delay);
+  }
+  function triggerLightning() {
+    lt.style.animation = 'none';
+    lt.offsetHeight; // reflow
+    const dur = (0.4 + Math.random() * 0.3).toFixed(2) + 's';
+    lt.style.animation = `lightning-flash ${dur} ease-out forwards`;
+  }
+  scheduleLightning();
+
+  // Ombak SVG lebih bergejolak — naikan opacity
+  const oceanBg = document.querySelector('.ocean-bg');
+  if (oceanBg) { oceanBg.style.opacity = '0.28'; }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Gambar tetes
+    drops.forEach((d, i) => {
+      ctx.beginPath();
+      ctx.moveTo(d.x, d.y);
+      ctx.lineTo(d.x - d.vx * (d.len / d.speed), d.y - d.len);
+      ctx.strokeStyle = `rgba(160, 210, 255, ${d.alpha})`;
+      ctx.lineWidth   = d.width;
+      ctx.stroke();
+
+      // Update posisi
+      d.x += d.vx;
+      d.y += d.speed;
+
+      // Reset kalau keluar layar
+      if (d.y > H + 30 || d.x > W + 30) {
+        // Cipratan saat menyentuh bawah
+        if (d.y > H - 10 && d.y < H + 30) {
+          splashes.push(newSplash(d.x, H));
+        }
+        drops[i] = newDrop(false);
+      }
+    });
+
+    // Gambar cipratan
+    splashes = splashes.filter(s => s.alpha > 0);
+    splashes.forEach(s => {
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI, true); // setengah lingkaran ke atas
+      ctx.strokeStyle = `rgba(160, 210, 255, ${s.alpha})`;
+      ctx.lineWidth   = 0.8;
+      ctx.stroke();
+      s.r     += s.vr;
+      s.alpha -= 0.07;
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+})();
+</script>
+
 <!-- Bottom nav (mobile) -->
 <nav class="bottom-nav" aria-label="Navigasi">
   <div class="bottom-nav-items">
@@ -390,6 +592,7 @@ document.getElementById('compass-nav').innerHTML = layers.map(l =>
     <a href="layers/03-ombak.html"  class="bottom-nav-item">       <span class="bottom-nav-icon">🌊</span><span class="bottom-nav-lbl">Ombak</span></a>
     <a href="layers/04-muatan.html" class="bottom-nav-item">       <span class="bottom-nav-icon">📦</span><span class="bottom-nav-lbl">Muatan</span></a>
     <a href="layers/05-tiktok.html" class="bottom-nav-item">       <span class="bottom-nav-icon">⚙️</span><span class="bottom-nav-lbl">Mesin</span></a>
+    <a href="layers/06-kr-tracker.html" class="bottom-nav-item">    <span class="bottom-nav-icon">🔧</span><span class="bottom-nav-lbl">K.Mesin</span></a>
   </div>
 </nav>
 </body>

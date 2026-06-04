@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kamar Mesin — Kapal Madeena</title>
+<link rel="stylesheet" href="../shared/style.css">
+<style>
+/* ══════════════════════════════════════════════════
+   Layer 06 — Kamar Mesin (+ Edit Mode)
+   Data: kr-config.js + kr-actual.js
+         overridden by localStorage['kr-config-override']
+   ══════════════════════════════════════════════════ */
+
+.km-intro { color: var(--teks-kedua); font-size: 15px; max-width: 660px; line-height: 1.7; margin-bottom: 24px; }
+.km-intro strong { color: var(--emas); font-weight: 500; }
+
+#km-content { opacity: 1; transition: opacity 0.18s ease; }
+
+/* ── Tabs ── */
+.km-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
+.km-tab {
+  font-family: var(--font-mono); font-size: 11px; padding: 5px 14px;
+  border-radius: var(--r-sm); border: 1px solid var(--border-sedang);
+  background: transparent; color: var(--teks-kedua); cursor: pointer;
+  letter-spacing: 0.5px; transition: all 0.15s; touch-action: manipulation;
+}
+.km-tab:hover { background: var(--laut-surface); color: var(--teks-primer); border-color: var(--border-tebal); }
+.km-tab.active { background: var(--emas-redup); border-color: var(--emas-border); color: var(--emas); }
+
+/* ── Channel card grid ── */
+.channel-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 26px; }
+.channel-card {
+  position: relative; overflow: hidden; cursor: pointer;
+  animation: fadeUp 0.4s ease both;
+  transition: transform 0.15s, border-color 0.2s, box-shadow 0.2s;
+}
+.channel-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--ch-accent, var(--langit));
+}
+.channel-card:hover { transform: translateY(-2px); border-color: var(--border-sedang); }
+.mesin-prima { border-color: rgba(62,207,122,0.3) !important; box-shadow: 0 0 0 1px rgba(62,207,122,0.25), 0 0 22px rgba(62,207,122,0.10) !important; }
+.mesin-kritis { animation: fadeUp 0.4s ease both, pulseRedBorder 1.6s ease-in-out 0.4s infinite; }
+
+.ch-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.ch-ikon { font-size: 22px; line-height: 1; flex-shrink: 0; }
+.ch-meta { flex: 1; min-width: 0; }
+.ch-nama { font-family: var(--font-serif); font-size: 17px; font-weight: 700; color: var(--teks-primer); line-height: 1.2; }
+.ch-target { font-family: var(--font-mono); font-size: 10px; color: var(--teks-redup); letter-spacing: 0.3px; margin-top: 3px; }
+.ch-pct { font-family: var(--font-mono); font-size: 20px; font-weight: 500; flex-shrink: 0; }
+.ch-stats { display: flex; justify-content: space-between; margin-top: 10px; font-family: var(--font-mono); font-size: 11px; color: var(--teks-kedua); gap: 8px; flex-wrap: wrap; }
+.ch-actual-row { font-family: var(--font-mono); font-size: 11px; color: var(--teks-kedua); margin-top: 4px; }
+
+/* Card edit button — hover-only */
+.card-edit-btn {
+  position: absolute; top: 10px; right: 10px;
+  opacity: 0; pointer-events: none;
+  background: var(--laut-surface); border: 1px solid var(--border-sedang);
+  border-radius: var(--r-sm); color: var(--teks-kedua);
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.3px;
+  padding: 3px 8px; cursor: pointer; z-index: 5;
+  transition: opacity 0.15s, color 0.15s, border-color 0.15s;
+}
+.channel-card:hover .card-edit-btn { opacity: 1; pointer-events: auto; }
+.card-edit-btn:hover { color: var(--emas); border-color: var(--emas-border); background: var(--emas-redup); }
+
+/* ── Alerts ── */
+.alert-wrap { display: flex; flex-direction: column; gap: 8px; }
+.alert-item { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: var(--r-md); border-left: 3px solid; }
+.alert-macet  { border-left-color: var(--merah-badai); background: var(--merah-redup); }
+.alert-tenaga { border-left-color: var(--emas);        background: var(--emas-redup); }
+.alert-orphan { border-left-color: #e8924b;            background: rgba(232,146,75,0.12); }
+.alert-emoji { font-size: 15px; line-height: 1.4; }
+.alert-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--teks-kedua); margin-bottom: 3px; }
+.alert-main  { font-size: 13px; color: var(--teks-primer); }
+.alert-sub   { font-size: 12px; color: var(--teks-kedua); margin-top: 2px; }
+.alert-empty { color: var(--hijau-laut); font-size: 13px; padding: 12px 14px; background: var(--hijau-redup); border-radius: var(--r-md); border: 1px solid rgba(62,207,122,0.25); }
+
+/* ── View 2 header ── */
+.km-view-head { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.km-view-ikon { font-size: 28px; line-height: 1; flex-shrink: 0; }
+.km-view-nama { font-family: var(--font-serif); font-size: 20px; font-weight: 700; color: var(--teks-primer); line-height: 1.2; }
+.km-view-meta { font-family: var(--font-mono); font-size: 11px; color: var(--teks-redup); margin-top: 4px; letter-spacing: 0.2px; }
+
+/* ── Action table ── */
+.table-wrap { overflow-x: auto; border: 1px solid var(--border-tipis); border-radius: var(--r-md); -webkit-overflow-scrolling: touch; margin-bottom: 20px; }
+.action-table { width: 100%; border-collapse: collapse; min-width: 620px; }
+.action-table th { text-align: left; font-family: var(--font-mono); font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--teks-redup); padding: 10px 14px; border-bottom: 1px solid var(--border-tipis); background: var(--laut-tepi); white-space: nowrap; }
+.action-table td { padding: 12px 14px; border-bottom: 1px solid var(--border-tipis); font-size: 13px; vertical-align: top; }
+.action-table tbody tr:last-child td { border-bottom: none; }
+.sprint-head-row td { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1.2px; color: var(--emas); background: rgba(232,184,75,0.06); padding: 8px 14px; text-transform: uppercase; border-bottom: 1px solid var(--border-tipis); }
+.td-desk { color: var(--teks-primer); max-width: 240px; }
+.td-date { font-family: var(--font-mono); font-size: 10px; color: var(--teks-redup); margin-top: 4px; }
+.td-dept { font-family: var(--font-mono); font-size: 9px; color: var(--teks-redup); margin-top: 3px; letter-spacing: 0.3px; }
+.td-acts { white-space: nowrap; width: 56px; padding-right: 8px; }
+
+/* Outcome cell — click-to-edit */
+.outcome-cell { cursor: pointer; max-width: 200px; }
+.outcome-cell .edit-icon { opacity: 0; font-style: normal; font-size: 11px; margin-left: 4px; transition: opacity 0.15s; }
+.outcome-cell:hover .edit-icon { opacity: 0.6; }
+.outcome-input { background: var(--laut-surface); border: 1px solid var(--emas-border); border-radius: var(--r-sm); color: var(--teks-primer); font-family: var(--font-sans); font-size: 12px; padding: 4px 8px; width: 100%; min-width: 130px; outline: none; }
+.outcome-input:focus { border-color: var(--emas); box-shadow: 0 0 0 2px rgba(232,184,75,0.15); }
+
+/* Row action buttons — hover-only */
+.row-act-btn { opacity: 0; background: none; border: none; color: var(--teks-kedua); font-size: 13px; padding: 2px 3px; border-radius: 3px; cursor: pointer; transition: opacity 0.12s, background 0.12s; }
+.action-table tbody tr:hover .row-act-btn { opacity: 1; }
+.row-act-btn:hover { background: var(--laut-surface); color: var(--teks-primer); }
+
+/* Inline delete confirm */
+.del-confirm { display: flex; align-items: center; gap: 5px; }
+.del-msg { font-family: var(--font-mono); font-size: 10px; color: var(--merah-badai); white-space: nowrap; }
+.btn-xs { font-family: var(--font-mono); font-size: 9px; padding: 3px 7px; border-radius: 3px; border: 1px solid var(--border-sedang); background: transparent; color: var(--teks-kedua); cursor: pointer; transition: all 0.12s; }
+.btn-xs:hover { background: var(--laut-surface); }
+.btn-xs.danger { border-color: rgba(224,90,58,0.4); color: var(--merah-badai); }
+.btn-xs.danger:hover { background: var(--merah-redup); }
+
+/* Status prefix */
+.status-selesai::before  { content: '✓ '; color: var(--hijau-laut); }
+.status-berjalan::before { content: '↻ '; color: var(--emas); }
+.status-belum::before    { content: '○ '; color: var(--teks-redup); }
+.badge-redup { background: rgba(74,90,106,0.18); border-color: var(--teks-redup); color: var(--teks-kedua); }
+
+.prog-row { display: flex; align-items: center; gap: 10px; }
+.prog-row .progress-track { flex: 1; }
+.km-back { margin-bottom: 18px; }
+
+/* ── Modal overlay ── */
+.km-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.72);
+  z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px;
+  animation: kmFadeIn 0.12s ease;
+}
+@keyframes kmFadeIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes kmScaleIn { from { opacity: 0; transform: scale(0.96) translateY(6px); } to { opacity: 1; transform: none; } }
+.km-modal {
+  background: var(--laut-tengah); border: 1px solid var(--border-sedang);
+  border-radius: var(--r-lg); width: 100%; max-width: 520px; max-height: 90vh;
+  display: flex; flex-direction: column; animation: kmScaleIn 0.12s ease;
+}
+.modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border-tipis); flex-shrink: 0; }
+.modal-title { font-family: var(--font-serif); font-size: 17px; font-weight: 700; color: var(--teks-primer); }
+.modal-close { background: none; border: none; color: var(--teks-kedua); font-size: 18px; cursor: pointer; padding: 2px 6px; border-radius: 4px; line-height: 1; transition: color 0.12s; }
+.modal-close:hover { color: var(--teks-primer); }
+.modal-body { padding: 18px 20px; overflow-y: auto; flex: 1; }
+.modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 20px; border-top: 1px solid var(--border-tipis); flex-shrink: 0; }
+
+/* ── Form elements ── */
+.form-row { margin-bottom: 14px; }
+.form-row label { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.8px; text-transform: uppercase; color: var(--teks-redup); margin-bottom: 6px; }
+.km-input, .km-select, .km-textarea {
+  width: 100%; background: var(--laut-surface); border: 1px solid var(--border-sedang);
+  border-radius: var(--r-sm); color: var(--teks-primer); font-family: var(--font-sans);
+  font-size: 13px; padding: 8px 10px; outline: none; transition: border-color 0.15s;
+  -webkit-appearance: none;
+}
+.km-input:focus, .km-select:focus, .km-textarea:focus { border-color: var(--emas); box-shadow: 0 0 0 2px rgba(232,184,75,0.12); }
+.km-textarea { resize: vertical; min-height: 68px; }
+.km-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239ba8b5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px;
+}
+.km-input[type="number"] { -moz-appearance: textfield; }
+.km-input[type="number"]::-webkit-outer-spin-button,
+.km-input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+/* Checkbox / radio pill groups */
+.pill-group { display: flex; flex-wrap: wrap; gap: 7px; }
+.pill-label { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--teks-kedua); cursor: pointer; padding: 5px 11px; border: 1px solid var(--border-sedang); border-radius: var(--r-sm); transition: all 0.12s; user-select: none; }
+.pill-label:hover { border-color: var(--emas-border); color: var(--teks-primer); }
+.pill-label input { accent-color: var(--emas); width: 13px; height: 13px; flex-shrink: 0; }
+.pill-label:has(input:checked) { border-color: var(--emas-border); background: var(--emas-redup); color: var(--emas); }
+
+/* Target table */
+.target-table { width: 100%; border-collapse: collapse; }
+.target-table td { padding: 5px 4px; }
+.target-table td:first-child { font-family: var(--font-mono); font-size: 11px; color: var(--teks-kedua); width: 100px; padding-right: 10px; }
+.target-table .km-input { padding: 6px 8px; font-family: var(--font-mono); font-size: 12px; text-align: right; }
+
+.form-error { font-family: var(--font-mono); font-size: 11px; color: var(--merah-badai); margin-top: 4px; min-height: 16px; }
+
+/* Primary button */
+.btn-primary { background: var(--emas); color: var(--laut-dalam) !important; border-color: var(--emas) !important; font-weight: 500; }
+.btn-primary:hover { background: #f0c45a; border-color: #f0c45a !important; }
+
+/* ── Reset footer ── */
+.km-reset-footer { margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--border-tipis); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.reset-link { font-family: var(--font-mono); font-size: 10px; color: var(--teks-redup); cursor: pointer; letter-spacing: 0.5px; transition: color 0.12s; }
+.reset-link:hover { color: var(--merah-badai); }
+.reset-confirm-row { display: none; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; color: var(--teks-kedua); }
+
+/* ── Mobile ── */
+@media (max-width: 640px) {
+  .channel-grid { grid-template-columns: 1fr; }
+  .ch-pct { font-size: 17px; }
+  .km-view-nama { font-size: 17px; }
+  h1[style] { font-size: 24px !important; }
+  .km-tabs { gap: 5px; }
+  .km-tab { font-size: 10px; padding: 5px 10px; min-height: 36px; }
+  .km-modal { max-height: 88vh; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="../index.html" class="nav-brand">⚓ Kapal <em>Madeena</em></a>
+  <div class="nav-links">
+    <a href="../index.html"      class="nav-link">Peta</a>
+    <a href="01-voyage.html"     class="nav-link">Pelayaran</a>
+    <a href="02-misi.html"       class="nav-link">Misi Awak</a>
+    <a href="03-ombak.html"      class="nav-link">Ombak Mingguan</a>
+    <a href="04-muatan.html"     class="nav-link">Muatan</a>
+    <a href="05-tiktok.html"     class="nav-link">Mesin TikTok</a>
+    <a href="06-kr-tracker.html" class="nav-link active">Kamar Mesin<span class="nav-baru">BARU</span></a>
+  </div>
+</nav>
+
+<div class="shell">
+  <div style="margin-bottom:24px;padding-top:8px">
+    <div class="section-lbl">Layer 06 · Kamar Mesin</div>
+    <h1 style="font-family:var(--font-serif);font-size:32px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px">
+      ⚙️ Kamar Mesin
+    </h1>
+    <p class="km-intro">
+      Setiap channel adalah <strong>satu mesin kapal</strong>. Sprint actions adalah
+      aktivitas perawatan dan perbaikannya.
+      Mesin yang terawat → optimal → kapal melaju kencang → target revenue tercapai.
+    </p>
+  </div>
+
+  <div id="km-content"></div>
+
+  <!-- Reset footer -->
+  <div class="km-reset-footer">
+    <span class="reset-link" id="reset-trigger" onclick="showReset()">↺ Reset ke data default</span>
+    <span class="reset-confirm-row" id="reset-confirm">
+      <span>Hapus semua perubahan lokal?</span>
+      <button class="btn-xs danger" onclick="doReset()">Ya, reset</button>
+      <button class="btn-xs" onclick="hideReset()">Batal</button>
+    </span>
+  </div>
+</div>
+
+<!-- Modal overlay -->
+<div class="km-overlay" id="km-overlay" style="display:none" onclick="handleOverlayClick(event)">
+  <div class="km-modal" id="km-modal"></div>
+</div>
+
+<!-- Ocean waves -->
+<svg class="ocean-bg" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
+  <g class="wave-anim">
+    <path d="M0,70 C120,42 240,98 360,70 C480,42 600,98 720,70 C840,42 960,98 1080,70 C1200,42 1320,98 1440,70 C1560,42 1680,98 1800,70 C1920,42 2040,98 2160,70 C2280,42 2400,98 2520,70 C2640,42 2760,98 2880,70 L2880,160 L0,160 Z" fill="#7ab8d8" opacity="0.28"/>
+  </g>
+  <g class="wave-anim-slow">
+    <path d="M0,105 C180,68 360,142 540,105 C720,68 900,142 1080,105 C1260,68 1440,142 1620,105 C1800,68 1980,142 2160,105 C2340,68 2520,142 2700,105 C2880,68 2880,142 2880,105 L2880,160 L0,160 Z" fill="#3ecf7a" opacity="0.14"/>
+  </g>
+</svg>
+
+<!-- Bottom nav (mobile) -->
+<nav class="bottom-nav" aria-label="Navigasi">
+  <div class="bottom-nav-items">
+    <a href="../index.html"      class="bottom-nav-item">        <span class="bottom-nav-icon">🏠</span><span class="bottom-nav-lbl">Peta</span></a>
+    <a href="01-voyage.html"     class="bottom-nav-item">        <span class="bottom-nav-icon">⚓</span><span class="bottom-nav-lbl">Pelayaran</span></a>
+    <a href="02-misi.html"       class="bottom-nav-item">        <span class="bottom-nav-icon">🧭</span><span class="bottom-nav-lbl">Misi</span></a>
+    <a href="03-ombak.html"      class="bottom-nav-item">        <span class="bottom-nav-icon">🌊</span><span class="bottom-nav-lbl">Ombak</span></a>
+    <a href="04-muatan.html"     class="bottom-nav-item">        <span class="bottom-nav-icon">📦</span><span class="bottom-nav-lbl">Muatan</span></a>
+    <a href="05-tiktok.html"     class="bottom-nav-item">        <span class="bottom-nav-icon">⚙️</span><span class="bottom-nav-lbl">Mesin</span></a>
+    <a href="06-kr-tracker.html" class="bottom-nav-item active"> <span class="bottom-nav-icon">🔧</span><span class="bottom-nav-lbl">K.Mesin</span></a>
+  </div>
+</nav>
+
+<script src="../data/kr-config.js"></script>
+<script src="../data/kr-actual.js"></script>
+<script>
+'use strict';
+
+// ════════════════════════════════════════════════════
+// DATA LAYER — localStorage override (merge, not replace)
+// Priority: localStorage['kr-config-override'] > kr-config.js
+// ════════════════════════════════════════════════════
+
+let cfg; // mutable working config
+
+function loadData() {
+  cfg = JSON.parse(JSON.stringify(krConfig)); // deep-clone defaults
+  try {
+    const raw = localStorage.getItem('kr-config-override');
+    if (!raw) return;
+    const ov = JSON.parse(raw);
+    // Merge targetBulanan per channel (new channels from file still pass through)
+    if (Array.isArray(ov.channels)) {
+      ov.channels.forEach(ovCh => {
+        const ch = cfg.channels.find(c => c.id === ovCh.id);
+        if (ch && ovCh.targetBulanan) Object.assign(ch.targetBulanan, ovCh.targetBulanan);
+      });
+    }
+    // Actions array: user owns this after first edit
+    if (Array.isArray(ov.actions)) cfg.actions = ov.actions;
+  } catch (e) { console.warn('kr-config-override parse error:', e); }
+}
+
+function saveCfg() {
+  const override = {
+    channels: cfg.channels.map(ch => ({ id: ch.id, targetBulanan: { ...ch.targetBulanan } })),
+    actions:  cfg.actions
+  };
+  localStorage.setItem('kr-config-override', JSON.stringify(override));
+}
+
+function genId() {
+  return 'act-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+}
+
+// ════════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════════
+
+const BULAN_ID      = ['','Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const BULAN_SINGKAT = ['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+const DEPT_OPTIONS  = ['Tim Ads','Tim Konten','Tim Produk','Tim Operasional','Lainnya'];
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function fmtRp(v) {
+  if (v >= 1e9) return (v / 1e9).toFixed(2).replace('.', ',') + 'M';
+  if (v >= 1e6) return (v / 1e6).toFixed(1).replace('.', ',') + 'jt';
+  if (v >= 1e3) return Math.round(v / 1e3) + 'rb';
+  return String(Math.round(v));
+}
+
+function pctColor(p) { return p >= 80 ? 'var(--hijau-laut)' : p >= 50 ? 'var(--emas)' : 'var(--merah-badai)'; }
+
+function progressBar(pct) {
+  const w = Math.min(Math.max(pct, 0), 100);
+  return `<div class="progress-track"><div class="progress-fill" style="width:${w}%;background:${pctColor(pct)}"></div></div>`;
+}
+
+function sprintRange(label) {
+  const w = parseInt(label.replace(/\D/g,''), 10);
+  if (!w) return '';
+  const w1    = new Date(2025, 11, 29); // ISO W1 2026 = Dec 29 2025
+  const start = new Date(w1.getTime() + (w - 1) * 7 * 86400000);
+  const end   = new Date(start.getTime() + 6 * 86400000);
+  const fmt   = d => `${d.getDate()} ${BULAN_SINGKAT[d.getMonth() + 1]}`;
+  return `${fmt(start)}–${fmt(end)}`;
+}
+
+// ════════════════════════════════════════════════════
+// DATA LOOKUPS (all reference cfg, not krConfig)
+// ════════════════════════════════════════════════════
+
+function getActualRow(channelId) {
+  const ch = cfg.channels.find(c => c.id === channelId);
+  if (!ch) return null;
+  return krActual.data.find(
+    r => r.channel === ch.dbName && r.bulan === krActual.bulanAktif && r.tahun === krActual.tahun
+  ) || { gmvNet: 0, jumlahOrder: 0, gmvNetMingguLalu: 0 };
+}
+
+function getTarget(channelId) {
+  const ch = cfg.channels.find(c => c.id === channelId);
+  return ch ? (ch.targetBulanan[krActual.bulanAktif] || 0) : 0;
+}
+
+function getPct(channelId) {
+  const a = getActualRow(channelId), t = getTarget(channelId);
+  return (!t || !a) ? 0 : Math.round(a.gmvNet / t * 100);
+}
+
+function actionsOf(id)     { return cfg.actions.filter(a => a.channels.includes(id)); }
+function berjalanOf(id)    { return actionsOf(id).filter(a => a.status === 'berjalan'); }
+function selesaiBulanIni(id) {
+  const pre = `${krActual.tahun}-${String(krActual.bulanAktif).padStart(2,'0')}`;
+  return actionsOf(id).filter(a => a.status === 'selesai' && a.tanggalMulai.startsWith(pre));
+}
+
+// ════════════════════════════════════════════════════
+// ALERT DETECTION (re-evaluates after every saveCfg)
+// ════════════════════════════════════════════════════
+
+function isMesinMacet(id) {
+  const today    = new Date(krActual.lastUpdated);
+  const sevenAgo = new Date(today.getTime() - 7 * 86400000);
+  return actionsOf(id).some(a => a.status === 'selesai' && new Date(a.tanggalMulai) >= sevenAgo)
+      && getPct(id) < 30;
+}
+function isMesinKurangTenaga(id) { return berjalanOf(id).length <= 1; }
+function orphanActions()         { return cfg.actions.filter(a => !a.channels || !a.channels.length); }
+
+// ════════════════════════════════════════════════════
+// BADGE / LABEL MAPS
+// ════════════════════════════════════════════════════
+
+const BOBOT_BADGE  = { tinggi:'badge-merah', sedang:'badge-amber', rendah:'badge-langit' };
+const BOBOT_LABEL  = { tinggi:'Tinggi', sedang:'Sedang', rendah:'Rendah' };
+const STATUS_BADGE = { selesai:'badge-hijau', berjalan:'badge-amber', belum:'badge-redup' };
+const STATUS_CLS   = { selesai:'status-selesai', berjalan:'status-berjalan', belum:'status-belum' };
+const STATUS_LABEL = { selesai:'Selesai', berjalan:'Berjalan', belum:'Belum' };
+const VERDICT_BADGE = { pending:'badge-amber', correct:'badge-hijau', wrong:'badge-merah', partial:'badge-langit' };
+const VERDICT_LABEL = { pending:'⏳ Pending', correct:'✓ Correct', wrong:'✗ Wrong', partial:'⚡ Partial' };
+
+// ════════════════════════════════════════════════════
+// VIEW 1 — Channel overview
+// ════════════════════════════════════════════════════
+
+function renderView1(filter) {
+  const bulanNama = BULAN_ID[krActual.bulanAktif] + ' ' + krActual.tahun;
+  const channels  = filter === 'semua' ? cfg.channels : cfg.channels.filter(c => c.id === filter);
+
+  const tabLabels = { semua: 'Semua', ...Object.fromEntries(cfg.channels.map(c => [c.id, c.ikon + ' ' + c.nama])) };
+  const tabsHtml  = ['semua', ...cfg.channels.map(c => c.id)].map(id =>
+    `<button class="km-tab${filter===id?' active':''}" onclick="switchTab('${id}')">${tabLabels[id]}</button>`
+  ).join('');
+
+  const cardsHtml = channels.map((ch, i) => {
+    const a = getActualRow(ch.id), t = getTarget(ch.id), pct = getPct(ch.id);
+    const healthCls = pct >= 80 ? 'mesin-prima' : pct < 30 ? 'mesin-kritis' : '';
+    return `<div class="channel-card card ${healthCls}"
+        style="--ch-accent:var(${ch.warna});animation-delay:${i*60}ms"
+        onclick="openChannel('${ch.id}')">
+      <button class="card-edit-btn"
+        onclick="event.stopPropagation();openTargetModal('${ch.id}')"
+        title="Edit target bulanan">⚙ Edit Target</button>
+      <div class="ch-top">
+        <span class="ch-ikon">${ch.ikon}</span>
+        <div class="ch-meta">
+          <div class="ch-nama">${ch.nama}</div>
+          <div class="ch-target">Target ${bulanNama} · Rp ${fmtRp(t)}</div>
+        </div>
+        <span class="ch-pct" style="color:${pctColor(pct)}">${pct}%</span>
+      </div>
+      <div class="prog-row">${progressBar(pct)}</div>
+      <div class="ch-actual-row">Actual: Rp ${fmtRp(a ? a.gmvNet : 0)}</div>
+      <div class="ch-stats">
+        <span>${actionsOf(ch.id).length} actions · <span style="color:var(--emas)">${berjalanOf(ch.id).length} berjalan</span></span>
+        <span style="color:var(--hijau-laut)">${selesaiBulanIni(ch.id).length} selesai bulan ini</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div class="km-tabs">${tabsHtml}</div>
+    <div class="section-lbl">Status Mesin — ${bulanNama}</div>
+    <div class="channel-grid">${cardsHtml}</div>
+    <div class="section-lbl">Sinyal Mesin</div>
+    <div class="alert-wrap">${buildAlertSection()}</div>`;
+}
+
+function buildAlertSection() {
+  let s = '';
+  cfg.channels.forEach(ch => {
+    if (!isMesinMacet(ch.id)) return;
+    s += alertItem('macet','🔴','Mesin Macet',
+      `${ch.nama} — ${getPct(ch.id)}% dari target ${BULAN_ID[krActual.bulanAktif]}`,
+      `${actionsOf(ch.id).filter(a=>a.status==='selesai').length} aksi selesai, GMV belum bergerak signifikan dalam 7 hari.`);
+  });
+  cfg.channels.forEach(ch => {
+    if (!isMesinKurangTenaga(ch.id)) return;
+    s += alertItem('tenaga','🟡','Mesin Kurang Tenaga',
+      `${ch.nama} — hanya ${berjalanOf(ch.id).length} aksi berstatus berjalan`,
+      'Terlalu sedikit aktivitas aktif menopang channel ini.');
+  });
+  orphanActions().forEach(a => {
+    s += alertItem('orphan','🟠','Energi Terbuang', esc(a.deskripsi),
+      `Sprint ${a.sprint} · "${esc(a.departemen)}" — belum ter-assign ke channel mana pun.`);
+  });
+  return s || `<div class="alert-empty">✓ Semua mesin dalam kondisi baik — tidak ada sinyal peringatan.</div>`;
+}
+
+function alertItem(type, emoji, title, main, sub) {
+  return `<div class="alert-item alert-${type}">
+    <span class="alert-emoji">${emoji}</span>
+    <div><div class="alert-title">${title}</div><div class="alert-main">${main}</div><div class="alert-sub">${sub}</div></div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════════
+// VIEW 2 — Sprint actions per channel
+// ════════════════════════════════════════════════════
+
+function outcomeCell(a) {
+  const txt = a.outcome
+    ? `${esc(a.outcome)} <span class="edit-icon">✏️</span>`
+    : `<span class="c-redup">—</span> <span class="edit-icon">✏️</span>`;
+  return txt;
+}
+
+function renderView2(channelId) {
+  const ch = cfg.channels.find(c => c.id === channelId);
+  if (!ch) return '<p>Channel tidak ditemukan.</p>';
+  const a = getActualRow(channelId), t = getTarget(channelId), pct = getPct(channelId);
+  const bulanNama = BULAN_ID[krActual.bulanAktif] + ' ' + krActual.tahun;
+
+  const deadBanner = isMesinMacet(channelId) ? `
+    <div class="alert-item alert-macet" style="margin-bottom:18px">
+      <span class="alert-emoji">🔴</span>
+      <div><div class="alert-title">Mesin Macet</div>
+      <div class="alert-main">Aksi sudah selesai, tapi GMV belum bergerak signifikan dalam 7 hari.</div>
+      <div class="alert-sub">Tinjau ulang: apakah aksi yang selesai benar-benar berdampak ke channel ini?</div></div>
+    </div>` : '';
+
+  // TODO: Todoist sync — titik integrasi pull sprint actions dari Todoist
+  // via Claude Code script: todoist -> scripts/sync-actions.py -> kr-config.js (bagian actions)
+  // Saat ini rows di-render dari cfg.actions (localStorage / kr-config.js).
+  const acts = cfg.actions
+    .filter(a => a.channels.includes(channelId))
+    .slice().sort((x,y) => y.sprint.localeCompare(x.sprint) || x.tanggalMulai.localeCompare(y.tanggalMulai));
+
+  const sprints   = [...new Set(acts.map(a => a.sprint))];
+  const tableBody = sprints.map(sp => {
+    const hdr = `<tr class="sprint-head-row"><td colspan="5">Sprint ${sp} &nbsp;·&nbsp; ${sprintRange(sp)}</td></tr>`;
+    const rows = acts.filter(a => a.sprint === sp).map(a => {
+      const isDecision = a.type === 'decision';
+      const statusBadge = isDecision
+        ? `<span class="badge ${VERDICT_BADGE[a.status]||'badge-redup'}">${VERDICT_LABEL[a.status]||a.status}</span>`
+        : `<span class="badge ${STATUS_BADGE[a.status]}"><span class="${STATUS_CLS[a.status]}">${STATUS_LABEL[a.status]}</span></span>`;
+      const decisionLabel = isDecision
+        ? `<span style="font-family:var(--font-mono);font-size:9px;letter-spacing:.8px;text-transform:uppercase;padding:1px 5px;border-radius:3px;background:rgba(167,139,250,.15);color:#a78bfa;margin-right:5px">DECISION</span>`
+        : '';
+      return `
+      <tr data-act="${a.id}">
+        <td class="td-desk">
+          ${decisionLabel}${esc(a.deskripsi)}
+          <div class="td-date">${a.tanggalMulai}</div>
+          <div class="td-dept">${esc(a.departemen)}</div>
+        </td>
+        <td><span class="badge ${BOBOT_BADGE[a.bobot]}">${BOBOT_LABEL[a.bobot]}</span></td>
+        <td>${statusBadge}</td>
+        <td class="td-out outcome-cell" data-oc="${a.id}" onclick="startOutcomeEdit('${a.id}')">${outcomeCell(a)}</td>
+        <td class="td-acts" id="ta-${a.id}">
+          <button class="row-act-btn" onclick="openActionModal('${a.id}',null)" title="Edit">✏️</button>
+          <button class="row-act-btn" onclick="confirmDelete('${a.id}')" title="Hapus">🗑️</button>
+        </td>
+      </tr>`;
+    }).join('');
+    return hdr + rows;
+  }).join('');
+
+  const empty = !acts.length
+    ? `<tr><td colspan="5" style="padding:20px 14px;color:var(--teks-redup);text-align:center">Belum ada aksi ter-link ke channel ini.</td></tr>` : '';
+
+  return `<button class="btn km-back" onclick="backToOverview()">← Semua Channel</button>
+    <div class="km-view-head">
+      <span class="km-view-ikon">${ch.ikon}</span>
+      <div>
+        <div class="km-view-nama">${ch.nama}</div>
+        <div class="km-view-meta">
+          Actual: Rp ${fmtRp(a ? a.gmvNet : 0)} &nbsp;/&nbsp; Target: Rp ${fmtRp(t)}
+          &nbsp;·&nbsp; <span style="color:${pctColor(pct)};font-weight:500">${pct}% tercapai</span>
+          &nbsp;·&nbsp; ${bulanNama}
+        </div>
+      </div>
+    </div>
+    ${deadBanner}
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+      <div class="section-lbl" style="margin-bottom:0">Sprint Actions — ${ch.nama}</div>
+      <button class="btn btn-emas" onclick="openActionModal(null,'${channelId}')">+ Tambah Action</button>
+    </div>
+    <div class="table-wrap">
+      <table class="action-table">
+        <thead><tr>
+          <th>Action &amp; Departemen</th><th>Bobot</th><th>Status</th><th>Outcome</th><th></th>
+        </tr></thead>
+        <tbody>${tableBody}${empty}</tbody>
+      </table>
+    </div>`;
+}
+
+// ════════════════════════════════════════════════════
+// INLINE OUTCOME EDIT
+// ════════════════════════════════════════════════════
+
+let _ocEsc = false;
+
+function startOutcomeEdit(actionId) {
+  const cell = document.querySelector(`[data-oc="${actionId}"]`);
+  if (!cell || cell.querySelector('input')) return; // already editing
+  const act = cfg.actions.find(a => a.id === actionId);
+  if (!act) return;
+
+  _ocEsc = false;
+  cell.innerHTML = `<input class="outcome-input" type="text" value="${esc(act.outcome||'')}" placeholder="Tulis outcome...">`;
+  const inp = cell.querySelector('input');
+  inp.focus(); inp.select();
+
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  { e.preventDefault(); inp.blur(); }
+    if (e.key === 'Escape') { _ocEsc = true; cell.innerHTML = outcomeCell(act); }
+  });
+  inp.addEventListener('blur', () => {
+    if (_ocEsc) return;
+    act.outcome = inp.value.trim();
+    saveCfg();
+    cell.innerHTML = outcomeCell(act);
+    // Refresh alert section (orphan status can change)
+    const aw = document.querySelector('.alert-wrap');
+    if (aw) aw.innerHTML = buildAlertSection();
+  });
+}
+
+// ════════════════════════════════════════════════════
+// INLINE DELETE CONFIRM
+// ════════════════════════════════════════════════════
+
+function confirmDelete(id) {
+  const cell = document.getElementById(`ta-${id}`);
+  if (!cell) return;
+  cell.innerHTML = `<div class="del-confirm">
+    <span class="del-msg">Hapus?</span>
+    <button class="btn-xs danger" onclick="doDelete('${id}')">Ya</button>
+    <button class="btn-xs" onclick="cancelDelete('${id}')">Tidak</button>
+  </div>`;
+}
+
+function cancelDelete(id) {
+  const cell = document.getElementById(`ta-${id}`);
+  if (!cell) return;
+  cell.innerHTML = `
+    <button class="row-act-btn" onclick="openActionModal('${id}',null)" title="Edit">✏️</button>
+    <button class="row-act-btn" onclick="confirmDelete('${id}')" title="Hapus">🗑️</button>`;
+}
+
+function doDelete(id) {
+  cfg.actions = cfg.actions.filter(a => a.id !== id);
+  saveCfg();
+  render();
+}
+
+// ════════════════════════════════════════════════════
+// MODAL — Edit Target Bulanan
+// ════════════════════════════════════════════════════
+
+function openTargetModal(channelId) {
+  const ch = cfg.channels.find(c => c.id === channelId);
+  if (!ch) return;
+  const rows = Array.from({length:12}, (_,i) => {
+    const m = i + 1;
+    return `<tr>
+      <td>${BULAN_ID[m]}</td>
+      <td><input class="km-input" type="number" data-bulan="${m}" value="${ch.targetBulanan[m]||0}" step="1000000" min="0"></td>
+    </tr>`;
+  }).join('');
+  openModal(`
+    <div class="modal-head">
+      <span class="modal-title">Edit Target — ${ch.nama}</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--teks-kedua);margin-bottom:14px">
+        Target bulanan dalam Rupiah. Tersimpan di browser — tidak mengubah file data.
+      </p>
+      <table class="target-table">${rows}</table>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal()">Batal</button>
+      <button class="btn btn-primary" onclick="saveTarget('${channelId}')">Simpan</button>
+    </div>`);
+}
+
+function saveTarget(channelId) {
+  const ch = cfg.channels.find(c => c.id === channelId);
+  if (!ch) return;
+  document.querySelectorAll('#km-modal [data-bulan]').forEach(inp => {
+    ch.targetBulanan[parseInt(inp.dataset.bulan)] = parseInt(inp.value) || 0;
+  });
+  saveCfg();
+  closeModal();
+  render();
+}
+
+// ════════════════════════════════════════════════════
+// MODAL — Add / Edit Action
+// ════════════════════════════════════════════════════
+
+function openActionModal(actionId, prefillChannel) {
+  const act        = actionId ? cfg.actions.find(a => a.id === actionId) : null;
+  const isDecision = act ? act.type === 'decision' : false;
+  const title      = act ? (isDecision ? 'Edit Decision' : 'Edit Action') : 'Tambah Action';
+
+  const existingSprints = [...new Set(cfg.actions.map(a => a.sprint))].sort().reverse();
+  const sprintOpts = existingSprints.map(s =>
+    `<option value="${s}"${act&&act.sprint===s?' selected':''}>${s}</option>`
+  ).join('') + `<option value="__baru__">Sprint baru...</option>`;
+
+  const chBoxes = cfg.channels.map(ch => {
+    const chk = act ? act.channels.includes(ch.id) : ch.id === prefillChannel;
+    return `<label class="pill-label">
+      <input type="checkbox" name="fch" value="${ch.id}"${chk?' checked':''}> ${ch.ikon} ${ch.nama}
+    </label>`;
+  }).join('');
+
+  const bobotRadios = ['tinggi','sedang','rendah'].map(b => {
+    const chk = act ? act.bobot===b : b==='sedang';
+    return `<label class="pill-label"><input type="radio" name="fbobot" value="${b}"${chk?' checked':''}> ${BOBOT_LABEL[b]}</label>`;
+  }).join('');
+
+  const typeRadios = ['action','decision'].map(t => {
+    const chk = isDecision ? t==='decision' : t==='action';
+    const lbl = t === 'action' ? 'Action' : 'Decision';
+    return `<label class="pill-label"><input type="radio" name="ftype" value="${t}"${chk?' checked':''} onchange="onTypeChange(this)"> ${lbl}</label>`;
+  }).join('');
+
+  const statusOpts = ['belum','berjalan','selesai'].map(s =>
+    `<option value="${s}"${(!isDecision&&act?act.status===s:s==='belum')?' selected':''}>${STATUS_LABEL[s]}</option>`
+  ).join('');
+
+  const verdictOpts = ['pending','correct','wrong','partial'].map(v =>
+    `<option value="${v}"${(isDecision&&act?act.status===v:v==='pending')?' selected':''}>${VERDICT_LABEL[v]}</option>`
+  ).join('');
+
+  const deptOpts = DEPT_OPTIONS.map(d =>
+    `<option value="${d}"${act&&act.departemen===d?' selected':''}>${d}</option>`
+  ).join('');
+
+  openModal(`
+    <div class="modal-head">
+      <span class="modal-title" id="fmodal-title">${title}</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label>Tipe</label>
+        <div class="pill-group">${typeRadios}</div>
+      </div>
+      <div class="form-row">
+        <label>Sprint</label>
+        <div style="display:flex;gap:8px">
+          <select class="km-select" id="fsp" style="flex:1" onchange="onSprintChange(this)">${sprintOpts}</select>
+          <input class="km-input" id="fsp-new" type="text" placeholder="mis. W24" style="display:none;max-width:90px">
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Tanggal Mulai</label>
+        <input class="km-input" id="ftgl" type="date" value="${act ? act.tanggalMulai : new Date().toISOString().slice(0,10)}">
+      </div>
+      <div class="form-row">
+        <label>Deskripsi</label>
+        <input class="km-input" id="fdesc" type="text" value="${esc(act?act.deskripsi:'')}" placeholder="Apa yang dikerjakan?">
+      </div>
+      <div class="form-row">
+        <label>Channel</label>
+        <div class="pill-group">${chBoxes}</div>
+      </div>
+      <div class="form-row">
+        <label>Bobot</label>
+        <div class="pill-group">${bobotRadios}</div>
+      </div>
+      <div class="form-row" id="frow-status" style="${isDecision?'display:none':''}">
+        <label>Status</label>
+        <select class="km-select" id="fstat">${statusOpts}</select>
+      </div>
+      <div class="form-row" id="frow-verdict" style="${isDecision?'':'display:none'}">
+        <label>Verdict</label>
+        <select class="km-select" id="fverdict">${verdictOpts}</select>
+      </div>
+      <div class="form-row">
+        <label>Departemen</label>
+        <select class="km-select" id="fdept">${deptOpts}</select>
+      </div>
+      <div class="form-row">
+        <label>Outcome <span style="font-weight:300;font-style:italic;text-transform:none;letter-spacing:0;color:var(--teks-redup)">(opsional)</span></label>
+        <textarea class="km-textarea" id="fout" placeholder="Diisi setelah aksi selesai...">${esc(act?act.outcome||'':'')}</textarea>
+      </div>
+      <div class="form-error" id="ferr"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal()">Batal</button>
+      <button class="btn btn-primary" onclick="saveAction('${actionId||''}','${prefillChannel||''}')">Simpan</button>
+    </div>`);
+}
+
+function onTypeChange(radio) {
+  const isDecision = radio.value === 'decision';
+  document.getElementById('frow-status').style.display  = isDecision ? 'none' : '';
+  document.getElementById('frow-verdict').style.display = isDecision ? '' : 'none';
+  const titleEl = document.getElementById('fmodal-title');
+  if (titleEl) titleEl.textContent = isDecision ? 'Tambah Decision' : 'Tambah Action';
+}
+
+function onSprintChange(sel) {
+  const inp = document.getElementById('fsp-new');
+  if (!inp) return;
+  inp.style.display = sel.value === '__baru__' ? 'inline-block' : 'none';
+  if (sel.value !== '__baru__') inp.value = '';
+}
+
+function saveAction(actionId, prefillChannel) {
+  const spSel      = document.getElementById('fsp');
+  const sprint     = spSel.value === '__baru__'
+    ? (document.getElementById('fsp-new').value.trim().toUpperCase() || '')
+    : spSel.value;
+  const type       = (document.querySelector('input[name="ftype"]:checked') || {}).value || 'action';
+  const isDecision = type === 'decision';
+  const tanggal    = document.getElementById('ftgl').value;
+  const deskripsi  = document.getElementById('fdesc').value.trim();
+  const channels   = [...document.querySelectorAll('input[name="fch"]:checked')].map(c => c.value);
+  const bobot      = (document.querySelector('input[name="fbobot"]:checked') || {}).value;
+  const status     = isDecision
+    ? document.getElementById('fverdict').value
+    : document.getElementById('fstat').value;
+  const departemen = document.getElementById('fdept').value;
+  const outcome    = document.getElementById('fout').value.trim();
+  const errEl      = document.getElementById('ferr');
+
+  if (!sprint || !tanggal || !deskripsi || !bobot || !status || !departemen) {
+    errEl.textContent = 'Isi semua field yang wajib: Sprint, Tanggal, Deskripsi, Bobot, Status, Departemen.';
+    return;
+  }
+
+  if (actionId) {
+    const act = cfg.actions.find(a => a.id === actionId);
+    if (act) Object.assign(act, { type, sprint, tanggalMulai: tanggal, deskripsi, channels, bobot, status, departemen, outcome });
+  } else {
+    cfg.actions.push({ id: genId(), type, sprint, tanggalMulai: tanggal, deskripsi, channels, bobot, status, departemen, outcome });
+  }
+
+  saveCfg();
+  closeModal();
+  render();
+}
+
+// ════════════════════════════════════════════════════
+// MODAL SYSTEM
+// ════════════════════════════════════════════════════
+
+function openModal(html) {
+  const overlay = document.getElementById('km-overlay');
+  const modal   = document.getElementById('km-modal');
+  modal.innerHTML = html;
+  overlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  return modal;
+}
+
+function closeModal() {
+  document.getElementById('km-overlay').style.display = 'none';
+  document.getElementById('km-modal').innerHTML = '';
+  document.body.style.overflow = '';
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('km-overlay')) closeModal();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('km-overlay').style.display !== 'none') closeModal();
+});
+
+// ════════════════════════════════════════════════════
+// RESET
+// ════════════════════════════════════════════════════
+
+function showReset() {
+  document.getElementById('reset-trigger').style.display = 'none';
+  document.getElementById('reset-confirm').style.display = 'flex';
+}
+function hideReset() {
+  document.getElementById('reset-trigger').style.display = '';
+  document.getElementById('reset-confirm').style.display = 'none';
+}
+function doReset() {
+  localStorage.removeItem('kr-config-override');
+  localStorage.removeItem('kr-actual-override');
+  location.reload();
+}
+
+// ════════════════════════════════════════════════════
+// STATE + NAVIGATION
+// ════════════════════════════════════════════════════
+
+const state   = { view: 1, filter: 'semua', channel: null };
+const content = document.getElementById('km-content');
+
+function render() {
+  content.innerHTML = state.view === 1
+    ? renderView1(state.filter)
+    : renderView2(state.channel);
+}
+
+function navigate(next) {
+  content.style.opacity = '0';
+  setTimeout(() => {
+    Object.assign(state, next);
+    render();
+    content.style.opacity = '1';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 180);
+}
+
+function switchTab(filter)   { state.filter = filter; render(); }
+function openChannel(id)     { navigate({ view: 2, channel: id }); }
+function backToOverview()    { navigate({ view: 1 }); }
+
+// ── Init ──
+loadData();
+render();
+</script>
+</body>
+</html>

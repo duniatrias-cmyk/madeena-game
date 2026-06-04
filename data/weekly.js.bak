@@ -13,7 +13,7 @@ const DATA = {
     okr: 40_000_000_000,
     tahun: 2026,
     mingguTerakhir: 23,
-    tanggalUpdate: '2 Juni 2026'
+    tanggalUpdate: '1 Juni 2026'
   },
 
   // -- GMV total per minggu (semua channel + series) --
@@ -40,7 +40,7 @@ const DATA = {
     { w: 20, gmv: 289_721_363 },
     { w: 21, gmv: 232_245_905 },
     { w: 22, gmv: 295_353_706 },
-    { w: 23, gmv: 133_662_308 },
+    { w: 23, gmv:  83_032_214 },
   ],
 
   // -- Angin buritan (event boosts) --
@@ -75,7 +75,7 @@ const DATA = {
     {s:'Abbasy',w:20,gmv:10_291_000},
     {s:'Abbasy',w:21,gmv:6_552_000},
     {s:'Abbasy',w:22,gmv:5_718_000},
-    {s:'Abbasy',w:23,gmv:2_495_000},
+    {s:'Abbasy',w:23,gmv:1_351_000},
 
     {s:'Airees DPP',w:1,gmv:5_754_047},
     {s:'Airees DPP',w:2,gmv:8_784_019},
@@ -99,7 +99,7 @@ const DATA = {
     {s:'Airees DPP',w:20,gmv:13_094_848},
     {s:'Airees DPP',w:21,gmv:5_020_228},
     {s:'Airees DPP',w:22,gmv:6_176_457},
-    {s:'Airees DPP',w:23,gmv:3_268_000},
+    {s:'Airees DPP',w:23,gmv:2_505_000},
 
     {s:'Heekaya DPP',w:1,gmv:8_555_808},
     {s:'Heekaya DPP',w:2,gmv:15_143_308},
@@ -123,7 +123,7 @@ const DATA = {
     {s:'Heekaya DPP',w:20,gmv:6_580_228},
     {s:'Heekaya DPP',w:21,gmv:7_822_000},
     {s:'Heekaya DPP',w:22,gmv:10_093_000},
-    {s:'Heekaya DPP',w:23,gmv:5_821_228},
+    {s:'Heekaya DPP',w:23,gmv:3_590_000},
 
     {s:'Heekaya HC',w:1,gmv:42_303_598},
     {s:'Heekaya HC',w:2,gmv:53_424_122},
@@ -146,7 +146,7 @@ const DATA = {
     {s:'Heekaya HC',w:20,gmv:8_509_000},
     {s:'Heekaya HC',w:21,gmv:6_128_925},
     {s:'Heekaya HC',w:22,gmv:9_327_000},
-    {s:'Heekaya HC',w:23,gmv:2_816_000},
+    {s:'Heekaya HC',w:23,gmv:1_866_000},
 
     {s:'Heekaya Jaket',w:1,gmv:16_425_962},
     {s:'Heekaya Jaket',w:2,gmv:22_051_843},
@@ -170,7 +170,7 @@ const DATA = {
     {s:'Heekaya Jaket',w:20,gmv:7_813_874},
     {s:'Heekaya Jaket',w:21,gmv:9_283_251},
     {s:'Heekaya Jaket',w:22,gmv:16_527_000},
-    {s:'Heekaya Jaket',w:23,gmv:4_675_000},
+    {s:'Heekaya Jaket',w:23,gmv:3_612_000},
 
     {s:'Heekaya per Juz',w:1,gmv:10_773_470},
     {s:'Heekaya per Juz',w:2,gmv:23_321_735},
@@ -207,7 +207,7 @@ const DATA = {
     {s:'Reeyana',w:20,gmv:11_171_000},
     {s:'Reeyana',w:21,gmv:12_174_011},
     {s:'Reeyana',w:22,gmv:9_109_000},
-    {s:'Reeyana',w:23,gmv:6_126_000},
+    {s:'Reeyana',w:23,gmv:4_144_000},
 
     {s:'Reeyana BDDA',w:1,gmv:7_800_295},
     {s:'Reeyana BDDA',w:2,gmv:10_235_000},
@@ -231,7 +231,7 @@ const DATA = {
     {s:'Reeyana BDDA',w:20,gmv:19_758_000},
     {s:'Reeyana BDDA',w:21,gmv:15_397_000},
     {s:'Reeyana BDDA',w:22,gmv:14_062_000},
-    {s:'Reeyana BDDA',w:23,gmv:6_497_000},
+    {s:'Reeyana BDDA',w:23,gmv:4_806_000},
 
     {s:'Reeyana HC',w:1,gmv:25_650_522},
     {s:'Reeyana HC',w:2,gmv:42_315_699},
@@ -255,7 +255,7 @@ const DATA = {
     {s:'Reeyana HC',w:20,gmv:82_027_500},
     {s:'Reeyana HC',w:21,gmv:61_035_739},
     {s:'Reeyana HC',w:22,gmv:91_741_825},
-    {s:'Reeyana HC',w:23,gmv:34_186_218},
+    {s:'Reeyana HC',w:23,gmv:21_488_914},
 
     {s:'Reeyana Jaket',w:1,gmv:169_740_039},
     {s:'Reeyana Jaket',w:2,gmv:140_142_294},
@@ -279,7 +279,7 @@ const DATA = {
     {s:'Reeyana Jaket',w:20,gmv:91_266_773},
     {s:'Reeyana Jaket',w:21,gmv:77_085_022},
     {s:'Reeyana Jaket',w:22,gmv:90_548_118},
-    {s:'Reeyana Jaket',w:23,gmv:51_048_761},
+    {s:'Reeyana Jaket',w:23,gmv:29_724_000},
 
     {s:'Reeyana Prayer Mat',w:1,gmv:7_197_000},
     {s:'Reeyana Prayer Mat',w:2,gmv:12_508_000},
@@ -303,7 +303,7 @@ const DATA = {
     {s:'Reeyana Prayer Mat',w:20,gmv:1_415_000},
     {s:'Reeyana Prayer Mat',w:21,gmv:2_360_000},
     {s:'Reeyana Prayer Mat',w:22,gmv:3_657_000},
-    {s:'Reeyana Prayer Mat',w:23,gmv:1_061_000},
+    {s:'Reeyana Prayer Mat',w:23,gmv:472_000},
 
     {s:'Zhafira Signature Tasbih New',w:1,gmv:4_238_400},
     {s:'Zhafira Signature Tasbih New',w:2,gmv:4_357_311},
@@ -327,23 +327,23 @@ const DATA = {
     {s:'Zhafira Signature Tasbih New',w:20,gmv:7_493_700},
     {s:'Zhafira Signature Tasbih New',w:21,gmv:3_749_700},
     {s:'Zhafira Signature Tasbih New',w:22,gmv:7_181_700},
-    {s:'Zhafira Signature Tasbih New',w:23,gmv:2_422_500},
+    {s:'Zhafira Signature Tasbih New',w:23,gmv:1_568_700},
   ],
 
   // -- Stok & demand series (per 3 Juni 2026) --
   seriStok: {
-    'Reeyana Jaket':               { stok:  2_160, demandPerMinggu:   747, warna: '#e882b0' },
-    'Reeyana HC':                  { stok:  5_289, demandPerMinggu:   809, warna: '#d46a9e' },
-    'Reeyana BDDA':                { stok:  5_563, demandPerMinggu:   191, warna: '#c85a8f' },
-    'Heekaya HC':                  { stok:    349, demandPerMinggu:    55, warna: '#a78bfa' },
+    'Reeyana Jaket':               { stok:  2_160, demandPerMinggu:   704, warna: '#e882b0' },
+    'Reeyana HC':                  { stok:  5_289, demandPerMinggu:   771, warna: '#d46a9e' },
+    'Reeyana BDDA':                { stok:  5_563, demandPerMinggu:   186, warna: '#c85a8f' },
+    'Heekaya HC':                  { stok:    349, demandPerMinggu:    54, warna: '#a78bfa' },
     'Heekaya per Juz':             { stok:  5_004, demandPerMinggu:     0, warna: '#7140c4' },
-    'Heekaya Jaket':               { stok:    552, demandPerMinggu:    58, warna: '#9570e8' },
-    'Reeyana':                     { stok:    316, demandPerMinggu:    90, warna: '#b04880' },
-    'Airees DPP':                  { stok: 24_485, demandPerMinggu:   340, warna: '#7ab8d8' },
-    'Heekaya DPP':                 { stok: 31_490, demandPerMinggu:   399, warna: '#8355d6' },
-    'Reeyana Prayer Mat':          { stok:    714, demandPerMinggu:    24, warna: '#a83e75' },
-    'Zhafira Signature Tasbih New':{ stok:  3_274, demandPerMinggu:   253, warna: '#5ecbb0' },
-    'Abbasy':                      { stok:    730, demandPerMinggu:    67, warna: '#6366f1' },
+    'Heekaya Jaket':               { stok:    552, demandPerMinggu:    57, warna: '#9570e8' },
+    'Reeyana':                     { stok:    316, demandPerMinggu:    87, warna: '#b04880' },
+    'Airees DPP':                  { stok: 24_485, demandPerMinggu:   331, warna: '#7ab8d8' },
+    'Heekaya DPP':                 { stok: 31_490, demandPerMinggu:   374, warna: '#8355d6' },
+    'Reeyana Prayer Mat':          { stok:    714, demandPerMinggu:    23, warna: '#a83e75' },
+    'Zhafira Signature Tasbih New':{ stok:  3_274, demandPerMinggu:   244, warna: '#5ecbb0' },
+    'Abbasy':                      { stok:    730, demandPerMinggu:    65, warna: '#6366f1' },
   },
 
   // -- Misi awak (quests / initiatives) --
