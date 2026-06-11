@@ -1,3 +1,80 @@
+# Update Log — 11 Jun 2026
+
+## weekly.js — PROMPT-UPDATE-DATA (W24 fresh run)
+
+**Sumber data:** mart_sales_tra_so_rts + dim_product_origin + mart_inventory via PostgreSQL
+
+| Metrik | Sebelumnya | Sekarang |
+|---|---|---|
+| mingguTerakhir | W23 | W24 |
+| tanggalUpdate | 2 Jun 2026 | 11 Jun 2026 |
+| YTD total (mingguanTotal) | ~8.4 M | **Rp 10.604.633.070** |
+| W23 GMV total (koreksi!) | 133.662.308 | **432.617.031** |
+| W24 GMV total (baru) | — | 141.763.620 (parsial, ~3 hari) |
+
+### Koreksi W23 — signifikan
+W23 sebelumnya dihitung pada awal June ketika mart belum fully settled. Setelah data lengkap:
+
+| Series | W23 Lama | W23 Baru | Δ |
+|---|---|---|---|
+| Reeyana Jaket | 51.048.761 | 157.398.262 | +208% |
+| Reeyana HC | 34.186.218 | 106.053.137 | +210% |
+| Reeyana BDDA | 6.497.000 | 21.093.000 | +225% |
+| Reeyana | 6.126.000 | 17.255.000 | +182% |
+| Heekaya DPP | 5.821.228 | 16.578.014 | +185% |
+| Heekaya Jaket | 4.675.000 | 18.876.000 | +304% |
+| Airees DPP | 3.268.000 | 11.332.043 | +247% |
+| Heekaya HC | 2.816.000 | 13.451.000 | +378% |
+| Abbasy | 2.495.000 | 6.447.000 | +158% |
+| Lumee (baru) | 225.000 | 3.600.000 | +1500% |
+| Alamee HC | 2.524.000 | 10.508.000 | +316% |
+
+_Catatan: Data W23 pertama diambil 4 Jun 2026 sebelum mart_sales_tra_so_rts selesai settle. Data sekarang full week (Jun 1-7)._
+
+### W24 ditambahkan (Jun 8–10, parsial)
+Data W24 tersedia untuk semua series. Angka akan tumbuh sampai akhir minggu (Jun 14).
+
+### Stok & Demand diperbarui (per 1 Jun 2026)
+Demand = rata-rata qty sold W20–W23.
+
+| Series | Stok | Demand/Mgg | Cover |
+|---|---|---|---|
+| Reeyana Jaket | 3.338 | 888 | **3,8 mgg** 🔴 |
+| Reeyana HC | 4.564 | 900 | 5,1 mgg |
+| Reeyana BDDA | 5.473 | 203 | 27,0 mgg |
+| Heekaya HC | 209 | 66 | **3,2 mgg** 🔴 |
+| Heekaya per Juz | 4.576 | 0 | ∞ |
+| Heekaya Jaket | 625 | 78 | 8,0 mgg |
+| Reeyana | 220 | 102 | **2,2 mgg** 🔴 |
+| Airees DPP | 23.755 | 393 | 60,4 mgg |
+| Heekaya DPP | 30.251 | 472 | 64,1 mgg |
+| Reeyana Prayer Mat | 634 | 28 | 22,6 mgg |
+| Zhafira Signature Tasbih New | 2.904 | 294 | 9,9 mgg |
+| Abbasy | 628 | 71 | 8,8 mgg |
+| Alamee HC | 2.077 | 31 | 67,0 mgg |
+| Lumee | 665 | 15 | 44,3 mgg |
+
+**KRITIS — cover < 4 minggu:**
+- **Reeyana Jaket**: 3.338 ÷ 888 = **3,8 minggu** 🔴 (turun dari 2,9 → stok naik, demand naik lebih besar)
+- **Heekaya HC**: 209 ÷ 66 = **3,2 minggu** 🔴 (baru masuk radar!)
+- **Reeyana**: 220 ÷ 102 = **2,2 minggu** 🔴 (kritis, stok sangat rendah)
+
+### Proyeksi kapal (per W24)
+
+| Metrik | Nilai |
+|---|---|
+| YTD | Rp 10,6 M (26,5% dari target) |
+| Run rate 4W (W20–W23) | ~323 juta/mgg |
+| Target pace | ~769 juta/mgg |
+| Fuel % | 42% (di bawah pace) |
+| Gap tersisa | ~29,4 M |
+| Minggu sisa | 28 |
+| Proyeksi akhir tahun | ~Rp 19,6 M (49% target) |
+
+_Perlu akselerasi signifikan — terutama lewat angin buritan Idul Adha (W24) dan 7.7 (W27)._
+
+---
+
 # Update Log — 2026-06-04
 
 ## kr-actual.js
