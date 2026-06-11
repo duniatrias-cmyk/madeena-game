@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Peta Pelayaran — Kapal Madeena</title>
-<link rel="stylesheet" href="../shared/style.css">
+<link rel="stylesheet" href="../shared/style.css?v=2">
+<script src="../shared/dm-toggle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 /* ── Ocean map canvas ── */
@@ -269,6 +270,42 @@
 .kapal-icon.bobbing { animation: shipBob 2.6s ease-in-out infinite; }
 @keyframes shipBob { 0%,100%{transform:translateY(-60%)} 50%{transform:translateY(-72%)} }
 
+/* ── Page-specific light mode overrides ── */
+html[data-theme="light"] .ocean-map {
+  background: linear-gradient(175deg, #c8dff0 0%, #d8eaf8 55%, #ddeeff 100%);
+}
+html[data-theme="light"] .konsep-box {
+  background: linear-gradient(135deg, rgba(232,184,75,0.08), rgba(122,184,216,0.06));
+}
+
+/* ── Info tile hover ── */
+.info-tile { transition: box-shadow 0.25s, border-color 0.25s; cursor: default; }
+.info-tile.t-emas:hover   { box-shadow: 0 4px 20px rgba(232,184,75,0.14);  border-color: var(--emas-border); }
+.info-tile.t-langit:hover { box-shadow: 0 4px 20px rgba(122,184,216,0.14); border-color: rgba(122,184,216,0.3); }
+.info-tile.t-hijau:hover  { box-shadow: 0 4px 20px rgba(62,207,122,0.14);  border-color: rgba(62,207,122,0.3); }
+.info-tile.t-merah:hover  { box-shadow: 0 4px 20px rgba(224,90,58,0.14);   border-color: rgba(224,90,58,0.3); }
+
+/* ── Angin card tooltip ── */
+.angin-card { position: relative; transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s; }
+.angin-card:hover { transform: scale(1.025); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+.angin-tip {
+  display: none; position: absolute; bottom: calc(100% + 10px); left: 50%;
+  transform: translateX(-50%);
+  background: rgba(5,12,25,0.97); border: 1px solid var(--border-sedang);
+  border-radius: var(--r-md); padding: 10px 14px;
+  width: 200px; z-index: 50;
+  font-family: var(--font-mono); font-size: 10px; color: var(--teks-kedua);
+  line-height: 1.7; text-align: left; pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.angin-tip::after {
+  content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 6px solid transparent; border-top-color: rgba(5,12,25,0.97);
+}
+.angin-card:hover .angin-tip { display: block; }
+html[data-theme="light"] .angin-tip { background: rgba(255,255,255,0.98); color: var(--teks-kedua); }
+html[data-theme="light"] .angin-tip::after { border-top-color: rgba(255,255,255,0.98); }
+
 /* ── Mobile 01-voyage ── */
 @media (max-width: 640px) {
   .ocean-map { min-height: 220px; }
@@ -297,13 +334,22 @@
 
 <nav class="nav">
   <a href="../index.html" class="nav-brand">⚓ Kapal <em>Madeena</em></a>
-  <div class="nav-links">
-    <a href="../index.html"           class="nav-link">Peta</a>
-    <a href="01-voyage.html"          class="nav-link active">Pelayaran</a>
-    <a href="02-misi.html"            class="nav-link">Misi Awak</a>
-    <a href="03-ombak.html"           class="nav-link">Ombak Mingguan</a>
-    <a href="04-muatan.html"          class="nav-link">Muatan</a>
-    <a href="05-tiktok.html" class="nav-link">Mesin TikTok<span class="nav-baru">BARU</span></a>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="nav-links">
+      <a href="../index.html"           class="nav-link">Peta</a>
+      <a href="01-voyage.html"          class="nav-link active">Pelayaran</a>
+      <a href="02-misi.html"            class="nav-link">Misi Awak</a>
+      <a href="03-ombak.html"           class="nav-link">Ombak Mingguan</a>
+      <a href="04-muatan.html"          class="nav-link">Muatan</a>
+      <a href="05-tiktok.html"          class="nav-link">Mesin TikTok</a>
+      <a href="06-kr-tracker.html"          class="nav-link">Kamar Mesin</a>
+      <a href="07-pelabuhan.html"          class="nav-link">Pelabuhan<span class="nav-baru">BARU</span></a>
+    </div>
+    <button class="dm-toggle" id="dm-toggle" aria-label="Toggle dark/light mode">
+      <span id="dm-icon">🌙</span>
+      <div class="dm-pill"><div class="dm-dot"></div></div>
+      <span id="dm-label">DARK</span>
+    </button>
   </div>
 </nav>
 
@@ -386,7 +432,7 @@
         <div style="font-size:13px;color:var(--teks-kedua)">Batang tinggi = kapal melaju kencang. Garis putus-putus = target pace OKR.</div>
       </div>
       <div class="toggle-row">
-        <button class="toggle-btn active" onclick="setChart('aktual')"   id="btn-aktual">Aktual W1–W22</button>
+        <button class="toggle-btn active" onclick="setChart('aktual')"   id="btn-aktual">Aktual W1–W23</button>
         <button class="toggle-btn"        onclick="setChart('proyeksi')" id="btn-proyeksi">+ Proyeksi</button>
         <button class="toggle-btn"        onclick="setChart('kumulatif')" id="btn-kumulatif">Kumulatif</button>
       </div>
@@ -488,15 +534,19 @@ document.getElementById('info-grid').innerHTML = tiles.map(t =>
 
 // ── Angin buritan cards ──
 document.getElementById('angin-grid').innerHTML = DATA.anginBuritan.map(a => {
-  const cls = a.selesai ? 'selesai' : 'mendatang';
-  return `<div class="angin-card ${cls}" style="border-color:${a.selesai ? a.warna+'44' : 'rgba(255,255,255,0.08)'}">
-    <span class="angin-icon">${a.ikon}</span>
+  const cls      = a.selesai ? 'selesai' : 'mendatang';
+  const bcls     = a.selesai ? 'badge-hijau' : 'badge-langit';
+  const btxt     = a.selesai ? 'Selesai' : 'Menunggu';
+  const borderC  = a.selesai ? a.warna + '55' : 'rgba(122,184,216,0.15)';
+  const mingguTxt= a.selesai ? 'Sudah berlalu' : `Mendatang · W${a.minggu[0]}`;
+  const tipHtml  = a.detail ? `<div class="angin-tip">${a.detail}</div>` : '';
+  return `<div class="angin-card ${cls}" style="border-color:${borderC}">
+    <span class="angin-icon" style="${a.selesai ? 'filter:drop-shadow(0 0 5px '+a.warna+'90)' : ''}">${a.ikon}</span>
     <div class="angin-nama">${a.nama}</div>
-    <div class="angin-minggu">${a.minggu[0] > 22 ? 'Mendatang · W'+a.minggu[0] : 'Sudah berlalu'}</div>
+    <div class="angin-minggu">${mingguTxt}</div>
     <div class="angin-mult" style="color:${a.warna}">${a.multiplier}</div>
-    <div style="margin-top:6px">
-      <span class="badge ${a.selesai ? 'badge-hijau' : 'badge-langit'}">${a.selesai ? 'Selesai' : 'Menunggu'}</span>
-    </div>
+    <div style="margin-top:6px"><span class="badge ${bcls}">${btxt}</span></div>
+    ${tipHtml}
   </div>`;
 }).join('');
 
@@ -558,25 +608,33 @@ function buildChart() {
 }
 
 function chartOpts(ylabel, showBar) {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const gridC   = isLight ? 'rgba(0,0,0,0.06)'    : 'rgba(255,255,255,0.04)';
+  const tickC   = isLight ? '#7a8a9a'              : '#4a5a6a';
+  const bgTip   = isLight ? 'rgba(255,255,255,0.97)' : 'rgba(10,15,26,0.95)';
+  const titlC   = isLight ? '#1a2a3a'              : '#f0e8d0';
+  const bodyC   = isLight ? '#4a5a6a'              : '#9ba8b5';
   return {
     responsive: true, maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: 'rgba(10,15,26,0.95)',
+        backgroundColor: bgTip,
         borderColor: 'rgba(232,184,75,0.3)', borderWidth: 1,
-        titleColor: '#f0e8d0', bodyColor: '#9ba8b5',
+        titleColor: titlC, bodyColor: bodyC,
         callbacks: { label: c => c.raw != null ? c.dataset.label + ': Rp ' + c.raw + 'jt' : '' }
       }
     },
     scales: {
-      x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { font: { size: 10, family: 'DM Mono' }, color: '#4a5a6a' } },
-      y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { font: { size: 10, family: 'DM Mono' }, color: '#4a5a6a', callback: v => v >= 1000 ? (v/1000).toFixed(1)+'B' : v+'jt' } }
+      x: { grid: { color: gridC }, ticks: { font: { size: 10, family: 'DM Mono' }, color: tickC } },
+      y: { grid: { color: gridC }, ticks: { font: { size: 10, family: 'DM Mono' }, color: tickC,
+        callback: v => v >= 1000 ? (v/1000).toFixed(1)+'B' : v+'jt' } }
     }
   };
 }
 
 buildChart();
+window.onThemeChange = function() { buildChart(); };
 </script>
 
 <!-- Ocean waves -->
@@ -598,6 +656,8 @@ buildChart();
     <a href="03-ombak.html"  class="bottom-nav-item">        <span class="bottom-nav-icon">🌊</span><span class="bottom-nav-lbl">Ombak</span></a>
     <a href="04-muatan.html" class="bottom-nav-item">        <span class="bottom-nav-icon">📦</span><span class="bottom-nav-lbl">Muatan</span></a>
     <a href="05-tiktok.html" class="bottom-nav-item">       <span class="bottom-nav-icon">⚙️</span><span class="bottom-nav-lbl">Mesin</span></a>
+    <a href="06-kr-tracker.html" class="bottom-nav-item">       <span class="bottom-nav-icon">🔧</span><span class="bottom-nav-lbl">K.Mesin</span></a>
+    <a href="07-pelabuhan.html"  class="bottom-nav-item">       <span class="bottom-nav-icon">⚓</span><span class="bottom-nav-lbl">Pelabuhan</span></a>
   </div>
 </nav>
 </body>

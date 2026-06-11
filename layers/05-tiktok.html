@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ruang Mesin — TikTok Engine · Kapal Madeena</title>
-<link rel="stylesheet" href="../shared/style.css">
+<link rel="stylesheet" href="../shared/style.css?v=2">
+<script src="../shared/dm-toggle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
@@ -119,13 +120,22 @@
 <body>
 <nav class="nav">
   <a href="../index.html" class="nav-brand">⚓ Kapal <em>Madeena</em></a>
-  <div class="nav-links">
-    <a href="../index.html"  class="nav-link">Peta</a>
-    <a href="01-voyage.html" class="nav-link">Pelayaran</a>
-    <a href="02-misi.html"   class="nav-link">Misi Awak</a>
-    <a href="03-ombak.html"  class="nav-link">Ombak Mingguan</a>
-    <a href="04-muatan.html" class="nav-link">Muatan</a>
-    <a href="05-tiktok.html" class="nav-link active">Mesin TikTok<span class="nav-baru">BARU</span></a>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="nav-links">
+      <a href="../index.html"  class="nav-link">Peta</a>
+      <a href="01-voyage.html" class="nav-link">Pelayaran</a>
+      <a href="02-misi.html"   class="nav-link">Misi Awak</a>
+      <a href="03-ombak.html"  class="nav-link">Ombak Mingguan</a>
+      <a href="04-muatan.html" class="nav-link">Muatan</a>
+      <a href="05-tiktok.html" class="nav-link active">Mesin TikTok</a>
+      <a href="06-kr-tracker.html" class="nav-link">Kamar Mesin</a>
+      <a href="07-pelabuhan.html" class="nav-link">Pelabuhan<span class="nav-baru">BARU</span></a>
+    </div>
+    <button class="dm-toggle" id="dm-toggle" aria-label="Toggle dark/light mode">
+      <span id="dm-icon">🌙</span>
+      <div class="dm-pill"><div class="dm-dot"></div></div>
+      <span id="dm-label">DARK</span>
+    </button>
   </div>
 </nav>
 
@@ -314,12 +324,17 @@ function render() {
   document.getElementById('core-total').textContent = fmtJt(total);
   const comp = SUMBER.map(s => ({ ...s, val: src[s.key], pct: total ? src[s.key]/total*100 : 0 }))
                      .sort((a,b)=>b.val-a.val);
+  const _l05    = document.documentElement.getAttribute('data-theme') === 'light';
+  const _bgTip  = _l05 ? 'rgba(255,255,255,0.97)' : 'rgba(10,15,26,0.95)';
+  const _titlC  = _l05 ? '#1a2a3a' : '#f0e8d0';
+  const _bodyC  = _l05 ? '#4a5a6a' : '#9ba8b5';
+  const _segBdr = _l05 ? '#ffffff' : '#0f1825';
   if (mesinChart) mesinChart.destroy();
   mesinChart = new Chart(document.getElementById('mesin-chart').getContext('2d'), {
     type:'doughnut',
-    data:{ labels:comp.map(c=>c.nama), datasets:[{ data:comp.map(c=>c.val), backgroundColor:comp.map(c=>c.warna), borderColor:'#0f1825', borderWidth:3, hoverOffset:6 }] },
+    data:{ labels:comp.map(c=>c.nama), datasets:[{ data:comp.map(c=>c.val), backgroundColor:comp.map(c=>c.warna), borderColor:_segBdr, borderWidth:3, hoverOffset:6 }] },
     options:{ responsive:true, maintainAspectRatio:false, cutout:'68%',
-      plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'rgba(10,15,26,0.95)', borderColor:'rgba(232,184,75,0.2)', borderWidth:1, titleColor:'#f0e8d0', bodyColor:'#9ba8b5',
+      plugins:{ legend:{display:false}, tooltip:{ backgroundColor:_bgTip, borderColor:'rgba(232,184,75,0.2)', borderWidth:1, titleColor:_titlC, bodyColor:_bodyC,
         callbacks:{ label:c=>` ${c.label}: ${fmtJt(c.raw)} (${(c.raw/total*100).toFixed(1)}%)` } } },
       animation:{ duration:800 } }
   });
@@ -436,6 +451,7 @@ document.getElementById('file-input').addEventListener('change', e=>{
 });
 
 render();
+window.onThemeChange = function() { render(); };
 </script>
 
 <!-- Ocean waves -->
@@ -455,7 +471,10 @@ render();
     <a href="01-voyage.html" class="bottom-nav-item">        <span class="bottom-nav-icon">⚓</span><span class="bottom-nav-lbl">Pelayaran</span></a>
     <a href="02-misi.html"   class="bottom-nav-item">        <span class="bottom-nav-icon">🧭</span><span class="bottom-nav-lbl">Misi</span></a>
     <a href="03-ombak.html"  class="bottom-nav-item">        <span class="bottom-nav-icon">🌊</span><span class="bottom-nav-lbl">Ombak</span></a>
+    <a href="04-muatan.html" class="bottom-nav-item">        <span class="bottom-nav-icon">📦</span><span class="bottom-nav-lbl">Muatan</span></a>
     <a href="05-tiktok.html" class="bottom-nav-item active"> <span class="bottom-nav-icon">⚙️</span><span class="bottom-nav-lbl">Mesin</span></a>
+    <a href="06-kr-tracker.html" class="bottom-nav-item">       <span class="bottom-nav-icon">🔧</span><span class="bottom-nav-lbl">K.Mesin</span></a>
+    <a href="07-pelabuhan.html"  class="bottom-nav-item">       <span class="bottom-nav-icon">⚓</span><span class="bottom-nav-lbl">Pelabuhan</span></a>
   </div>
 </nav>
 </body>

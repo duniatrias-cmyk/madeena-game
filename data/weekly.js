@@ -45,10 +45,14 @@ const DATA = {
 
   // -- Angin buritan (event boosts) --
   anginBuritan: [
-    { nama: 'Ramadan & Lebaran', minggu: [6,7,8,9,10,14], warna: '#f5a623', ikon: '🌙', multiplier: '3-4x', selesai: true },
-    { nama: '6.6 Sale',          minggu: [23],             warna: '#5b9cf6', ikon: '⚡', multiplier: '2-3x', selesai: false },
-    { nama: 'Idul Adha',         minggu: [24],             warna: '#3ecf7a', ikon: '🌿', multiplier: '2-3x', selesai: true },
-    { nama: '7.7 Sale',          minggu: [27],             warna: '#a78bfa', ikon: '⚡', multiplier: '2-3x', selesai: false }
+    { nama: 'Ramadan & Lebaran', minggu: [6,7,8,9,10,14], warna: '#f5a623', ikon: '🌙', multiplier: '3-4x', selesai: true,
+      detail: 'W6–W10 & W14. Peak di W8 (Rp 808jt). Angin terkuat tahun ini — berhasil kita tangkap sepenuhnya.' },
+    { nama: '6.6 Sale',          minggu: [23],             warna: '#5b9cf6', ikon: '⚡', multiplier: '2-3x', selesai: false,
+      detail: 'W23 — sedang berlangsung. Target 2–3× run-rate normal. Semua channel aktif.' },
+    { nama: 'Idul Adha',         minggu: [24],             warna: '#3ecf7a', ikon: '🌿', multiplier: '2-3x', selesai: true,
+      detail: 'W24 mendatang. Siapkan stok dan konten khusus prayer mat + tasbih.' },
+    { nama: '7.7 Sale',          minggu: [27],             warna: '#a78bfa', ikon: '⚡', multiplier: '2-3x', selesai: false,
+      detail: 'W27 mendatang. Double event — marketplace flash sale + TikTok LIVE special.' }
   ],
 
   // -- GMV per series per minggu --

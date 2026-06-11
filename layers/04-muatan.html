@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Palka Muatan — Kapal Madeena</title>
-<link rel="stylesheet" href="../shared/style.css">
+<link rel="stylesheet" href="../shared/style.css?v=2">
+<script src="../shared/dm-toggle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 .konsep-box { background:linear-gradient(135deg,rgba(62,207,122,0.06),rgba(122,184,216,0.04));border:1px solid rgba(62,207,122,0.2);border-radius:var(--r-lg);padding:24px;margin-bottom:24px; }
@@ -119,13 +120,22 @@
 <body>
 <nav class="nav">
   <a href="../index.html" class="nav-brand">⚓ Kapal <em>Madeena</em></a>
-  <div class="nav-links">
-    <a href="../index.html"  class="nav-link">Peta</a>
-    <a href="01-voyage.html" class="nav-link">Pelayaran</a>
-    <a href="02-misi.html"   class="nav-link">Misi Awak</a>
-    <a href="03-ombak.html"  class="nav-link">Ombak Mingguan</a>
-    <a href="04-muatan.html" class="nav-link active">Muatan</a>
-    <a href="05-tiktok.html" class="nav-link">Mesin TikTok<span class="nav-baru">BARU</span></a>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="nav-links">
+      <a href="../index.html"  class="nav-link">Peta</a>
+      <a href="01-voyage.html" class="nav-link">Pelayaran</a>
+      <a href="02-misi.html"   class="nav-link">Misi Awak</a>
+      <a href="03-ombak.html"  class="nav-link">Ombak Mingguan</a>
+      <a href="04-muatan.html" class="nav-link active">Muatan</a>
+      <a href="05-tiktok.html" class="nav-link">Mesin TikTok</a>
+      <a href="06-kr-tracker.html" class="nav-link">Kamar Mesin</a>
+      <a href="07-pelabuhan.html" class="nav-link">Pelabuhan<span class="nav-baru">BARU</span></a>
+    </div>
+    <button class="dm-toggle" id="dm-toggle" aria-label="Toggle dark/light mode">
+      <span id="dm-icon">🌙</span>
+      <div class="dm-pill"><div class="dm-dot"></div></div>
+      <span id="dm-label">DARK</span>
+    </button>
   </div>
 </nav>
 
@@ -319,6 +329,17 @@ function renderPalka() {
   }, 120);
 }
 
+function chartOpts04() {
+  const l = document.documentElement.getAttribute('data-theme') === 'light';
+  return {
+    gridC: l ? 'rgba(0,0,0,0.06)'      : 'rgba(255,255,255,0.03)',
+    tickC: l ? '#7a8a9a'               : '#4a5a6a',
+    bgTip: l ? 'rgba(255,255,255,0.97)': 'rgba(10,15,26,0.95)',
+    titlC: l ? '#1a2a3a'               : '#f0e8d0',
+    bodyC: l ? '#4a5a6a'               : '#9ba8b5',
+  };
+}
+
 function openDetail(idx) {
   openIdx = idx;
   const m = ALL[idx];
@@ -335,8 +356,8 @@ function openDetail(idx) {
   detailChart = new Chart(document.getElementById('detail-chart').getContext('2d'), {
     type:'bar',
     data:{ labels:gmvAll.map((_,i)=>'W'+(i+1)), datasets:[{ data:gmvAll, backgroundColor:gmvAll.map((_,i)=>i>=18?m.color:m.color+'66'), borderRadius:3 }] },
-    options:{ responsive:true,maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(10,15,26,0.95)',borderColor:'rgba(232,184,75,0.2)',borderWidth:1,titleColor:'#f0e8d0',bodyColor:'#9ba8b5',callbacks:{label:c=>c.raw+'jt'}}},
-      scales:{x:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{font:{size:9,family:'DM Mono'},color:'#4a5a6a'}},y:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{font:{size:9,family:'DM Mono'},color:'#4a5a6a',callback:v=>v+'jt'}}} }
+    options:{ responsive:true,maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:(()=>{const o=chartOpts04();return{backgroundColor:o.bgTip,borderColor:'rgba(232,184,75,0.2)',borderWidth:1,titleColor:o.titlC,bodyColor:o.bodyC,callbacks:{label:c=>c.raw+'jt'}}})()},
+      scales:(()=>{const o=chartOpts04();return{x:{grid:{color:o.gridC},ticks:{font:{size:9,family:'DM Mono'},color:o.tickC}},y:{grid:{color:o.gridC},ticks:{font:{size:9,family:'DM Mono'},color:o.tickC,callback:v=>v+'jt'}}}})() }
   });
 
   const last = m.rows[m.rows.length-1]?.gmv||0;
@@ -360,6 +381,13 @@ function closeDetail() {
 
 renderSummary();
 renderPalka();
+window.onThemeChange = function() {
+  ALL.forEach((m, idx) => {
+    const spark4 = m.rows.filter(r => r.w >= 19 && r.w <= 22).map(r => r.gmv / 1e6);
+    if (spark4.length) drawSpark('spark-' + idx, spark4, m.color);
+  });
+  if (openIdx >= 0) openDetail(openIdx);
+};
 </script>
 
 <!-- Ocean waves -->
@@ -381,6 +409,8 @@ renderPalka();
     <a href="03-ombak.html"  class="bottom-nav-item">        <span class="bottom-nav-icon">🌊</span><span class="bottom-nav-lbl">Ombak</span></a>
     <a href="04-muatan.html" class="bottom-nav-item active"> <span class="bottom-nav-icon">📦</span><span class="bottom-nav-lbl">Muatan</span></a>
     <a href="05-tiktok.html" class="bottom-nav-item">       <span class="bottom-nav-icon">⚙️</span><span class="bottom-nav-lbl">Mesin</span></a>
+    <a href="06-kr-tracker.html" class="bottom-nav-item">       <span class="bottom-nav-icon">🔧</span><span class="bottom-nav-lbl">K.Mesin</span></a>
+    <a href="07-pelabuhan.html"  class="bottom-nav-item">       <span class="bottom-nav-icon">⚓</span><span class="bottom-nav-lbl">Pelabuhan</span></a>
   </div>
 </nav>
 </body>

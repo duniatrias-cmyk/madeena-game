@@ -1,13 +1,15 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kapal Madeena — Game Bisnis 2026</title>
-<link rel="stylesheet" href="shared/style.css">
+<link rel="stylesheet" href="shared/style.css?v=2">
+<script src="shared/dm-toggle.js"></script>
 <script src="data/weekly.js"></script>
 <script src="data/kr-config.js"></script>
 <script src="data/kr-actual.js"></script>
+<script src="data/wssi.js"></script>
 <style>
 /* INDEX-SPECIFIC */
 .hero {
@@ -114,6 +116,7 @@
 .nav-card.prioritas-4::before { background: var(--hijau-laut); }
 .nav-card.prioritas-5::before { background: var(--langit); }
 .nav-card.prioritas-6::before { background: linear-gradient(90deg, var(--langit), var(--emas)); }
+.nav-card.prioritas-7::before { background: linear-gradient(90deg, var(--langit), var(--hijau-laut)); }
 
 .nav-card-num {
   font-family: var(--font-mono);
@@ -226,6 +229,10 @@
   z-index: 0;
   background: radial-gradient(ellipse at 50% 0%, rgba(10,15,30,0.55) 0%, rgba(5,8,20,0.75) 100%);
 }
+html[data-theme="light"] #storm-overlay {
+  background: radial-gradient(ellipse at 50% 0%, rgba(160,190,220,0.15) 0%, rgba(180,205,225,0.25) 100%);
+}
+html[data-theme="light"] #storm-canvas { opacity: 0.4; }
 
 /* Kilat / lightning flash */
 @keyframes lightning-flash {
@@ -306,14 +313,22 @@
 
 <nav class="nav">
   <a href="index.html" class="nav-brand">⚓ Kapal <em>Madeena</em></a>
-  <div class="nav-links">
-    <a href="index.html"            class="nav-link active">Peta</a>
-    <a href="layers/01-voyage.html" class="nav-link">Pelayaran</a>
-    <a href="layers/02-misi.html"   class="nav-link">Misi Awak</a>
-    <a href="layers/03-ombak.html"  class="nav-link">Ombak Mingguan</a>
-    <a href="layers/04-muatan.html" class="nav-link">Muatan</a>
-    <a href="layers/05-tiktok.html" class="nav-link">Mesin TikTok</a>
-    <a href="layers/06-kr-tracker.html" class="nav-link">Kamar Mesin<span class="nav-baru">BARU</span></a>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="nav-links">
+      <a href="index.html"            class="nav-link active">Peta</a>
+      <a href="layers/01-voyage.html" class="nav-link">Pelayaran</a>
+      <a href="layers/02-misi.html"   class="nav-link">Misi Awak</a>
+      <a href="layers/03-ombak.html"  class="nav-link">Ombak Mingguan</a>
+      <a href="layers/04-muatan.html" class="nav-link">Muatan</a>
+      <a href="layers/05-tiktok.html" class="nav-link">Mesin TikTok</a>
+      <a href="layers/06-kr-tracker.html" class="nav-link">Kamar Mesin</a>
+      <a href="layers/07-pelabuhan.html" class="nav-link">Pelabuhan<span class="nav-baru">BARU</span></a>
+    </div>
+    <button class="dm-toggle" id="dm-toggle" aria-label="Toggle dark/light mode">
+      <span id="dm-icon">🌙</span>
+      <div class="dm-pill"><div class="dm-dot"></div></div>
+      <span id="dm-label">DARK</span>
+    </button>
   </div>
 </nav>
 
@@ -461,6 +476,23 @@ const layers = [
       return Math.round(vals.reduce((s, v) => s + v, 0) / vals.length * 100);
     })(),
     progColor: '#3ecf7a'
+  },
+  {
+    href: 'layers/07-pelabuhan.html',
+    prioritas: 7,
+    num: 'PRIORITAS 07',
+    icon: '⚓',
+    title: 'Koordinat Pelabuhan',
+    sub: 'Tahu bekal, tahu arah, tahu kapan harus merapat. Peta WSSI: stok, penjualan, dan jadwal kapal suplai.',
+    bisnis: 'WSSI · WEEKS COVER · PRE-DECISION',
+    status: 'BARU',
+    statusCls: 'badge-hijau',
+    prog: (() => {
+      if (typeof WSSI === 'undefined') return 0;
+      const ok = WSSI.skus.filter(s => s.status !== 'darurat').length;
+      return Math.round(ok / WSSI.skus.length * 100);
+    })(),
+    progColor: '#7ab8d8'
   }
 ];
 
@@ -593,6 +625,7 @@ document.getElementById('compass-nav').innerHTML = layers.map(l =>
     <a href="layers/04-muatan.html" class="bottom-nav-item">       <span class="bottom-nav-icon">📦</span><span class="bottom-nav-lbl">Muatan</span></a>
     <a href="layers/05-tiktok.html" class="bottom-nav-item">       <span class="bottom-nav-icon">⚙️</span><span class="bottom-nav-lbl">Mesin</span></a>
     <a href="layers/06-kr-tracker.html" class="bottom-nav-item">    <span class="bottom-nav-icon">🔧</span><span class="bottom-nav-lbl">K.Mesin</span></a>
+    <a href="layers/07-pelabuhan.html" class="bottom-nav-item">    <span class="bottom-nav-icon">⚓</span><span class="bottom-nav-lbl">Pelabuhan</span></a>
   </div>
 </nav>
 </body>

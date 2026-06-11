@@ -395,3 +395,44 @@ a, button, [onclick], .btn, .nav-link, .nav-card, .misi-card,
   .arena-card.flash-menang, .arena-card.flash-kalah { animation: none !important; }
   * { transition-duration: 0.01ms !important; }
 }
+
+/* ── Light mode token overrides ── */
+html[data-theme="light"] {
+  --laut-dalam:    #edf2f7;
+  --laut-tengah:   #ffffff;
+  --laut-tepi:     #f5f8fb;
+  --laut-surface:  #e8edf5;
+  --laut-muda:     #dce6f0;
+  --teks-primer:   #1a2a3a;
+  --teks-kedua:    #4a5a6a;
+  --teks-redup:    #8a9aaa;
+  --border-tipis:  rgba(0,0,0,0.08);
+  --border-sedang: rgba(0,0,0,0.14);
+  --border-tebal:  rgba(0,0,0,0.22);
+}
+html[data-theme="light"] body::before { opacity: 0.25; }
+html[data-theme="light"] .nav        { background: rgba(237,242,247,0.96); }
+html[data-theme="light"] .bottom-nav { background: rgba(237,242,247,0.98); border-top-color: rgba(0,0,0,0.08); }
+
+/* ── Dark mode toggle component ── */
+.dm-toggle {
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--font-mono); font-size: 10px; color: var(--teks-kedua);
+  background: var(--laut-tepi); border: 1px solid var(--border-sedang);
+  border-radius: 20px; padding: 5px 10px; cursor: pointer;
+  transition: border-color 0.2s, background 0.2s; user-select: none;
+  flex-shrink: 0;
+}
+.dm-toggle:hover { border-color: var(--emas-border); background: var(--laut-surface); }
+.dm-pill {
+  width: 30px; height: 17px; border-radius: 9px;
+  background: var(--laut-surface); border: 1px solid var(--border-sedang);
+  position: relative; transition: background 0.3s; flex-shrink: 0;
+}
+html[data-theme="light"] .dm-pill { background: var(--emas-redup); border-color: var(--emas-border); }
+.dm-dot {
+  position: absolute; top: 2px; left: 2px;
+  width: 11px; height: 11px; border-radius: 50%;
+  background: var(--emas); transition: transform 0.3s;
+}
+html[data-theme="light"] .dm-dot { transform: translateX(13px); }

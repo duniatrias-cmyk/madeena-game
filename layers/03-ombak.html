@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ombak Mingguan — Kapal Madeena</title>
-<link rel="stylesheet" href="../shared/style.css">
+<link rel="stylesheet" href="../shared/style.css?v=2">
+<script src="../shared/dm-toggle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 .konsep-box {
@@ -126,13 +127,22 @@
 <body>
 <nav class="nav">
   <a href="../index.html" class="nav-brand">⚓ Kapal <em>Madeena</em></a>
-  <div class="nav-links">
-    <a href="../index.html"  class="nav-link">Peta</a>
-    <a href="01-voyage.html" class="nav-link">Pelayaran</a>
-    <a href="02-misi.html"   class="nav-link">Misi Awak</a>
-    <a href="03-ombak.html"  class="nav-link active">Ombak Mingguan</a>
-    <a href="04-muatan.html" class="nav-link">Muatan</a>
-    <a href="05-tiktok.html" class="nav-link">Mesin TikTok<span class="nav-baru">BARU</span></a>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="nav-links">
+      <a href="../index.html"  class="nav-link">Peta</a>
+      <a href="01-voyage.html" class="nav-link">Pelayaran</a>
+      <a href="02-misi.html"   class="nav-link">Misi Awak</a>
+      <a href="03-ombak.html"  class="nav-link active">Ombak Mingguan</a>
+      <a href="04-muatan.html" class="nav-link">Muatan</a>
+      <a href="05-tiktok.html" class="nav-link">Mesin TikTok</a>
+      <a href="06-kr-tracker.html" class="nav-link">Kamar Mesin</a>
+      <a href="07-pelabuhan.html" class="nav-link">Pelabuhan<span class="nav-baru">BARU</span></a>
+    </div>
+    <button class="dm-toggle" id="dm-toggle" aria-label="Toggle dark/light mode">
+      <span id="dm-icon">🌙</span>
+      <div class="dm-pill"><div class="dm-dot"></div></div>
+      <span id="dm-label">DARK</span>
+    </button>
   </div>
 </nav>
 
@@ -315,9 +325,21 @@ function renderLog(targets) {
   if (active) active.scrollIntoView({block:'nearest'});
 }
 
+function chartOpts03() {
+  const l = document.documentElement.getAttribute('data-theme') === 'light';
+  return {
+    gridC: l ? 'rgba(0,0,0,0.06)'      : 'rgba(255,255,255,0.03)',
+    tickC: l ? '#7a8a9a'               : '#4a5a6a',
+    bgTip: l ? 'rgba(255,255,255,0.97)': 'rgba(10,15,26,0.95)',
+    titlC: l ? '#1a2a3a'               : '#f0e8d0',
+    bodyC: l ? '#4a5a6a'               : '#9ba8b5',
+  };
+}
+
 function renderChart(targets) {
   if (chartInst) chartInst.destroy();
   const ctx = document.getElementById('bar-chart').getContext('2d');
+  const o = chartOpts03();
   chartInst = new Chart(ctx, {
     data: {
       labels: total.map(d=>'W'+d.w),
@@ -331,10 +353,10 @@ function renderChart(targets) {
     },
     options: {
       responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false}, tooltip:{backgroundColor:'rgba(10,15,26,0.95)',borderColor:'rgba(232,184,75,0.2)',borderWidth:1,titleColor:'#f0e8d0',bodyColor:'#9ba8b5'} },
+      plugins:{ legend:{display:false}, tooltip:{backgroundColor:o.bgTip,borderColor:'rgba(232,184,75,0.2)',borderWidth:1,titleColor:o.titlC,bodyColor:o.bodyC} },
       scales:{
-        x:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{font:{size:10,family:'DM Mono'},color:'#4a5a6a'}},
-        y:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{font:{size:10,family:'DM Mono'},color:'#4a5a6a',callback:v=>v>=1000?(v/1000).toFixed(1)+'B':v+'jt'}}
+        x:{grid:{color:o.gridC},ticks:{font:{size:10,family:'DM Mono'},color:o.tickC}},
+        y:{grid:{color:o.gridC},ticks:{font:{size:10,family:'DM Mono'},color:o.tickC,callback:v=>v>=1000?(v/1000).toFixed(1)+'B':v+'jt'}}
       },
       onClick:(_,els)=>{ if(els.length) selectWeek(els[0].index); },
       onHover:(_,els,chart)=>{ chart.canvas.style.cursor=els.length?'pointer':'default'; }
@@ -348,6 +370,7 @@ window.selectWeek = function(i) {
 };
 
 recompute();
+window.onThemeChange = function() { recompute(); };
 </script>
 
 <!-- Ocean waves -->
@@ -369,6 +392,8 @@ recompute();
     <a href="03-ombak.html"  class="bottom-nav-item active"> <span class="bottom-nav-icon">🌊</span><span class="bottom-nav-lbl">Ombak</span></a>
     <a href="04-muatan.html" class="bottom-nav-item">        <span class="bottom-nav-icon">📦</span><span class="bottom-nav-lbl">Muatan</span></a>
     <a href="05-tiktok.html" class="bottom-nav-item">       <span class="bottom-nav-icon">⚙️</span><span class="bottom-nav-lbl">Mesin</span></a>
+    <a href="06-kr-tracker.html" class="bottom-nav-item">       <span class="bottom-nav-icon">🔧</span><span class="bottom-nav-lbl">K.Mesin</span></a>
+    <a href="07-pelabuhan.html"  class="bottom-nav-item">       <span class="bottom-nav-icon">⚓</span><span class="bottom-nav-lbl">Pelabuhan</span></a>
   </div>
 </nav>
 </body>

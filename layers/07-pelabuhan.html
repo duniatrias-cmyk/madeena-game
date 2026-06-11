@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Koordinat Pelabuhan — Kapal Madeena</title>
+<link rel="stylesheet" href="../shared/style.css?v=2">
+<script src="../shared/dm-toggle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+.konsep-box { background:linear-gradient(135deg,rgba(122,184,216,0.07),rgba(62,207,122,0.04));border:1px solid rgba(122,184,216,0.22);border-radius:var(--r-lg);padding:24px;margin-bottom:24px; }
+.konsep-judul { font-family:var(--font-serif);font-size:18px;font-style:italic;color:var(--langit);margin-bottom:10px; }
+.konsep-isi { font-size:14px;color:var(--teks-kedua);line-height:1.8; }
+.konsep-isi strong { color:var(--teks-primer);font-weight:500; }
+
+/* Summary tiles */
+.summary-strip { display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:8px; }
+.sum-tile { background:var(--laut-tengah);border:1px solid var(--border-tipis);border-radius:var(--r-md);padding:14px;text-align:center;cursor:pointer;transition:border-color .15s, transform .15s; }
+.sum-tile:hover { transform:translateY(-1px);border-color:var(--border-sedang); }
+.sum-tile.active { border-color:var(--border-tebal);background:var(--laut-tepi); }
+.sum-val { font-family:var(--font-mono);font-size:20px;font-weight:500; }
+.sum-lbl { font-family:var(--font-mono);font-size:10px;color:var(--teks-redup);letter-spacing:0.5px;margin-top:4px; }
+.sum-range { font-family:var(--font-mono);font-size:9px;color:var(--teks-redup);margin-top:2px; }
+.strip-note { font-family:var(--font-mono);font-size:9px;color:var(--teks-redup);letter-spacing:.4px;margin-bottom:24px; }
+
+/* Pre-decision */
+.pd-wrap { margin-bottom:28px; }
+.pd-list { display:flex;flex-direction:column;gap:8px; }
+.pd-card { display:flex;align-items:flex-start;gap:12px;background:var(--laut-tengah);border:1px solid var(--border-tipis);border-left:3px solid var(--teks-redup);border-radius:var(--r-md);padding:12px 14px; }
+.pd-card .pd-main { flex:1;min-width:0; }
+.pd-sku { font-family:var(--font-mono);font-size:12px;font-weight:500;color:var(--teks-primer); }
+.pd-reko { font-size:13px;color:var(--teks-kedua);line-height:1.55;margin-top:3px; }
+.pd-reko strong { color:var(--teks-primer);font-weight:600; }
+.pd-meta { display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0; }
+.pd-done { background:none;border:1px solid var(--border-sedang);border-radius:var(--r-sm);color:var(--teks-kedua);font-family:var(--font-mono);font-size:9px;letter-spacing:.4px;padding:4px 8px;cursor:pointer; }
+.pd-done:hover { color:var(--hijau-laut);border-color:rgba(62,207,122,0.4); }
+.pd-foot { display:flex;gap:14px;align-items:center;margin-top:10px; }
+.pd-more, .pd-arsip-link { background:none;border:none;cursor:pointer;font-family:var(--font-mono);font-size:10px;color:var(--langit);letter-spacing:.4px;padding:0; }
+.pd-arsip { display:none;margin-top:10px;border-top:1px dashed var(--border-sedang);padding-top:10px; }
+.pd-arsip.visible { display:block; }
+.pd-arsip .pd-card { opacity:.55; }
+.pd-empty { font-size:13px;color:var(--teks-kedua);font-style:italic;padding:8px 2px; }
+
+/* Timeline */
+.tl-controls { display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:12px; }
+.mode-toggle { display:inline-flex;border:1px solid var(--border-sedang);border-radius:var(--r-sm);overflow:hidden; }
+.mode-btn { background:none;border:none;cursor:pointer;font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;color:var(--teks-kedua);padding:7px 12px; }
+.mode-btn.active { background:var(--laut-tepi);color:var(--teks-primer); }
+.tl-select { background:var(--laut-tengah);border:1px solid var(--border-sedang);border-radius:var(--r-sm);color:var(--teks-primer);font-family:var(--font-mono);font-size:11px;padding:7px 10px;max-width:300px; }
+.tl-legend { display:flex;flex-wrap:wrap;gap:12px;margin-left:auto; }
+.lg { display:flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:9px;color:var(--teks-redup);letter-spacing:.3px; }
+.lg i { display:inline-block;width:16px;height:0;border-top:2px solid var(--langit); }
+.lg i.dash { border-top-style:dashed; }
+.lg i.tri { width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:8px solid var(--hijau-laut);border-top:none; }
+.lg i.ev { width:0;height:12px;border-left:2px dashed var(--ungu);border-top:none; }
+.chart-card { background:var(--laut-tengah);border:1px solid var(--border-tipis);border-radius:var(--r-lg);padding:18px;margin-bottom:28px; }
+.chart-wrap { height:300px;position:relative; }
+.chart-sub { font-family:var(--font-mono);font-size:10px;color:var(--teks-redup);margin-bottom:10px;letter-spacing:.4px; }
+
+/* Tabel */
+.tbl-controls { display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px; }
+.tbl-search { flex:1;min-width:160px;background:var(--laut-tengah);border:1px solid var(--border-sedang);border-radius:var(--r-sm);color:var(--teks-primer);font-family:var(--font-mono);font-size:11px;padding:8px 12px; }
+.tbl-search::placeholder { color:var(--teks-redup); }
+.tbl-card { background:var(--laut-tengah);border:1px solid var(--border-tipis);border-radius:var(--r-lg);overflow:hidden;margin-bottom:24px; }
+.tbl-scroll { overflow-x:auto; }
+table.wssi { width:100%;border-collapse:collapse;min-width:760px; }
+table.wssi th { font-family:var(--font-mono);font-size:9px;letter-spacing:.6px;color:var(--teks-redup);text-transform:uppercase;text-align:left;padding:11px 12px;border-bottom:1px solid var(--border-sedang);cursor:pointer;user-select:none;white-space:nowrap; }
+table.wssi th.num, table.wssi td.num { text-align:right; }
+table.wssi th:hover { color:var(--teks-kedua); }
+table.wssi th .arr { color:var(--emas); }
+table.wssi td { padding:10px 12px;border-bottom:1px solid var(--border-tipis);font-size:12px;color:var(--teks-kedua);white-space:nowrap; }
+table.wssi td.c-merah { color:var(--merah-badai); }
+table.wssi tr.row { cursor:pointer; }
+table.wssi tr.row:hover td { background:rgba(255,255,255,0.02); }
+table.wssi tr.row.open td { background:var(--laut-tepi); }
+.td-prod { line-height:1.4; }
+.td-prod .nm { color:var(--teks-primer);font-weight:500;white-space:normal;max-width:260px;display:block; }
+.td-prod .cd { font-family:var(--font-mono);font-size:9px;color:var(--teks-redup); }
+.td-mono { font-family:var(--font-mono); }
+tr.expand td { background:var(--laut-dalam);padding:16px 14px; }
+.exp-grid { display:grid;grid-template-columns:1fr 1fr;gap:16px; }
+.exp-lbl { font-family:var(--font-mono);font-size:9px;color:var(--teks-redup);letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px; }
+.exp-chart { height:140px;position:relative; }
+.exp-members td { white-space:nowrap; }
+.tbl-empty { padding:22px;text-align:center;color:var(--teks-redup);font-family:var(--font-mono);font-size:11px; }
+
+@media (max-width: 640px) {
+  .summary-strip { display:flex;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;gap:8px;padding-bottom:4px;scrollbar-width:none; }
+  .summary-strip::-webkit-scrollbar { display:none; }
+  .sum-tile { min-width:120px;flex-shrink:0;padding:12px; }
+  .sum-val { font-size:17px; }
+  .tl-legend { margin-left:0; }
+  .chart-wrap { height:240px; }
+  .exp-grid { grid-template-columns:1fr;gap:12px; }
+  .konsep-box { padding:14px; }
+  .konsep-judul { font-size:15px; }
+  .konsep-isi { font-size:13px; }
+  h1[style] { font-size:22px !important; }
+  .pd-card { flex-direction:column;gap:8px; }
+  .pd-meta { flex-direction:row;align-items:center;width:100%;justify-content:space-between; }
+}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="../index.html" class="nav-brand">⚓ Kapal <em>Madeena</em></a>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="nav-links">
+      <a href="../index.html"     class="nav-link">Peta</a>
+      <a href="01-voyage.html"    class="nav-link">Pelayaran</a>
+      <a href="02-misi.html"      class="nav-link">Misi Awak</a>
+      <a href="03-ombak.html"     class="nav-link">Ombak Mingguan</a>
+      <a href="04-muatan.html"    class="nav-link">Muatan</a>
+      <a href="05-tiktok.html"    class="nav-link">Mesin TikTok</a>
+      <a href="06-kr-tracker.html" class="nav-link">Kamar Mesin</a>
+      <a href="07-pelabuhan.html" class="nav-link active">Pelabuhan<span class="nav-baru">BARU</span></a>
+    </div>
+    <button class="dm-toggle" id="dm-toggle" aria-label="Toggle dark/light mode">
+      <span id="dm-icon">🌙</span>
+      <div class="dm-pill"><div class="dm-dot"></div></div>
+      <span id="dm-label">DARK</span>
+    </button>
+  </div>
+</nav>
+
+<div class="shell">
+  <div style="margin-bottom:24px;padding-top:8px">
+    <div class="section-lbl">Layer 07 · Koordinat Pelabuhan ⚓</div>
+    <h1 style="font-family:var(--font-serif);font-size:32px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px">Tahu bekal, tahu arah, tahu kapan harus merapat</h1>
+    <p style="color:var(--teks-kedua);font-size:15px;max-width:640px;line-height:1.7">
+      WSSI — <strong style="color:var(--teks-primer)">Weekly Sales, Stock &amp; Intake</strong> (dibaca: <em>"wizzy"</em>).
+      Satu halaman untuk menjawab: berapa minggu lagi bekal habis, kapan harus pesan ulang,
+      dan produk mana yang aman di-push saat badai event datang.
+    </p>
+    <p class="chart-sub" id="meta-line" style="margin-top:8px"></p>
+  </div>
+
+  <div class="konsep-box">
+    <div class="konsep-judul">"Stok adalah bekal kapal. Halaman ini peta pelabuhan terdekat."</div>
+    <div class="konsep-isi">
+      <strong>Bekal di palka</strong> = stok on-hand · <strong>konsumsi bekal</strong> = penjualan per minggu ·
+      <strong>kapal suplai yang menuju</strong> = PO masuk · <strong>bekal tersisa (minggu)</strong> = weeks cover ·
+      <strong>badai mendadak</strong> = event sub-week (SW) yang melonjakkan permintaan.
+      <br><br>
+      Kalau weeks cover di bawah <strong>4 minggu</strong>, kapal harus segera merapat ke pelabuhan pengisian — reorder sekarang,
+      bukan saat palka sudah kosong di tengah laut.
+    </div>
+  </div>
+
+  <div class="summary-strip" id="summary-strip"></div>
+  <div class="strip-note">Status dihitung dari <span style="color:var(--teks-kedua)">weeks_cover</span> WSSI minggu berjalan · klik kartu untuk filter tabel</div>
+
+  <div class="pd-wrap">
+    <div class="section-lbl">⚠️ Pre-Decision — sinyal untuk bertindak lebih cepat</div>
+    <div class="pd-list" id="pd-list"></div>
+    <div class="pd-foot">
+      <button class="pd-more" id="pd-more" style="display:none"></button>
+      <button class="pd-arsip-link" id="pd-arsip-link" style="display:none"></button>
+    </div>
+    <div class="pd-arsip" id="pd-arsip"></div>
+  </div>
+
+  <div class="section-lbl">📊 Timeline Stok — aktual &amp; proyeksi per minggu</div>
+  <div class="chart-card">
+    <div class="tl-controls">
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="mode-series" onclick="setMode('series')">PER SERIES</button>
+        <button class="mode-btn" id="mode-sku" onclick="setMode('sku')">PER SKU</button>
+      </div>
+      <select class="tl-select" id="tl-select" onchange="setSelected(this.value)"></select>
+      <div class="tl-legend">
+        <span class="lg"><i></i>aktual</span>
+        <span class="lg"><i class="dash"></i>forecast</span>
+        <span class="lg"><i class="tri"></i>PO masuk</span>
+        <span class="lg"><i class="ev"></i>event SW</span>
+      </div>
+    </div>
+    <div class="chart-sub" id="chart-sub"></div>
+    <div class="chart-wrap"><canvas id="tl-chart"></canvas></div>
+  </div>
+
+  <div class="section-lbl">📋 Detail <span id="tbl-mode-lbl">per Series</span> — klik baris untuk drill-down</div>
+  <div class="tbl-controls">
+    <input class="tbl-search" id="tbl-search" type="search" placeholder="🔍 Cari produk / SKU…" oninput="state.search=this.value;renderTable()">
+    <select class="tl-select" id="tbl-status" onchange="state.statusFilter=this.value||null;renderAll()">
+      <option value="">Semua status</option>
+      <option value="darurat">🔴 Darurat</option>
+      <option value="waspada">🟡 Waspada</option>
+      <option value="aman">🟢 Aman</option>
+      <option value="overstock">🔵 Overstock</option>
+    </select>
+  </div>
+  <div class="tbl-card"><div class="tbl-scroll">
+    <table class="wssi">
+      <thead><tr id="tbl-head"></tr></thead>
+      <tbody id="tbl-body"></tbody>
+    </table>
+  </div></div>
+
+  <div style="display:flex;justify-content:space-between">
+    <a href="06-kr-tracker.html" class="btn">← Kamar Mesin</a>
+    <a href="../index.html" class="btn btn-emas">Kembali ke Peta ⚓</a>
+  </div>
+</div>
+
+<script src="../data/wssi.js"></script>
+
+<script>
+const TH  = WSSI.meta.thresholds;
+const CW  = WSSI.meta.currentWeekNum;
+const fmtN = v => v==null ? '—' : Math.round(v).toLocaleString('id-ID');
+const fmtWc = v => v==null ? '—' : (Math.round(v*10)/10).toLocaleString('id-ID');
+
+const STATUS_META = {
+  darurat:   { lbl:'DARURAT',   badge:'badge-merah',  cls:'c-merah',  hex:'#e05a3a', emoji:'🔴', range:'< 4 mgg' },
+  waspada:   { lbl:'WASPADA',   badge:'badge-amber',  cls:'c-emas',   hex:'#e8b84b', emoji:'🟡', range:'4–12 mgg' },
+  aman:      { lbl:'AMAN',      badge:'badge-hijau',  cls:'c-hijau',  hex:'#3ecf7a', emoji:'🟢', range:'12–16 mgg' },
+  overstock: { lbl:'OVERSTOCK', badge:'badge-langit', cls:'c-langit', hex:'#7ab8d8', emoji:'🔵', range:'> 16 mgg' },
+};
+const statusOf = wc => wc==null ? 'darurat' : wc < TH.darurat ? 'darurat' : wc < TH.waspada ? 'waspada' : wc < TH.aman ? 'aman' : 'overstock';
+
+document.getElementById('meta-line').textContent =
+  `Data per ${WSSI.meta.tanggalUpdate} · minggu berjalan ${WSSI.meta.currentWeek} · ${WSSI.skus.length} SKU · sumber: DWH (ff_wssi_reforecasting, mart_inventory)`;
+
+// ── Agregasi per series ─────────────────────────────────
+// weeks_cover WSSI = balance ÷ sales minggu berjalan, jadi agregat series
+// dihitung dengan basis yang sama: sum(bal) ÷ sum(sales current week).
+function buildSeriesRows() {
+  return Object.entries(WSSI.series).map(([name, info]) => {
+    const members = WSSI.skus.filter(s => s.series === name);
+    const stokVals = members.map(s => s.stok).filter(v => v != null);
+    const stok = stokVals.length ? stokVals.reduce((a,b)=>a+b,0) : null;
+    const stokIncomplete = stokVals.length < members.length;
+    const avgWeekly = members.reduce((a,s)=>a+s.avgWeekly,0);
+    // merge timeline per minggu
+    const byN = {};
+    members.forEach(s => s.timeline.forEach(r => {
+      const m = byN[r.n] || (byN[r.n] = { n:r.n, w:r.w, t:r.t, sales:0, intake:0, bal:0 });
+      m.sales += r.sales||0; m.intake += r.intake||0; m.bal += r.bal||0;
+    }));
+    const timeline = Object.values(byN).sort((a,b)=>a.n-b.n);
+    const cur = timeline.find(r => r.n === CW);
+    const wc = cur ? (cur.sales > 0 ? cur.bal/cur.sales : (cur.bal > 0 ? 999 : 0)) : null;
+    const status = statusOf(wc);
+    const intakeByN = {};
+    members.forEach(s => s.intakes.forEach(i => intakeByN[i.n] = (intakeByN[i.n]||0) + i.qty));
+    const intakes = Object.entries(intakeByN).map(([n,qty])=>({n:+n,qty})).sort((a,b)=>a.n-b.n);
+    // prediksi habis: balance gabungan pertama yang ≤ 0 setelah minggu berjalan
+    let habisWeek = null;
+    if (cur && cur.bal > 0) {
+      const hit = timeline.find(r => r.n > CW && r.bal <= 0);
+      if (hit) habisWeek = hit.w;
+    } else if (cur && cur.bal <= 0) habisWeek = cur.w;
+    const salesHist = WSSI.meta.histWeeks.map((w,i) => ({ w, qty: members.reduce((a,s)=>a+(s.salesHist[i]?.qty||0),0) }));
+    return { key:name, nama:name, sku:`${members.length} SKU`, series:name, warna:info.warna,
+             stok, stokIncomplete, avgWeekly, wc, status, timeline, intakes, habisWeek, habisDate:null,
+             salesHist, members };
+  }).sort((a,b)=>b.avgWeekly-a.avgWeekly);
+}
+const SERIES_ROWS = buildSeriesRows();
+const SKU_ROWS = WSSI.skus.map(s => ({ ...s, key:s.sku, warna:(WSSI.series[s.series]||{}).warna||'#9b9890', stokIncomplete:false }))
+                          .sort((a,b)=>b.avgWeekly-a.avgWeekly);
+
+// ── Pre-decision (PRD §6) — selalu granular per SKU ─────
+function buildSignals() {
+  const out = [];
+  const nextEvent = WSSI.events.find(e => e.n > CW) || null;
+  const weeksToEvent = nextEvent ? nextEvent.n - CW : Infinity;
+  WSSI.skus.forEach(s => {
+    const cur = s.timeline.find(r => r.t === 'c');
+    const fc  = s.timeline.filter(r => r.t === 'f');
+    const saldo = cur && cur.bal != null ? cur.bal : (s.stok||0);
+    const fcN = k => fc.slice(0,k).reduce((a,r)=>a+(r.sales||0),0);
+    const futureIntake = s.intakes.filter(i=>i.n>CW).reduce((a,i)=>a+i.qty,0);
+    const intakeThisWeek = s.intakes.some(i=>i.n===CW);
+    const evFc = nextEvent ? (fc.find(r=>r.n===nextEvent.n)||{}).sales||0 : 0;
+    const add = (rule, prio, reko, pic) => out.push({
+      id:`r${rule}:${s.sku}:${WSSI.meta.currentWeek}`, rule, prio, sku:s.sku, nama:s.nama, status:s.status, reko, pic });
+
+    let r6 = false;
+    if (s.status==='darurat' && weeksToEvent<=2) { r6=true;
+      add(6,0,`<strong>DARURAT + EVENT W${nextEvent.n} dalam ${weeksToEvent} mgg.</strong> Risiko OOS saat puncak permintaan. Tindakan hari ini.`,'Chairman + MD'); }
+    if (s.status==='darurat' && futureIntake===0 && !r6)
+      add(2,1,`<strong>ESKALASI.</strong> Stok kritis tanpa PO masuk terjadwal. Butuh keputusan segera.`,'Chairman');
+    if (intakeThisWeek && s.status==='waspada')
+      add(8,2,`<strong>Konfirmasi penerimaan barang.</strong> Intake masuk minggu ini — pastikan PO sesuai jadwal.`,'Gudang/Ops');
+    if (s.status==='waspada' && fcN(12) > saldo)
+      add(1,3,`<strong>Segera proses Reorder.</strong> Forecast 12 mgg (${fmtN(fcN(12))} unit) melebihi saldo stok (${fmtN(saldo)} unit).`,'MD');
+    if (nextEvent && evFc>0 && (s.stok!=null ? s.stok : saldo) < 2*evFc)
+      add(5,4,`<strong>Pertimbangkan pre-order tambahan.</strong> Stok < 2× forecast event W${nextEvent.n} (${fmtN(evFc)} unit) — amankan potensi lonjakan.`,'MD');
+    if (s.status==='overstock' && s.avgWeekly>0 && (fcN(8)/8) < 0.5*s.avgWeekly)
+      add(3,4,`<strong>Tahan intake.</strong> Forecast rendah (< 50% rata-rata aktual) — pertimbangkan push promo untuk mempercepat sell-out.`,'Sales & MD');
+    if (s.status==='aman' && weeksToEvent<=4)
+      add(4,5,`<strong>Review forecast event W${nextEvent.n}.</strong> Pastikan stok cukup untuk potensi lonjakan demand.`,'MD');
+    if (s.status==='overstock' && weeksToEvent<=4)
+      add(7,5,`<strong>Peluang clearance event W${nextEvent.n}.</strong> Gunakan momentum event untuk habiskan stok lama.`,'Sales');
+  });
+  return out.sort((a,b)=>a.prio-b.prio || a.sku.localeCompare(b.sku));
+}
+const SIGNALS = buildSignals();
+
+// ── Arsip localStorage ──────────────────────────────────
+const ARCHIVE_KEY = 'madeena-wssi-archive';
+function loadArchive() {
+  try {
+    const ids = JSON.parse(localStorage.getItem(ARCHIVE_KEY) || '[]');
+    return ids.filter(id => id.endsWith(':'+WSSI.meta.currentWeek)); // buang arsip minggu lama
+  } catch(e){ return []; }
+}
+function saveArchive(ids) { try { localStorage.setItem(ARCHIVE_KEY, JSON.stringify(ids)); } catch(e){} }
+let archived = loadArchive();
+let pdExpanded = false, arsipVisible = false;
+const PD_LIMIT = 6;
+
+function archiveSignal(id) { if (!archived.includes(id)) archived.push(id); saveArchive(archived); renderPD(); }
+function unarchiveSignal(id) { archived = archived.filter(x=>x!==id); saveArchive(archived); renderPD(); }
+
+function pdCardHtml(sig, isArchived) {
+  const sm = STATUS_META[sig.prio<=1 ? 'darurat' : sig.prio<=3 ? 'waspada' : sig.prio===4 ? 'overstock' : 'aman'];
+  const btn = isArchived
+    ? `<button class="pd-done" onclick="unarchiveSignal('${sig.id}')">↩ KEMBALIKAN</button>`
+    : `<button class="pd-done" onclick="archiveSignal('${sig.id}')">✓ SUDAH DITANGANI</button>`;
+  return `<div class="pd-card" style="border-left-color:${sm.hex}">
+    <div class="pd-main">
+      <div class="pd-sku">${sm.emoji} ${sig.sku} <span style="color:var(--teks-redup);font-weight:400">· ${sig.nama}</span></div>
+      <div class="pd-reko">${sig.reko}</div>
+    </div>
+    <div class="pd-meta"><span class="badge badge-langit">PIC: ${sig.pic}</span>${btn}</div>
+  </div>`;
+}
+
+function renderPD() {
+  const active = SIGNALS.filter(s=>!archived.includes(s.id));
+  const arch   = SIGNALS.filter(s=> archived.includes(s.id));
+  const shown  = pdExpanded ? active : active.slice(0, PD_LIMIT);
+  document.getElementById('pd-list').innerHTML = active.length
+    ? shown.map(s=>pdCardHtml(s,false)).join('')
+    : '<div class="pd-empty">Tidak ada sinyal aktif — semua rekomendasi sudah ditangani. ⚓</div>';
+  const more = document.getElementById('pd-more');
+  if (active.length > PD_LIMIT) {
+    more.style.display = '';
+    more.textContent = pdExpanded ? '▲ Tampilkan lebih sedikit' : `▼ Tampilkan ${active.length - PD_LIMIT} sinyal lainnya`;
+    more.onclick = () => { pdExpanded = !pdExpanded; renderPD(); };
+  } else more.style.display = 'none';
+  const al = document.getElementById('pd-arsip-link');
+  if (arch.length) {
+    al.style.display = '';
+    al.textContent = `${arsipVisible?'▲':'▼'} Arsip (${arch.length})`;
+    al.onclick = () => { arsipVisible = !arsipVisible; renderPD(); };
+  } else { al.style.display = 'none'; arsipVisible = false; }
+  const ar = document.getElementById('pd-arsip');
+  ar.classList.toggle('visible', arsipVisible);
+  ar.innerHTML = arsipVisible ? arch.map(s=>pdCardHtml(s,true)).join('') : '';
+}
+
+// ── Summary tiles ───────────────────────────────────────
+function renderSummary() {
+  const rows = state.mode==='series' ? SERIES_ROWS : SKU_ROWS;
+  const unit = state.mode==='series' ? 'series' : 'SKU';
+  document.getElementById('summary-strip').innerHTML = Object.entries(STATUS_META).map(([key,sm]) => {
+    const n = rows.filter(r=>r.status===key).length;
+    return `<div class="sum-tile${state.statusFilter===key?' active':''}" onclick="toggleFilter('${key}')">
+      <div class="sum-val ${sm.cls}">${sm.emoji} ${n} ${unit}</div>
+      <div class="sum-lbl">${sm.lbl}</div>
+      <div class="sum-range">${sm.range}</div>
+    </div>`;
+  }).join('');
+}
+function toggleFilter(key) {
+  state.statusFilter = state.statusFilter===key ? null : key;
+  document.getElementById('tbl-status').value = state.statusFilter || '';
+  renderAll();
+}
+
+// ── Timeline chart ──────────────────────────────────────
+function chartOpts() {
+  const l = document.documentElement.getAttribute('data-theme') === 'light';
+  return {
+    gridC: l ? 'rgba(0,0,0,0.06)'      : 'rgba(255,255,255,0.03)',
+    tickC: l ? '#7a8a9a'               : '#4a5a6a',
+    bgTip: l ? 'rgba(255,255,255,0.97)': 'rgba(10,15,26,0.95)',
+    titlC: l ? '#1a2a3a'               : '#f0e8d0',
+    bodyC: l ? '#4a5a6a'               : '#9ba8b5',
+    zeroC: l ? 'rgba(0,0,0,0.25)'      : 'rgba(255,255,255,0.25)',
+  };
+}
+
+// Plugin: band zona status (merah/kuning/hijau/biru) dalam satuan unit = wcUnit × threshold
+const wssiZones = {
+  id: 'wssiZones',
+  beforeDatasetsDraw(chart, args, opts) {
+    if (!opts.wcUnit || opts.wcUnit <= 0) return;
+    const { ctx, chartArea: ca, scales: { y } } = chart;
+    const px = v => Math.min(Math.max(y.getPixelForValue(v), ca.top), ca.bottom);
+    const bands = [
+      [ -Infinity, TH.darurat,  'rgba(224,90,58,0.07)'  ],
+      [ TH.darurat, TH.waspada, 'rgba(232,184,75,0.06)' ],
+      [ TH.waspada, TH.aman,    'rgba(62,207,122,0.06)' ],
+      [ TH.aman,    Infinity,   'rgba(122,184,216,0.06)'],
+    ];
+    ctx.save();
+    bands.forEach(([lo,hi,color]) => {
+      const yTop = hi===Infinity ? ca.top : px(hi*opts.wcUnit);
+      const yBot = lo===-Infinity ? ca.bottom : px(lo*opts.wcUnit);
+      if (yBot > yTop) { ctx.fillStyle = color; ctx.fillRect(ca.left, yTop, ca.right-ca.left, yBot-yTop); }
+    });
+    if (y.min < 0) {
+      ctx.strokeStyle = opts.zeroC; ctx.lineWidth = 1; ctx.setLineDash([2,3]);
+      ctx.beginPath(); ctx.moveTo(ca.left, y.getPixelForValue(0)); ctx.lineTo(ca.right, y.getPixelForValue(0)); ctx.stroke();
+    }
+    ctx.restore();
+  }
+};
+
+// Plugin: garis vertikal event sub-week (SW)
+const swMarkers = {
+  id: 'swMarkers',
+  afterDatasetsDraw(chart, args, opts) {
+    if (!opts.labels) return;
+    const { ctx, chartArea: ca, scales: { x } } = chart;
+    ctx.save();
+    WSSI.events.forEach(ev => {
+      const idx = opts.labels.indexOf('W'+ev.n);
+      if (idx < 0) return;
+      const xp = x.getPixelForValue(idx);
+      if (xp < ca.left || xp > ca.right) return;
+      ctx.strokeStyle = 'rgba(167,139,250,0.55)'; ctx.lineWidth = 1; ctx.setLineDash([3,3]);
+      ctx.beginPath(); ctx.moveTo(xp, ca.top); ctx.lineTo(xp, ca.bottom); ctx.stroke();
+      if (opts.withLabel) {
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(167,139,250,0.9)';
+        ctx.font = '8px "DM Mono", monospace'; ctx.textAlign = 'center';
+        ctx.fillText('⚡W'+ev.n, xp, ca.top + 9);
+      }
+    });
+    ctx.restore();
+  }
+};
+
+let tlChart = null;
+function renderChart() {
+  const row = currentRow();
+  if (!row) return;
+  const o = chartOpts();
+  const tl = row.timeline;
+  const labels = tl.map(r=>'W'+r.n);
+  const actual   = tl.map(r => (r.t==='a'||r.t==='c') ? r.bal : null);
+  const forecast = tl.map(r => r.n >= CW ? r.bal : null); // mulai dari current week agar garis menyambung
+  const triData  = row.intakes.map(i => {
+    const idx = tl.findIndex(r=>r.n===i.n);
+    return idx>=0 ? { x: idx, y: tl[idx].bal, qty: i.qty } : null;
+  }).filter(Boolean);
+  const cur = tl.find(r=>r.n===CW);
+  const wcUnit = cur && cur.sales > 0 ? cur.sales : 0; // 1 minggu cover = penjualan minggu berjalan
+
+  const sm = STATUS_META[row.status];
+  document.getElementById('chart-sub').innerHTML =
+    `${row.nama} · saldo WSSI per minggu (unit) · status <span class="${sm.cls}">${sm.lbl}</span> (${fmtWc(row.wc)} mgg cover)` +
+    (wcUnit ? '' : ' · zona disembunyikan (penjualan minggu berjalan = 0)');
+
+  const vals = tl.map(r=>r.bal).filter(v=>v!=null);
+  const dataMin = Math.min(0, ...vals);
+  if (tlChart) tlChart.destroy();
+  tlChart = new Chart(document.getElementById('tl-chart').getContext('2d'), {
+    type: 'line',
+    data: { labels, datasets: [
+      { label:'Aktual',   data:actual,   borderColor:'#7ab8d8', backgroundColor:'#7ab8d8', borderWidth:2, pointRadius:2, tension:0.3, spanGaps:false },
+      { label:'Forecast', data:forecast, borderColor:'rgba(122,184,216,0.65)', borderDash:[6,4], borderWidth:1.5, pointRadius:0, tension:0.3, spanGaps:false },
+      { label:'PO masuk', type:'scatter', data:triData, pointStyle:'triangle', radius:7, pointHoverRadius:9,
+        borderColor:'#3ecf7a', backgroundColor:'rgba(62,207,122,0.85)', showLine:false },
+    ]},
+    options: {
+      responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false },
+      plugins: {
+        legend:{ display:false },
+        wssiZones: { wcUnit, zeroC:o.zeroC },
+        swMarkers: { labels, withLabel:true },
+        tooltip: {
+          backgroundColor:o.bgTip, borderColor:'rgba(232,184,75,0.2)', borderWidth:1,
+          titleColor:o.titlC, bodyColor:o.bodyC,
+          callbacks: {
+            label: c => c.dataset.label==='PO masuk'
+              ? `▲ PO masuk: ${fmtN(c.raw.qty)} unit`
+              : `${c.dataset.label}: ${fmtN(c.raw)} unit`,
+            afterBody: items => {
+              const r = tl[items[0].dataIndex];
+              const ev = WSSI.events.find(e=>e.n===r.n);
+              const lines = [`sales: ${fmtN(r.sales)} · intake: ${fmtN(r.intake)}`];
+              if (ev) lines.push(`⚡ event ${ev.subweeks.join('+')}`);
+              return lines;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid:{ color:o.gridC }, ticks:{ font:{size:9, family:'DM Mono'}, color:o.tickC, maxRotation:0, autoSkip:true } },
+        y: { suggestedMin: dataMin===0?undefined:dataMin*1.05, grid:{ color:o.gridC },
+             ticks:{ font:{size:9, family:'DM Mono'}, color:o.tickC, callback:v=>fmtN(v) } },
+      },
+    },
+    plugins: [wssiZones, swMarkers],
+  });
+}
+
+// ── State & dropdown ────────────────────────────────────
+const state = { mode:'series', selectedKey:SERIES_ROWS[0]?.key, statusFilter:null, search:'', sortCol:'wc', sortDir:1, openKey:null };
+
+function rowsForMode() { return state.mode==='series' ? SERIES_ROWS : SKU_ROWS; }
+function currentRow() { return rowsForMode().find(r=>r.key===state.selectedKey) || rowsForMode()[0]; }
+
+function setMode(m) {
+  state.mode = m;
+  state.selectedKey = rowsForMode()[0]?.key;
+  state.openKey = null;
+  document.getElementById('mode-series').classList.toggle('active', m==='series');
+  document.getElementById('mode-sku').classList.toggle('active', m==='sku');
+  document.getElementById('tbl-mode-lbl').textContent = m==='series' ? 'per Series' : 'per SKU';
+  renderAll();
+}
+function setSelected(key) { state.selectedKey = key; renderChart(); }
+
+function renderSelect() {
+  const sel = document.getElementById('tl-select');
+  sel.innerHTML = rowsForMode().map(r =>
+    `<option value="${r.key}"${r.key===state.selectedKey?' selected':''}>${STATUS_META[r.status].emoji} ${state.mode==='series'?r.nama:r.sku+' — '+r.nama}</option>`
+  ).join('');
+}
+
+// ── Tabel ───────────────────────────────────────────────
+const COLS = [
+  { id:'nama',      lbl:'Produk',        num:false, val:r=>r.nama },
+  { id:'series',    lbl:'Series',        num:false, val:r=>r.series },
+  { id:'stok',      lbl:'Stok',          num:true,  val:r=>r.stok==null?-1:r.stok },
+  { id:'avgWeekly', lbl:'Avg/Mgg',       num:true,  val:r=>r.avgWeekly },
+  { id:'wc',        lbl:'W.Cover',       num:true,  val:r=>r.wc==null?-999:r.wc },
+  { id:'po',        lbl:'PO Masuk',      num:true,  val:r=>r.intakes.reduce((a,i)=>a+i.qty,0) },
+  { id:'status',    lbl:'Status',        num:false, val:r=>r.wc==null?-999:r.wc },
+  { id:'habis',     lbl:'Prediksi Habis',num:false, val:r=>r.habisWeek||r.habisDate||'zz' },
+];
+function sortBy(col) {
+  if (state.sortCol===col) state.sortDir*=-1; else { state.sortCol=col; state.sortDir=1; }
+  renderTable();
+}
+function fmtHabis(r) {
+  if (!r.habisWeek && !r.habisDate) return '—';
+  let s = r.habisWeek ? r.habisWeek.replace('Y26-','') : '';
+  if (r.habisDate) {
+    const d = new Date(r.habisDate+'T00:00:00');
+    const BLN = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+    s += (s?' · ':'') + d.getDate()+' '+BLN[d.getMonth()];
+  }
+  return s;
+}
+function fmtPO(r) {
+  if (!r.intakes.length) return '—';
+  const tot = r.intakes.reduce((a,i)=>a+i.qty,0);
+  return `${fmtN(tot)} · ${r.intakes.map(i=>'W'+i.n).join(',')}`;
+}
+
+function renderTable() {
+  const head = document.getElementById('tbl-head');
+  head.innerHTML = COLS.map(c =>
+    `<th class="${c.num?'num':''}" onclick="sortBy('${c.id}')">${c.lbl}${state.sortCol===c.id?` <span class="arr">${state.sortDir>0?'▲':'▼'}</span>`:''}</th>`
+  ).join('');
+
+  let rows = rowsForMode().slice();
+  if (state.statusFilter) rows = rows.filter(r=>r.status===state.statusFilter);
+  if (state.search) {
+    const q = state.search.toLowerCase();
+    rows = rows.filter(r => r.nama.toLowerCase().includes(q) || r.key.toLowerCase().includes(q) || (r.series||'').toLowerCase().includes(q));
+  }
+  const col = COLS.find(c=>c.id===state.sortCol) || COLS[4];
+  rows.sort((a,b)=>{ const va=col.val(a), vb=col.val(b);
+    return (typeof va==='string' ? va.localeCompare(vb) : va-vb) * state.sortDir; });
+
+  const body = document.getElementById('tbl-body');
+  if (!rows.length) { body.innerHTML = `<tr><td colspan="8" class="tbl-empty">Tidak ada baris yang cocok dengan filter.</td></tr>`; return; }
+  body.innerHTML = rows.map(r => {
+    const sm = STATUS_META[r.status];
+    const wcColor = r.wc!=null && r.wc < TH.darurat ? 'c-merah' : '';
+    const open = state.openKey===r.key;
+    let html = `<tr class="row${open?' open':''}" onclick="toggleExpand('${r.key.replace(/'/g,"\\'")}')">
+      <td class="td-prod"><span class="nm">${r.nama}</span><span class="cd">${r.sku}</span></td>
+      <td>${r.series}${r.stokIncomplete?' <span title="Sebagian SKU tidak ada di data stok WMS" style="color:var(--emas)">*</span>':''}</td>
+      <td class="num td-mono">${fmtN(r.stok)}${r.stokIncomplete?'<span class="c-emas">*</span>':''}</td>
+      <td class="num td-mono">${fmtN(r.avgWeekly)}</td>
+      <td class="num td-mono ${wcColor}">${fmtWc(r.wc)}</td>
+      <td class="num td-mono">${fmtPO(r)}</td>
+      <td><span class="badge ${sm.badge}">${sm.lbl}</span></td>
+      <td class="td-mono">${fmtHabis(r)}</td>
+    </tr>`;
+    if (open) html += renderExpand(r);
+    return html;
+  }).join('');
+  if (state.openKey) drawExpandCharts(rows.find(r=>r.key===state.openKey));
+}
+
+function toggleExpand(key) {
+  state.openKey = state.openKey===key ? null : key;
+  renderTable();
+}
+
+function renderExpand(r) {
+  if (state.mode==='series') {
+    const memberRows = r.members.map(m => {
+      const sm = STATUS_META[m.status];
+      return `<tr class="exp-members"><td class="td-mono">${m.sku}</td><td>${m.nama}</td>
+        <td class="num td-mono">${fmtN(m.stok)}</td><td class="num td-mono">${fmtN(m.avgWeekly)}</td>
+        <td class="num td-mono">${fmtWc(m.wc)}</td><td><span class="badge ${sm.badge}">${sm.lbl}</span></td></tr>`;
+    }).join('');
+    return `<tr class="expand"><td colspan="8">
+      <div class="exp-grid">
+        <div><div class="exp-lbl">Penjualan gabungan 8 minggu (W${WSSI.meta.histWeeks[0]}–W${WSSI.meta.histWeeks[7]})</div>
+          <div class="exp-chart"><canvas id="exp-hist"></canvas></div></div>
+        <div><div class="exp-lbl">Anggota series — ${r.members.length} SKU</div>
+          <div style="overflow-x:auto"><table class="wssi" style="min-width:0">
+            <thead><tr><th>SKU</th><th>Nama</th><th class="num">Stok</th><th class="num">Avg/Mgg</th><th class="num">W.Cover</th><th>Status</th></tr></thead>
+            <tbody>${memberRows}</tbody></table></div></div>
+      </div></td></tr>`;
+  }
+  return `<tr class="expand"><td colspan="8">
+    <div class="exp-grid">
+      <div><div class="exp-lbl">Penjualan aktual 8 minggu (W${WSSI.meta.histWeeks[0]}–W${WSSI.meta.histWeeks[7]})</div>
+        <div class="exp-chart"><canvas id="exp-hist"></canvas></div></div>
+      <div><div class="exp-lbl">Saldo WSSI — aktual &amp; forecast</div>
+        <div class="exp-chart"><canvas id="exp-tl"></canvas></div></div>
+    </div></td></tr>`;
+}
+
+let expCharts = [];
+function drawExpandCharts(r) {
+  expCharts.forEach(c=>c.destroy()); expCharts = [];
+  if (!r) return;
+  const o = chartOpts();
+  const mini = (id, cfg) => {
+    const el = document.getElementById(id);
+    if (el) expCharts.push(new Chart(el.getContext('2d'), cfg));
+  };
+  const tickOpts = { font:{size:8, family:'DM Mono'}, color:o.tickC };
+  mini('exp-hist', {
+    type:'bar',
+    data:{ labels:r.salesHist.map(h=>'W'+h.w),
+      datasets:[{ data:r.salesHist.map(h=>h.qty), backgroundColor:(r.warna||'#7ab8d8')+'aa', borderRadius:3 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false},
+      tooltip:{ backgroundColor:o.bgTip, titleColor:o.titlC, bodyColor:o.bodyC, callbacks:{ label:c=>fmtN(c.raw)+' unit' } } },
+      scales:{ x:{ grid:{display:false}, ticks:tickOpts }, y:{ grid:{color:o.gridC}, ticks:tickOpts } } }
+  });
+  if (state.mode==='sku') {
+    const tl = r.timeline, labels = tl.map(x=>'W'+x.n);
+    mini('exp-tl', {
+      type:'line',
+      data:{ labels, datasets:[
+        { data:tl.map(x=>(x.t==='a'||x.t==='c')?x.bal:null), borderColor:'#7ab8d8', borderWidth:1.5, pointRadius:0, tension:0.3, spanGaps:false },
+        { data:tl.map(x=>x.n>=CW?x.bal:null), borderColor:'rgba(122,184,216,0.6)', borderDash:[5,3], borderWidth:1.2, pointRadius:0, tension:0.3, spanGaps:false },
+      ]},
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false},
+        tooltip:{ backgroundColor:o.bgTip, titleColor:o.titlC, bodyColor:o.bodyC, callbacks:{ label:c=>fmtN(c.raw)+' unit' } },
+        swMarkers:{ labels, withLabel:false } },
+        scales:{ x:{ grid:{display:false}, ticks:{...tickOpts, maxRotation:0, autoSkip:true} }, y:{ grid:{color:o.gridC}, ticks:tickOpts } } },
+      plugins:[swMarkers],
+    });
+  }
+}
+
+// ── Render all ──────────────────────────────────────────
+function renderAll() {
+  renderSummary();
+  renderSelect();
+  renderChart();
+  renderTable();
+}
+renderPD();
+renderAll();
+
+window.onThemeChange = function() {
+  renderChart();
+  if (state.openKey) renderTable();
+};
+</script>
+
+<!-- Ocean waves -->
+<svg class="ocean-bg" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
+  <g class="wave-anim">
+    <path d="M0,70 C120,42 240,98 360,70 C480,42 600,98 720,70 C840,42 960,98 1080,70 C1200,42 1320,98 1440,70 C1560,42 1680,98 1800,70 C1920,42 2040,98 2160,70 C2280,42 2400,98 2520,70 C2640,42 2760,98 2880,70 L2880,160 L0,160 Z" fill="#7ab8d8" opacity="0.24"/>
+  </g>
+  <g class="wave-anim-slow">
+    <path d="M0,105 C180,68 360,142 540,105 C720,68 900,142 1080,105 C1260,68 1440,142 1620,105 C1800,68 1980,142 2160,105 C2340,68 2520,142 2700,105 C2880,68 2880,142 2880,105 L2880,160 L0,160 Z" fill="#3ecf7a" opacity="0.13"/>
+  </g>
+</svg>
+
+<!-- Bottom nav (mobile) -->
+<nav class="bottom-nav" aria-label="Navigasi">
+  <div class="bottom-nav-items">
+    <a href="../index.html"      class="bottom-nav-item">       <span class="bottom-nav-icon">🏠</span><span class="bottom-nav-lbl">Peta</span></a>
+    <a href="01-voyage.html"     class="bottom-nav-item">       <span class="bottom-nav-icon">🧭</span><span class="bottom-nav-lbl">Pelayaran</span></a>
+    <a href="02-misi.html"       class="bottom-nav-item">       <span class="bottom-nav-icon">🗺️</span><span class="bottom-nav-lbl">Misi</span></a>
+    <a href="03-ombak.html"      class="bottom-nav-item">       <span class="bottom-nav-icon">🌊</span><span class="bottom-nav-lbl">Ombak</span></a>
+    <a href="04-muatan.html"     class="bottom-nav-item">       <span class="bottom-nav-icon">📦</span><span class="bottom-nav-lbl">Muatan</span></a>
+    <a href="05-tiktok.html"     class="bottom-nav-item">       <span class="bottom-nav-icon">⚙️</span><span class="bottom-nav-lbl">Mesin</span></a>
+    <a href="06-kr-tracker.html" class="bottom-nav-item">       <span class="bottom-nav-icon">🔧</span><span class="bottom-nav-lbl">K.Mesin</span></a>
+    <a href="07-pelabuhan.html"  class="bottom-nav-item active"><span class="bottom-nav-icon">⚓</span><span class="bottom-nav-lbl">Pelabuhan</span></a>
+  </div>
+</nav>
+</body>
+</html>
