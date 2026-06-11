@@ -1,6 +1,6 @@
 // =======================================================
 // DATA WSSI — Koordinat Pelabuhan (Layer 07)
-// Auto-generated: 2026-06-11 13:28
+// Auto-generated: 2026-06-11 14:07
 // Source: ff_wssi_reforecasting + mart_inventory
 //         + dim_product_origin + mart_sales_tra_so_created
 // =======================================================
@@ -58,7 +58,7 @@ const WSSI = {
   skus: [
     {
       sku: "AB-NAVY-QUBBA", nama: "Mushaf A7 Mina Abbasy Jaket Navy Qubba", series: "Abbasy",
-      stok: 412, avgWeekly: 31.9, wc: -1, status: "darurat",
+      stok: 412, avgWeekly: 31.9, wc: 12.9, status: "aman",
       salesHist: [{"w": 16, "qty": 18}, {"w": 17, "qty": 32}, {"w": 18, "qty": 36}, {"w": 19, "qty": 28}, {"w": 20, "qty": 63}, {"w": 21, "qty": 22}, {"w": 22, "qty": 26}, {"w": 23, "qty": 30}],
       timeline: [
         { n:23, w:"Y26-W23", t:"a", sales:0, intake:0, bal:0, wc:0 },
@@ -98,7 +98,7 @@ const WSSI = {
     },
     {
       sku: "BDDA", nama: "Buku Doa Dear Allah", series: "Reeyana BDDA",
-      stok: 5473, avgWeekly: 244, wc: -1, status: "darurat",
+      stok: 5473, avgWeekly: 244, wc: 22.4, status: "overstock",
       salesHist: [{"w": 16, "qty": 164}, {"w": 17, "qty": 345}, {"w": 18, "qty": 304}, {"w": 19, "qty": 261}, {"w": 20, "qty": 263}, {"w": 21, "qty": 188}, {"w": 22, "qty": 170}, {"w": 23, "qty": 257}],
       timeline: [
         { n:23, w:"Y26-W23", t:"a", sales:0, intake:0, bal:0, wc:0 },
@@ -240,7 +240,7 @@ const WSSI = {
     },
     {
       sku: "DPP-BLUSH", nama: "Buku Dzikir Pagi Petang - Blush", series: "Heekaya DPP",
-      stok: 8518, avgWeekly: 314, wc: -1, status: "darurat",
+      stok: 8518, avgWeekly: 314, wc: 27.1, status: "overstock",
       salesHist: [{"w": 16, "qty": 245}, {"w": 17, "qty": 321}, {"w": 18, "qty": 352}, {"w": 19, "qty": 412}, {"w": 20, "qty": 195}, {"w": 21, "qty": 227}, {"w": 22, "qty": 298}, {"w": 23, "qty": 462}],
       timeline: [
         { n:23, w:"Y26-W23", t:"a", sales:0, intake:0, bal:0, wc:0 },
@@ -280,7 +280,7 @@ const WSSI = {
     },
     {
       sku: "DPP-CORAL", nama: "Buku Dzikir Pagi Petang - Coral", series: "Airees DPP",
-      stok: 6926, avgWeekly: 138.2, wc: -1, status: "darurat",
+      stok: 6926, avgWeekly: 138.2, wc: 50.1, status: "overstock",
       salesHist: [{"w": 16, "qty": 155}, {"w": 17, "qty": 171}, {"w": 18, "qty": 130}, {"w": 19, "qty": 140}, {"w": 20, "qty": 123}, {"w": 21, "qty": 90}, {"w": 22, "qty": 111}, {"w": 23, "qty": 186}],
       timeline: [
         { n:23, w:"Y26-W23", t:"a", sales:0, intake:0, bal:0, wc:0 },
@@ -320,7 +320,7 @@ const WSSI = {
     },
     {
       sku: "DPP-STONE", nama: "Buku Dzikir Pagi Petang - Stone", series: "Heekaya DPP",
-      stok: 20727, avgWeekly: 186, wc: -1, status: "darurat",
+      stok: 20727, avgWeekly: 186, wc: 111.4, status: "overstock",
       salesHist: [{"w": 16, "qty": 165}, {"w": 17, "qty": 185}, {"w": 18, "qty": 155}, {"w": 19, "qty": 244}, {"w": 20, "qty": 122}, {"w": 21, "qty": 133}, {"w": 22, "qty": 176}, {"w": 23, "qty": 308}],
       timeline: [
         { n:23, w:"Y26-W23", t:"a", sales:0, intake:0, bal:0, wc:0 },
@@ -360,7 +360,7 @@ const WSSI = {
     },
     {
       sku: "HQJ", nama: "HQJ", series: "Heekaya per Juz",
-      stok: null, avgWeekly: 6.2, wc: -1, status: "darurat",
+      stok: null, avgWeekly: 6.2, wc: 0, status: "darurat",
       salesHist: [{"w": 16, "qty": 49}, {"w": 17, "qty": 1}, {"w": 18, "qty": 0}, {"w": 19, "qty": 0}, {"w": 20, "qty": 0}, {"w": 21, "qty": 0}, {"w": 22, "qty": 0}, {"w": 23, "qty": 0}],
       timeline: [
         { n:23, w:"Y26-W23", t:"a", sales:0, intake:0, bal:0, wc:0 },
@@ -484,7 +484,7 @@ const WSSI = {
     },
     {
       sku: "RYA-A6-BLOSSOM", nama: "Mushaf A6 Bukhara Islamic Garden HC Pink", series: "Reeyana HC",
-      stok: 403, avgWeekly: 73.1, wc: -1, status: "darurat",
+      stok: 403, avgWeekly: 73.1, wc: 5.5, status: "waspada",
       salesHist: [{"w": 16, "qty": 81}, {"w": 17, "qty": 88}, {"w": 18, "qty": 62}, {"w": 19, "qty": 74}, {"w": 20, "qty": 40}, {"w": 21, "qty": 32}, {"w": 22, "qty": 90}, {"w": 23, "qty": 118}],
       timeline: [
         { n:23, w:"Y26-W23", t:"a", sales:0, intake:0, bal:0, wc:0 },
@@ -586,7 +586,7 @@ const WSSI = {
     },
     {
       sku: "RYN-A5-LILAC", nama: "Mushaf A5 Bukhara Islamic Garden Jaket Lilac", series: "Reeyana",
-      stok: 75, avgWeekly: 16, wc: -1, status: "darurat",
+      stok: 75, avgWeekly: 16, wc: 4.7, status: "waspada",
       salesHist: [{"w": 16, "qty": 2}, {"w": 17, "qty": 24}, {"w": 18, "qty": 22}, {"w": 19, "qty": 15}, {"w": 20, "qty": 13}, {"w": 21, "qty": 12}, {"w": 22, "qty": 15}, {"w": 23, "qty": 25}],
       timeline: [
         { n:23, w:"Y26-W23", t:"a", sales:0, intake:0, bal:0, wc:0 },
@@ -648,7 +648,7 @@ const WSSI = {
     },
     {
       sku: "RYN-A6-AQUA", nama: "Mushaf A6 Bukhara Islamic Garden Jaket Blue", series: "Reeyana Jaket",
-      stok: 184, avgWeekly: 37, wc: -1, status: "darurat",
+      stok: 184, avgWeekly: 37, wc: 5, status: "waspada",
       salesHist: [{"w": 16, "qty": 29}, {"w": 17, "qty": 33}, {"w": 18, "qty": 33}, {"w": 19, "qty": 43}, {"w": 20, "qty": 56}, {"w": 21, "qty": 19}, {"w": 22, "qty": 39}, {"w": 23, "qty": 44}],
       timeline: [
         { n:23, w:"Y26-W23", t:"a", sales:0, intake:0, bal:0, wc:0 },
@@ -732,7 +732,7 @@ const WSSI = {
     },
     {
       sku: "RYN-A6-LILAC", nama: "Mushaf A6 Bukhara Islamic Garden Jaket Lilac", series: "Reeyana",
-      stok: 30, avgWeekly: 45.4, wc: -1, status: "darurat",
+      stok: 30, avgWeekly: 45.4, wc: 0.7, status: "darurat",
       salesHist: [{"w": 16, "qty": 93}, {"w": 17, "qty": 29}, {"w": 18, "qty": 48}, {"w": 19, "qty": 55}, {"w": 20, "qty": 40}, {"w": 21, "qty": 53}, {"w": 22, "qty": 9}, {"w": 23, "qty": 36}],
       timeline: [
         { n:23, w:"Y26-W23", t:"a", sales:0, intake:0, bal:0, wc:0 },
@@ -874,7 +874,7 @@ const WSSI = {
     },
     {
       sku: "RYN-A7-BLOSSOM-QUBA", nama: "Mushaf A7 Mina Islamic Garden Jaket Pink Quba", series: "Reeyana Jaket",
-      stok: 5, avgWeekly: 52.9, wc: -1, status: "darurat",
+      stok: 5, avgWeekly: 52.9, wc: 0.1, status: "darurat",
       salesHist: [{"w": 16, "qty": 0}, {"w": 17, "qty": 38}, {"w": 18, "qty": 34}, {"w": 19, "qty": 37}, {"w": 20, "qty": 65}, {"w": 21, "qty": 125}, {"w": 22, "qty": 49}, {"w": 23, "qty": 75}],
       timeline: [
         { n:23, w:"Y26-W23", t:"a", sales:0, intake:0, bal:0, wc:0 },
@@ -994,7 +994,7 @@ const WSSI = {
     },
     {
       sku: "YME-A5-STONE", nama: "Mushaf A5 Heekaya HC Black Aswad", series: "Heekaya HC",
-      stok: 66, avgWeekly: 41.2, wc: -1, status: "darurat",
+      stok: 66, avgWeekly: 41.2, wc: 1.6, status: "darurat",
       salesHist: [{"w": 16, "qty": 52}, {"w": 17, "qty": 59}, {"w": 18, "qty": 33}, {"w": 19, "qty": 70}, {"w": 20, "qty": 26}, {"w": 21, "qty": 18}, {"w": 22, "qty": 27}, {"w": 23, "qty": 45}],
       timeline: [
         { n:23, w:"Y26-W23", t:"a", sales:0, intake:0, bal:0, wc:0 },

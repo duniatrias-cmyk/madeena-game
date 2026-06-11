@@ -240,7 +240,13 @@ function buildSeriesRows() {
     }));
     const timeline = Object.values(byN).sort((a,b)=>a.n-b.n);
     const cur = timeline.find(r => r.n === CW);
-    const wc = cur ? (cur.sales > 0 ? cur.bal/cur.sales : (cur.bal > 0 ? 999 : 0)) : null;
+    // Gunakan weighted wc dari per-SKU (stok aktual ÷ avgWeekly), konsisten dengan logika Python.
+    // WSSI bal sering negatif/sentinel sehingga bal/sales tidak andal di level series.
+    const wcMembers = members.filter(s => s.wc != null && s.wc >= 0);
+    const wc = stok != null && avgWeekly > 0 ? Math.round(stok / avgWeekly * 10) / 10
+             : stok != null && stok > 0 ? 999
+             : wcMembers.length ? Math.round(wcMembers.reduce((a,s)=>a+s.wc,0)/wcMembers.length*10)/10
+             : null;
     const status = statusOf(wc);
     const intakeByN = {};
     members.forEach(s => s.intakes.forEach(i => intakeByN[i.n] = (intakeByN[i.n]||0) + i.qty));

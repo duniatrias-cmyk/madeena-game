@@ -138,7 +138,7 @@ def fetch_wssi(conn):
             "sales": num(r["sales_volume"]),
             "intake": num(r["intake_volume"]),
             "bal": num(r["balance_mi"]),
-            "wc": num(r["weeks_cover"]),
+            "wc": (lambda v: v if v is not None and v >= 0 else None)(num(r["weeks_cover"])),
         })
 
     for tl in timelines.values():
@@ -265,7 +265,7 @@ def derive_sku(sku, tl, inv, series_map, hist):
     avg_weekly = round(sum(h["qty"] for h in sales_hist) / HIST_WEEKS, 1)
 
     cur = next((r for r in tl if r["t"] == "c"), None)
-    wc = cur["wc"] if cur else None
+    wc = cur["wc"] if cur and cur["wc"] is not None and cur["wc"] >= 0 else None
     if wc is None:
         # Fallback bila weeks_cover tidak tersedia
         if stok is None or stok <= 0:
