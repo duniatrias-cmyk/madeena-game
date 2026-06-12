@@ -13,7 +13,7 @@ const DATA = {
     okr: 40_000_000_000,
     tahun: 2026,
     mingguTerakhir: 24,
-    tanggalUpdate: '11 Jun 2026'
+    tanggalUpdate: '12 Jun 2026'
   },
 
   // ── GMV total per minggu (semua channel + series, exclude Zhafira Signature) ──
@@ -99,20 +99,20 @@ const DATA = {
 
   // ── Stok & demand series (dari mart_inventory, demand = avg 4 minggu W20–W23) ──
   seriStok: {
-    'Reeyana Jaket':                { stok: 3_338, demandPerMinggu: 888, warna: '#e882b0' },
-    'Reeyana HC':                   { stok: 4_564, demandPerMinggu: 900, warna: '#d46a9e' },
-    'Reeyana BDDA':                 { stok: 5_473, demandPerMinggu: 203, warna: '#c85a8f' },
-    'Heekaya HC':                   { stok:   209, demandPerMinggu:  66, warna: '#a78bfa' },
+    'Reeyana Jaket':                { stok: 3_229, demandPerMinggu: 888, warna: '#e882b0' },
+    'Reeyana HC':                   { stok: 4_523, demandPerMinggu: 900, warna: '#d46a9e' },
+    'Reeyana BDDA':                 { stok: 5_472, demandPerMinggu: 203, warna: '#c85a8f' },
+    'Heekaya HC':                   { stok:   208, demandPerMinggu:  66, warna: '#a78bfa' },
     'Heekaya per Juz':              { stok: 4_576, demandPerMinggu:   0, warna: '#7140c4' },
-    'Heekaya Jaket':                { stok:   625, demandPerMinggu:  78, warna: '#9570e8' },
-    'Reeyana':                      { stok:   220, demandPerMinggu: 102, warna: '#b04880' },
-    'Airees DPP':                   { stok: 23_755, demandPerMinggu: 393, warna: '#7ab8d8' },
-    'Heekaya DPP':                  { stok: 30_251, demandPerMinggu: 472, warna: '#8355d6' },
-    'Reeyana Prayer Mat':           { stok:   634, demandPerMinggu:  28, warna: '#a83e75' },
-    'Zhafira Signature Tasbih New': { stok: 2_904, demandPerMinggu: 294, warna: '#5ecbb0' },
-    'Abbasy':                       { stok:   628, demandPerMinggu:  71, warna: '#6366f1' },
-    'Alamee HC':                    { stok: 2_077, demandPerMinggu:  31, warna: '#4ecdc4' },
-    'Lumee':                        { stok:   665, demandPerMinggu:  15, warna: '#f7b731' }
+    'Heekaya Jaket':                { stok:   611, demandPerMinggu:  78, warna: '#9570e8' },
+    'Reeyana':                      { stok:   210, demandPerMinggu: 102, warna: '#b04880' },
+    'Airees DPP':                   { stok: 23_746, demandPerMinggu: 393, warna: '#7ab8d8' },
+    'Heekaya DPP':                  { stok: 30_175, demandPerMinggu: 472, warna: '#8355d6' },
+    'Reeyana Prayer Mat':           { stok:   633, demandPerMinggu:  28, warna: '#a83e75' },
+    'Zhafira Signature Tasbih New': { stok: 2_891, demandPerMinggu: 294, warna: '#5ecbb0' },
+    'Abbasy':                       { stok:   625, demandPerMinggu:  71, warna: '#6366f1' },
+    'Alamee HC':                    { stok: 2_060, demandPerMinggu:  31, warna: '#4ecdc4' },
+    'Lumee':                        { stok:   750, demandPerMinggu:  15, warna: '#f7b731' }
   },
 
   // ── Misi awak (quests / initiatives) ──

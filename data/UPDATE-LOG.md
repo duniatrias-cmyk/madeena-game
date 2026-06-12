@@ -1,3 +1,36 @@
+# Update Log — 12 Jun 2026
+
+## weekly.js — PROMPT-UPDATE-DATA (stok refresh)
+
+**Sumber data:** mart_inventory per 12 Jun 2026 (MAX date = 2026-06-12)
+
+GMV tidak berubah (mart_sales_tra_so_rts W24 belum settle untuk tanggal 12 Jun).
+Update hanya pada stok dan tanggalUpdate.
+
+| Series | Stok Lama | Stok Baru | Cover Baru |
+|---|---|---|---|
+| Reeyana Jaket | 3.338 | **3.229** | **3,6 mgg** 🔴 |
+| Reeyana HC | 4.564 | **4.523** | 5,0 mgg |
+| Reeyana BDDA | 5.473 | **5.472** | 27,0 mgg |
+| Heekaya HC | 209 | **208** | **3,2 mgg** 🔴 |
+| Heekaya Jaket | 625 | **611** | 7,8 mgg |
+| Reeyana | 220 | **210** | **2,1 mgg** 🔴 |
+| Airees DPP | 23.755 | **23.746** | 60,4 mgg |
+| Heekaya DPP | 30.251 | **30.175** | 63,9 mgg |
+| Reeyana Prayer Mat | 634 | **633** | 22,6 mgg |
+| Zhafira Signature Tasbih New | 2.904 | **2.891** | 9,8 mgg |
+| Abbasy | 628 | **625** | 8,8 mgg |
+| Alamee HC | 2.077 | **2.060** | 66,5 mgg |
+| Lumee | 665 | **750** | 50,0 mgg (+restok) |
+| Heekaya per Juz | 4.576 | 4.576 | ∞ |
+
+**KRITIS — cover < 4 minggu:**
+- **Reeyana**: 210 ÷ 102 = **2,1 minggu** 🔴
+- **Heekaya HC**: 208 ÷ 66 = **3,2 minggu** 🔴
+- **Reeyana Jaket**: 3.229 ÷ 888 = **3,6 minggu** 🔴
+
+---
+
 # Update Log — 11 Jun 2026
 
 ## weekly.js — PROMPT-UPDATE-DATA (W24 fresh run)
