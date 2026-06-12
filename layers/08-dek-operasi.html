@@ -1,0 +1,1829 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dek Operasi — Kapal Madeena</title>
+<link rel="stylesheet" href="../shared/style.css?v=2">
+<script src="../shared/dm-toggle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="../data/team-registry.js"></script>
+<style>
+/* ── Kanban Board ── */
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+@media (max-width: 768px) {
+  .kanban-board { grid-template-columns: 1fr; }
+}
+
+.kanban-col {
+  background: var(--laut-tengah);
+  border: 1px solid var(--border-tipis);
+  border-radius: var(--r-lg);
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+  max-height: 680px;
+}
+.kanban-col.col-doing {
+  border-color: var(--emas);
+  box-shadow: 0 0 12px rgba(232,184,75,0.12);
+}
+.kanban-col.col-done {
+  border-color: var(--hijau-laut);
+  opacity: 0.88;
+}
+
+.col-header {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border-tipis);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.col-icon { font-size: 18px; }
+.col-title {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--teks-primer);
+  flex: 1;
+}
+.col-doing .col-title { color: var(--emas); }
+.col-done .col-title { color: var(--hijau-laut); }
+.col-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--teks-redup);
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 2px 8px;
+}
+.col-xp-total {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--teks-redup);
+}
+.col-doing .col-xp-total { color: rgba(232,184,75,0.7); }
+.col-done .col-xp-total { color: rgba(62,207,122,0.7); }
+
+.col-tasks {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Task Card ── */
+.task-card {
+  background: var(--laut-tepi);
+  border: 1px solid var(--border-tipis);
+  border-radius: var(--r-md);
+  padding: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.task-card:hover { border-color: var(--border-sedang); background: var(--laut-surface); }
+.task-card.status-doing { border-left: 3px solid var(--emas); }
+.task-card.status-done  { border-left: 3px solid var(--hijau-laut); opacity: 0.72; }
+
+.task-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.task-title {
+  font-size: 13px;
+  color: var(--teks-primer);
+  line-height: 1.45;
+  flex: 1;
+}
+.status-done .task-title { text-decoration: line-through; color: var(--teks-kedua); }
+
+.task-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.task-due {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--teks-redup);
+}
+
+/* Priority badges */
+.prio-badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  border-radius: 4px;
+  padding: 2px 6px;
+  flex-shrink: 0;
+  line-height: 1.6;
+}
+.prio-badge.p1 { background: rgba(224,90,58,0.15); color: var(--merah-badai); }
+.prio-badge.p2 { background: rgba(232,184,75,0.15); color: var(--emas); }
+.prio-badge.p3 { background: rgba(122,184,216,0.15); color: var(--langit); }
+.prio-badge.p4 { background: var(--border-tipis); color: var(--teks-redup); }
+
+/* XP badge */
+.xp-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+.xp-badge.xp-todo  { color: var(--teks-redup); background: rgba(255,255,255,0.04); }
+.xp-badge.xp-doing { color: var(--emas); background: rgba(232,184,75,0.1); }
+.xp-badge.xp-done  { color: var(--hijau-laut); background: rgba(62,207,122,0.1); }
+
+/* Assignee chip */
+.assignee-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--teks-kedua);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-tipis);
+  border-radius: 12px;
+  padding: 2px 7px 2px 3px;
+}
+.assignee-chip.unassigned { color: var(--teks-redup); }
+.assignee-av {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 8px; font-weight: 700; color: #0a0f1a;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+/* Task expanded body */
+.task-body {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-tipis);
+}
+.task-desc {
+  font-size: 12px;
+  color: var(--teks-kedua);
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+.task-desc strong { color: var(--teks-primer); font-weight: 500; }
+/* Waiting badge */
+.waiting-badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  color: #e8963a;
+  background: rgba(232,150,58,0.12);
+  border: 1px solid rgba(232,150,58,0.3);
+  border-radius: 4px;
+  padding: 2px 7px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+/* Sub-task badge (progress in collapsed card) */
+.subtask-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--teks-kedua);
+  background: var(--laut-tepi);
+  border: 1px solid var(--border-tipis);
+  border-radius: 4px;
+  padding: 1px 6px;
+  flex-shrink: 0;
+}
+
+/* Subtask expanded section */
+.subtask-section {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-tipis);
+}
+.subtask-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--teks-redup);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.subtask-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 12px;
+}
+.subtask-row:last-child { border-bottom: none; }
+.subtask-row.done .subtask-title { text-decoration: line-through; color: var(--teks-redup); }
+.subtask-dot { font-family: var(--font-mono); color: var(--teks-redup); flex-shrink: 0; margin-top: 1px; }
+.subtask-row.done .subtask-dot { color: var(--hijau-laut); }
+.subtask-title { flex: 1; color: var(--teks-kedua); line-height: 1.4; }
+.subtask-meta { display: flex; align-items: center; gap: 6px; flex-shrink: 0; flex-wrap: wrap; }
+.subtask-assignee { font-family: var(--font-mono); font-size: 10px; color: var(--teks-redup); }
+.subtask-date { font-family: var(--font-mono); font-size: 10px; color: var(--teks-redup); }
+.subtask-xp { font-family: var(--font-mono); font-size: 10px; color: var(--emas); }
+
+.col-empty {
+  font-size: 12px;
+  color: var(--teks-redup);
+  text-align: center;
+  padding: 24px 16px;
+  line-height: 1.6;
+}
+.col-empty.onboarding { color: var(--teks-kedua); }
+
+/* ── Sprint Header ── */
+.sprint-hdr {
+  background: var(--laut-tengah);
+  border: 1px solid var(--border-tipis);
+  border-radius: var(--r-lg);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+.sprint-hdr-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.sprint-id-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  background: rgba(232,184,75,0.1);
+  border: 1px solid rgba(232,184,75,0.3);
+  color: var(--emas);
+  border-radius: var(--r-sm);
+  padding: 4px 10px;
+}
+.sprint-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+
+.sprint-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 600px) {
+  .sprint-stats { grid-template-columns: repeat(2, 1fr); }
+}
+.stat-box {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-tipis);
+  border-radius: var(--r-md);
+  padding: 10px 14px;
+}
+.stat-lbl {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--teks-redup);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.stat-val {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--teks-primer);
+}
+.stat-val.accent-emas { color: var(--emas); }
+.stat-val.accent-hijau { color: var(--hijau-laut); }
+
+/* ── Leaderboard ── */
+.leaderboard-panel {
+  background: var(--laut-tengah);
+  border: 1px solid var(--border-tipis);
+  border-radius: var(--r-lg);
+  padding: 20px 24px;
+  margin-bottom: 32px;
+}
+.lb-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.lb-title {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--teks-primer);
+}
+.lb-sprint-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--teks-redup);
+}
+.lb-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-tipis);
+}
+.lb-row:last-child { border-bottom: none; }
+.lb-rank {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--teks-redup);
+  width: 26px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.lb-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: #0a0f1a;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+.lb-info { flex: 1; min-width: 0; }
+.lb-name {
+  font-size: 13px;
+  color: var(--teks-primer);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.lb-role {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--teks-redup);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 400;
+}
+.lb-bar-wrap {
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.lb-bar {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.6s ease;
+}
+.lb-xp {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--teks-kedua);
+  width: 72px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.sprint-xp-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--emas);
+  background: rgba(232,184,75,0.1);
+  border-radius: 10px;
+  padding: 2px 8px;
+  flex-shrink: 0;
+}
+.sprint-xp-zero {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--teks-redup);
+  width: 50px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── Collapsible Sections ── */
+.collapsible-hdr {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background: var(--laut-tengah);
+  border: 1px solid var(--border-tipis);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 0;
+  transition: background 0.15s;
+}
+.collapsible-hdr:hover { background: var(--laut-surface); }
+.collapsible-hdr.open { border-radius: var(--r-md) var(--r-md) 0 0; border-bottom-color: transparent; }
+.collapsible-arrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--teks-redup);
+  transition: transform 0.2s;
+}
+.collapsible-hdr.open .collapsible-arrow { transform: rotate(90deg); }
+.collapsible-label {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--teks-primer);
+  flex: 1;
+}
+
+.collapsible-body {
+  display: none;
+  background: var(--laut-tengah);
+  border: 1px solid var(--border-tipis);
+  border-top: none;
+  border-radius: 0 0 var(--r-md) var(--r-md);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.section-wrapper { margin-bottom: 16px; }
+
+/* ── Charts ── */
+.chart-wrap {
+  height: 200px;
+  position: relative;
+}
+.metric-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 600px) { .metric-grid { grid-template-columns: 1fr; } }
+.metric-block {}
+.metric-block-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--teks-redup);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.completion-stat {
+  font-family: var(--font-mono);
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--teks-primer);
+  margin-bottom: 8px;
+}
+.completion-bar-track {
+  height: 8px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.completion-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease, background 0.4s;
+}
+.completion-hint {
+  font-size: 11px;
+  color: var(--teks-redup);
+}
+
+/* ── History Table ── */
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.history-table th {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--teks-redup);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-tipis);
+}
+.history-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--teks-kedua);
+}
+.history-table tr:last-child td { border-bottom: none; }
+.history-table td.mono { font-family: var(--font-mono); font-size: 12px; }
+
+/* ── Onboarding State ── */
+.onboarding-box {
+  background: linear-gradient(135deg, rgba(232,184,75,0.05), rgba(122,184,216,0.04));
+  border: 1px dashed rgba(232,184,75,0.25);
+  border-radius: var(--r-lg);
+  padding: 32px 24px;
+  text-align: center;
+  margin-bottom: 24px;
+}
+.onboarding-icon { font-size: 40px; margin-bottom: 12px; }
+.onboarding-title {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  color: var(--teks-primer);
+  margin-bottom: 8px;
+}
+.onboarding-desc {
+  font-size: 13px;
+  color: var(--teks-kedua);
+  line-height: 1.6;
+  max-width: 420px;
+  margin: 0 auto 20px;
+}
+
+/* ── Upload hint ── */
+.upload-hint {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--teks-redup);
+  letter-spacing: 0.5px;
+}
+
+/* ── Modal overlay ── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: var(--laut-tengah);
+  border: 1px solid var(--border-sedang);
+  border-radius: var(--r-lg);
+  padding: 28px;
+  max-width: 400px;
+  width: 90%;
+}
+.modal-title {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  color: var(--teks-primer);
+  margin-bottom: 10px;
+}
+.modal-desc {
+  font-size: 13px;
+  color: var(--teks-kedua);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+/* ── Page intro ── */
+.page-intro {
+  margin-bottom: 24px;
+}
+.page-intro-lbl {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--teks-redup);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.page-intro h1 {
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--teks-primer);
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+.page-intro h1 em { color: var(--emas); font-style: normal; }
+.page-intro p {
+  font-size: 14px;
+  color: var(--teks-kedua);
+  line-height: 1.6;
+}
+
+/* ── Nav baru badge ── */
+.nav-baru {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--emas);
+  background: rgba(232,184,75,0.15);
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-left: 5px;
+  vertical-align: middle;
+  letter-spacing: 0.5px;
+}
+
+/* ── Footer nav ── */
+.layer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 40px 0 24px;
+  gap: 12px;
+}
+</style>
+</head>
+<body>
+
+<!-- Modal: no active sprint -->
+<div class="modal-overlay" id="modal-no-sprint">
+  <div class="modal-box">
+    <div class="modal-title">⚓ Mulai Sprint Baru?</div>
+    <div class="modal-desc" id="modal-sprint-desc">Belum ada sprint aktif. Commit semua task dari CSV ini sebagai sprint baru?</div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Batal</button>
+      <button class="btn btn-emas" onclick="confirmCommitFromModal()">Mulai Sprint</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden file inputs -->
+<input type="file" id="csv-input" accept=".csv" style="display:none" onchange="handleCSVUpload(event)">
+<input type="file" id="json-input" accept=".json" style="display:none" onchange="handleJSONImport(event)">
+
+<nav class="nav">
+  <a href="../index.html" class="nav-brand">⚓ Kapal <em>Madeena</em></a>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="nav-links">
+      <a href="../index.html"     class="nav-link">Peta</a>
+      <a href="01-voyage.html"   class="nav-link">Pelayaran</a>
+      <a href="02-misi.html"     class="nav-link">Misi Awak</a>
+      <a href="03-ombak.html"    class="nav-link">Ombak</a>
+      <a href="04-muatan.html"   class="nav-link">Muatan</a>
+      <a href="05-tiktok.html"   class="nav-link">TikTok</a>
+      <a href="06-kr-tracker.html" class="nav-link">Kamar Mesin</a>
+      <a href="07-pelabuhan.html"  class="nav-link">Pelabuhan</a>
+      <a href="08-dek-operasi.html" class="nav-link active">Dek Operasi<span class="nav-baru">BARU</span></a>
+    </div>
+    <button class="dm-toggle" id="dm-toggle" aria-label="Toggle dark/light mode">
+      <span id="dm-icon">🌙</span>
+      <div class="dm-pill"><div class="dm-dot"></div></div>
+      <span id="dm-label">DARK</span>
+    </button>
+  </div>
+</nav>
+
+<div class="shell" style="padding-top:80px;padding-bottom:40px">
+
+  <!-- Page intro -->
+  <div class="page-intro">
+    <div class="page-intro-lbl">Layer 08 · Dek Operasi</div>
+    <h1>Dek <em>Operasi</em></h1>
+    <p>Kanban SCRUM dengan XP gamifikasi — setiap misi selesai, kapal makin dekat ke tujuan.</p>
+  </div>
+
+  <!-- Sprint Header -->
+  <div class="sprint-hdr">
+    <div class="sprint-hdr-top">
+      <span class="section-lbl" style="margin:0">Sprint</span>
+      <span class="sprint-id-badge" id="sprint-id">—</span>
+      <div class="sprint-actions">
+        <button class="btn" onclick="document.getElementById('csv-input').click()" title="Upload CSV Todoist">
+          📥 Upload CSV
+        </button>
+        <button class="btn btn-emas" id="btn-start-sprint" onclick="startSprint()">
+          ⚓ Mulai Sprint
+        </button>
+        <button class="btn" onclick="exportJSON()" title="Export sprint-history.json">
+          ⬆ Export JSON
+        </button>
+        <button class="btn" onclick="document.getElementById('json-input').click()" title="Import sprint-history.json">
+          ⬇ Import JSON
+        </button>
+        <button class="btn" style="color:var(--merah,#e05252);border-color:var(--merah,#e05252);opacity:0.7" onclick="resetAllData()" title="Hapus semua data sprint">
+          🗑 Reset
+        </button>
+      </div>
+    </div>
+    <div class="sprint-stats">
+      <div class="stat-box">
+        <div class="stat-lbl">Task selesai</div>
+        <div class="stat-val" id="stat-tasks">—</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-lbl">XP dikumpulkan</div>
+        <div class="stat-val accent-emas" id="stat-earned">—</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-lbl">XP di-commit</div>
+        <div class="stat-val" id="stat-committed">—</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-lbl">Completion Rate</div>
+        <div class="stat-val accent-hijau" id="stat-completion">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Onboarding (shown when no tasks) -->
+  <div class="onboarding-box" id="onboarding-box" style="display:none">
+    <div class="onboarding-icon">⚓</div>
+    <div class="onboarding-title">Belum ada sprint aktif</div>
+    <div class="onboarding-desc">Upload file CSV export dari Todoist untuk memuat task ke Kanban board, lalu klik "Mulai Sprint" untuk mengunci daftar task sprint ini.</div>
+    <button class="btn btn-emas" onclick="document.getElementById('csv-input').click()">📥 Upload CSV Todoist</button>
+    <div class="upload-hint" style="margin-top:10px">Format: export CSV dari Todoist (File → Export Data → CSV)</div>
+  </div>
+
+  <!-- Kanban Board -->
+  <div class="kanban-board">
+    <!-- TODO -->
+    <div class="kanban-col col-todo">
+      <div class="col-header">
+        <span class="col-icon">⚓</span>
+        <span class="col-title">Todo</span>
+        <span class="col-count" id="col-todo-count">0</span>
+        <span class="col-xp-total" id="col-todo-xp"></span>
+      </div>
+      <div class="col-tasks" id="col-todo-tasks">
+        <div class="col-empty onboarding">Upload CSV untuk memuat task</div>
+      </div>
+    </div>
+
+    <!-- DOING -->
+    <div class="kanban-col col-doing">
+      <div class="col-header">
+        <span class="col-icon">⛵</span>
+        <span class="col-title">Doing</span>
+        <span class="col-count" id="col-doing-count">0</span>
+        <span class="col-xp-total" id="col-doing-xp"></span>
+      </div>
+      <div class="col-tasks" id="col-doing-tasks">
+        <div class="col-empty">Tidak ada task aktif</div>
+      </div>
+    </div>
+
+    <!-- DONE -->
+    <div class="kanban-col col-done">
+      <div class="col-header">
+        <span class="col-icon">🏁</span>
+        <span class="col-title">Done</span>
+        <span class="col-count" id="col-done-count">0</span>
+        <span class="col-xp-total" id="col-done-xp"></span>
+      </div>
+      <div class="col-tasks" id="col-done-tasks">
+        <div class="col-empty">Belum ada task selesai</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboard -->
+  <div class="leaderboard-panel">
+    <div class="lb-header">
+      <span class="lb-title">🏆 Papan Kehormatan Awak</span>
+      <span class="lb-sprint-label" id="leaderboard-sprint-label"></span>
+    </div>
+    <div id="leaderboard-list"></div>
+  </div>
+
+  <!-- Panel Metrik [collapsible] -->
+  <div class="section-wrapper">
+    <div class="collapsible-hdr" id="hdr-panel-metrik" onclick="toggleSection('panel-metrik')">
+      <span class="collapsible-arrow">▸</span>
+      <span class="collapsible-label">📊 Panel Metrik Sprint</span>
+      <span class="upload-hint">Velocity · Completion Rate · Burndown</span>
+    </div>
+    <div class="collapsible-body" id="panel-metrik" style="display:none">
+      <div class="metric-grid">
+        <div class="metric-block">
+          <div class="metric-block-title">Velocity (XP per Sprint)</div>
+          <div class="chart-wrap">
+            <canvas id="chart-velocity"></canvas>
+          </div>
+        </div>
+        <div class="metric-block">
+          <div class="metric-block-title">Completion Rate — Sprint Terakhir</div>
+          <div class="completion-stat" id="metric-completion-rate">—</div>
+          <div class="completion-bar-track">
+            <div class="completion-bar-fill" id="metric-completion-bar" style="width:0%"></div>
+          </div>
+          <div class="completion-hint">≥ 70% = sprint sehat · &lt; 50% = perlu review</div>
+        </div>
+      </div>
+      <div style="margin-top:20px">
+        <div class="metric-block-title">Burndown Sprint Aktif</div>
+        <div class="chart-wrap">
+          <canvas id="chart-burndown"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Histori Sprint [collapsible] -->
+  <div class="section-wrapper">
+    <div class="collapsible-hdr" id="hdr-panel-histori" onclick="toggleSection('panel-histori')">
+      <span class="collapsible-arrow">▸</span>
+      <span class="collapsible-label">📜 Histori Sprint</span>
+      <span class="upload-hint">Semua sprint yang pernah di-commit</span>
+    </div>
+    <div class="collapsible-body" id="panel-histori" style="display:none">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Sprint ID</th>
+            <th>Mulai</th>
+            <th>Selesai</th>
+            <th>XP Commit</th>
+            <th>XP Earned</th>
+            <th>Completion</th>
+          </tr>
+        </thead>
+        <tbody id="history-table">
+          <tr><td colspan="6" style="text-align:center;color:var(--teks-redup)">Belum ada histori sprint</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Footer nav -->
+  <div class="layer-nav">
+    <a href="07-pelabuhan.html" class="btn">← Koordinat Pelabuhan</a>
+    <a href="../index.html" class="btn btn-emas">⚓ Kembali ke Peta</a>
+  </div>
+
+</div><!-- /.shell -->
+
+<!-- Ocean waves -->
+<svg class="ocean-bg" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
+  <g class="wave-anim">
+    <path d="M0,70 C120,42 240,98 360,70 C480,42 600,98 720,70 C840,42 960,98 1080,70 C1200,42 1320,98 1440,70 C1560,42 1680,98 1800,70 C1920,42 2040,98 2160,70 C2280,42 2400,98 2520,70 C2640,42 2760,98 2880,70 L2880,160 L0,160 Z" fill="#e8b84b" opacity="0.15"/>
+  </g>
+  <g class="wave-anim-slow">
+    <path d="M0,105 C180,68 360,142 540,105 C720,68 900,142 1080,105 C1260,68 1440,142 1620,105 C1800,68 1980,142 2160,105 C2340,68 2520,142 2700,105 C2880,68 2880,142 2880,105 L2880,160 L0,160 Z" fill="#3ecf7a" opacity="0.10"/>
+  </g>
+</svg>
+
+<!-- Bottom nav (mobile) -->
+<nav class="bottom-nav" aria-label="Navigasi">
+  <div class="bottom-nav-items">
+    <a href="../index.html"       class="bottom-nav-item"><span class="bottom-nav-icon">🏠</span><span class="bottom-nav-lbl">Peta</span></a>
+    <a href="01-voyage.html"     class="bottom-nav-item"><span class="bottom-nav-icon">⚓</span><span class="bottom-nav-lbl">Pelayaran</span></a>
+    <a href="02-misi.html"       class="bottom-nav-item"><span class="bottom-nav-icon">🧭</span><span class="bottom-nav-lbl">Misi</span></a>
+    <a href="03-ombak.html"      class="bottom-nav-item"><span class="bottom-nav-icon">🌊</span><span class="bottom-nav-lbl">Ombak</span></a>
+    <a href="04-muatan.html"     class="bottom-nav-item"><span class="bottom-nav-icon">📦</span><span class="bottom-nav-lbl">Muatan</span></a>
+    <a href="05-tiktok.html"     class="bottom-nav-item"><span class="bottom-nav-icon">⚙️</span><span class="bottom-nav-lbl">Mesin</span></a>
+    <a href="06-kr-tracker.html" class="bottom-nav-item"><span class="bottom-nav-icon">🔧</span><span class="bottom-nav-lbl">K.Mesin</span></a>
+    <a href="07-pelabuhan.html"  class="bottom-nav-item"><span class="bottom-nav-icon">⚓</span><span class="bottom-nav-lbl">Pelabuhan</span></a>
+    <a href="08-dek-operasi.html" class="bottom-nav-item active"><span class="bottom-nav-icon">🧭</span><span class="bottom-nav-lbl">Dek Ops</span></a>
+  </div>
+</nav>
+
+<script>
+// ── CONFIG ──
+const XP_MAP = { '1': 100, '2': 60, '3': 30, '4': 10 };
+const LS_KEY = 'madeena_sprint_history';
+
+// ── STATE ──
+let STATE = {
+  activeSprint: null,
+  committedTasks: [],
+  currentTasks: [],
+  history: { meta: { lastUpdated: null, totalMembers: 11 }, members: {}, sprints: [] },
+  charts: { velocity: null, burndown: null },
+  pendingCSVTasks: null  // tasks waiting for sprint confirmation
+};
+
+// ── ISO WEEK ──
+function getISOWeek(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  return `W${weekNo}-${d.getUTCFullYear()}`;
+}
+
+function currentSprintId() { return getISOWeek(new Date()); }
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+}
+
+function getWeekStart(date) {
+  const d = new Date(date);
+  const day = d.getDay() || 7;
+  d.setDate(d.getDate() - day + 1);
+  return d;
+}
+
+// ── MEMBER HELPERS ──
+function getMemberInfo(name) {
+  if (!name) return null;
+  let m = TEAM_REGISTRY.members.find(mb => mb.name === name);
+  if (!m) {
+    m = { name, todoistId: '', color: '--langit', avatar: name.slice(0, 2).toUpperCase(), role: 'Unknown' };
+    TEAM_REGISTRY.members.push(m);
+    console.log('[Dek Operasi] Member baru ditambahkan otomatis:', name);
+  }
+  return m;
+}
+
+// ── CSV PARSING ──
+function escapeHtml(str) {
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── TASK KEY HELPERS ──
+// Keys are built from tag-stripped, whitespace-normalized content so that
+// adding/removing @tags in Todoist between exports doesn't cause false Done detection.
+function _makeKey(rawContent, assignee) {
+  const c = (rawContent || '').replace(/\r/g, '').replace(/@\S+/g, ' ').replace(/\s+/g, ' ').trim();
+  return normalizeTaskKey(c.substring(0, 80).trimEnd() + '_' + (assignee ?? ''));
+}
+function buildTaskKey(rawContent, rawResponsible) {
+  const ar = rawResponsible ? String(rawResponsible).trim() : '';
+  const assignee = ar ? ar.replace(/\s*\(\d+\)$/, '').trim() : null;
+  return _makeKey(rawContent, assignee);
+}
+
+function parseCSV(csvText) {
+  const rows = Papa.parse(csvText, { header: true }).data;
+  const required = ['TYPE', 'CONTENT', 'PRIORITY', 'INDENT'];
+  const headers = Object.keys(rows[0] || {});
+  if (required.some(h => !headers.includes(h))) throw new Error('invalid_format');
+
+  let currentSection = null;
+  let lastIndent1Task = null;
+  const tasks = [];
+
+  for (const row of rows) {
+    if (!row.TYPE) continue;
+
+    // Track current section
+    if (row.TYPE === 'section') {
+      currentSection = row.CONTENT?.trim() || null;
+      lastIndent1Task = null;
+      continue;
+    }
+
+    if (row.TYPE !== 'task') continue;
+
+    // Only process tasks from "TO DO" and "DOING" sections
+    const sectionName = (currentSection || '').toUpperCase();
+    const isValidSection = sectionName === 'TO DO' || sectionName === 'DOING';
+    const isBeforeAnySection = currentSection === null;
+    if (!isValidSection && !isBeforeAnySection) continue;
+
+    // Map section → column status
+    const status = sectionName === 'DOING' ? 'doing' : 'todo';
+
+    const content = row.CONTENT || '';
+    if (!content.trim()) continue;
+
+    // Skip decorative headers
+    const isDecorativeHeader = (
+      content.startsWith('* 🔷') ||
+      content.startsWith('* **EPIC') ||
+      content.startsWith('* **OUTPUT') ||
+      content.startsWith('* **') ||
+      /^\* \d+\./.test(content)
+    );
+    if (isDecorativeHeader) { lastIndent1Task = null; continue; }
+
+    const indent = parseInt(row.INDENT) || 1;
+    const assigneeRaw = row.RESPONSIBLE ? row.RESPONSIBLE.trim() : '';
+    const assignee = assigneeRaw ? assigneeRaw.replace(/\s*\(\d+\)$/, '').trim() : null;
+    const priority = row.PRIORITY || '4';
+    const baseXP = XP_MAP[priority] || 10;
+    const dueDate = row.DATE && row.DATE !== '' ? row.DATE : null;
+    const hasWaiting = /@[Ww]aiting/.test(content);
+
+    const title = content
+      .replace(/@[\w\\\s]+(?=\s|$)/g, '')
+      .replace(/`[^`]+`/g, '')
+      .replace(/\*\*/g, '')
+      .replace(/\[.*?\]\(.*?\)/g, '')
+      .trim();
+
+    const taskKey = _makeKey(content, assignee);
+
+    if (indent === 1) {
+      const task = {
+        key: taskKey,
+        title,
+        rawContent: content,
+        assignee,
+        priority,
+        baseXP,
+        dueDate,
+        status,
+        hasWaiting,
+        description: row.DESCRIPTION || '',
+        subtasks: [],
+        isSubtask: false,
+        committedStatus: status,
+        completedDate: null,
+        earnedXP: null,
+        bonusApplied: false
+      };
+      tasks.push(task);
+      lastIndent1Task = task;
+
+    } else if (indent >= 2 && lastIndent1Task) {
+      lastIndent1Task.subtasks.push({
+        key: taskKey,
+        title,
+        rawContent: content,
+        assignee,
+        priority,
+        baseXP,
+        dueDate,
+        hasWaiting,
+        status: 'pending'
+      });
+
+    } else if (indent >= 2 && !lastIndent1Task) {
+      tasks.push({
+        key: taskKey,
+        title,
+        rawContent: content,
+        assignee,
+        priority,
+        baseXP,
+        dueDate,
+        status,
+        hasWaiting,
+        description: row.DESCRIPTION || '',
+        subtasks: [],
+        isSubtask: true,
+        committedStatus: status,
+        completedDate: null,
+        earnedXP: null,
+        bonusApplied: false
+      });
+    }
+  }
+
+  return tasks;
+}
+
+// ── ALL-SECTION KEY PARSER ──
+// Berbeda dari parseCSV: mengambil key dari SEMUA section (bukan hanya TO DO & DOING).
+// Digunakan oleh detectCompleted agar task yang pindah section tidak salah dikira selesai.
+function parseAllTaskKeys(csvText) {
+  const rows = Papa.parse(csvText, { header: true }).data;
+  const keySet = new Set();
+  for (const row of rows) {
+    if (!row.TYPE || row.TYPE !== 'task') continue;
+    if (!(row.CONTENT || '').trim()) continue;
+    keySet.add(buildTaskKey(row.CONTENT, row.RESPONSIBLE));
+  }
+  return keySet;
+}
+
+// ── DELTA DETECTION ──
+// allNewKeys (opsional): Set berisi key dari SEMUA section CSV.
+// Jika tidak diberikan, fallback ke newCSVTasks saja (perilaku lama).
+function detectCompleted(committedTasks, newCSVTasks, allNewKeys) {
+  // Gunakan allNewKeys jika tersedia, supaya task di section non-TODO/DOING
+  // tidak salah dideteksi sebagai selesai.
+  const newKeySet = allNewKeys || (() => {
+    const s = new Set();
+    for (const t of newCSVTasks) {
+      s.add(t.key);
+      for (const st of (t.subtasks || [])) s.add(st.key);
+    }
+    return s;
+  })();
+  const today = new Date();
+
+  return committedTasks.map(task => {
+    const updatedSubtasks = (task.subtasks || []).map(st => {
+      if (st.status === 'done') {
+        if (newKeySet.has(st.key)) return { ...st, status: 'pending', completedDate: null, earnedXP: null };
+        return st;
+      }
+      if (!newKeySet.has(st.key)) {
+        const bonus = st.dueDate && today <= new Date(st.dueDate) ? 0.2 : 0;
+        const earnedXP = Math.round(st.baseXP * (1 + bonus));
+        const recipient = st.assignee || task.assignee || 'Kas Tim';
+        return { ...st, status: 'done', completedDate: today.toISOString(), earnedXP, recipient };
+      }
+      return st;
+    });
+
+    if (task.status === 'done') {
+      // Jika task sudah done tapi muncul lagi di CSV baru → restore ke status CSV
+      if (newKeySet.has(task.key)) {
+        const csvTask = newCSVTasks.find(t => t.key === task.key);
+        if (csvTask) return { ...task, status: csvTask.status, subtasks: updatedSubtasks, completedDate: null, earnedXP: null };
+      }
+      return { ...task, subtasks: updatedSubtasks };
+    }
+
+    if (!newKeySet.has(task.key)) {
+      const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+      const bonus = dueDate && today <= dueDate ? 0.2 : 0;
+      const earnedXP = Math.round(task.baseXP * (1 + bonus));
+      const recipient = task.assignee || 'Kas Tim';
+      // CASCADE: parent done → semua subtask yang belum done ikut selesai + dapat XP sendiri
+      const cascadedSubtasks = updatedSubtasks.map(st => {
+        if (st.status === 'done') return st; // sudah done independen sebelumnya, pertahankan
+        const stDue = st.dueDate ? new Date(st.dueDate) : null;
+        const stBonus = stDue && today <= stDue ? 0.2 : 0;
+        const stEarnedXP = Math.round(st.baseXP * (1 + stBonus));
+        const stRecipient = st.assignee || task.assignee || 'Kas Tim';
+        return { ...st, status: 'done', completedDate: today.toISOString(), earnedXP: stEarnedXP, recipient: stRecipient };
+      });
+      return {
+        ...task,
+        subtasks: cascadedSubtasks,
+        status: 'done',
+        completedDate: today.toISOString(),
+        earnedXP,
+        recipient,
+        bonusApplied: bonus > 0
+      };
+    }
+
+    const updated = newCSVTasks.find(t => t.key === task.key);
+    return { ...task, status: updated ? updated.status : task.status, subtasks: updatedSubtasks };
+  });
+}
+
+// ── KEY NORMALIZATION (migrasi key lama yang memakai "_null" untuk unassigned) ──
+function normalizeTaskKey(k) {
+  return k ? k.replace(/_null$/, '_') : (k ?? '');
+}
+function normalizeHistoryKeys(history) {
+  for (const sprint of (history.sprints || [])) {
+    for (const task of (sprint.tasks || [])) {
+      if (task.key) task.key = normalizeTaskKey(task.key);
+      for (const st of (task.subtasks || [])) {
+        if (st.key) st.key = normalizeTaskKey(st.key);
+      }
+    }
+  }
+}
+
+// ── PERSISTENCE ──
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    normalizeHistoryKeys(parsed);          // migrasi one-time: _null → _
+    // Migrasi: re-derive keys ke format tag-stripped agar @tag changes tidak
+    // menyebabkan false Done. rawContent selalu ada sejak versi pertama.
+    for (const sprint of (parsed.sprints || [])) {
+      for (const task of (sprint.tasks || [])) {
+        if (task.rawContent) task.key = _makeKey(task.rawContent, task.assignee);
+        for (const st of (task.subtasks || [])) {
+          if (st.rawContent) st.key = _makeKey(st.rawContent, st.assignee);
+        }
+      }
+    }
+    STATE.history = parsed;
+    try { localStorage.setItem(LS_KEY, JSON.stringify(parsed)); } catch {} // simpan ulang normalized
+    if (parsed.sprints && parsed.sprints.length > 0) {
+      const last = parsed.sprints[parsed.sprints.length - 1];
+      const endDate = last.endDate ? new Date(last.endDate) : null;
+      if (!endDate || endDate >= new Date()) {
+        STATE.activeSprint = last;
+        STATE.currentTasks = last.tasks ? JSON.parse(JSON.stringify(last.tasks)) : [];
+        STATE.committedTasks = last.tasks ? JSON.parse(JSON.stringify(last.tasks)) : [];
+      }
+    }
+  } catch (e) {
+    console.warn('[Dek Operasi] Gagal load history:', e);
+  }
+}
+
+function saveHistory() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(STATE.history));
+  } catch (e) {
+    console.warn('[Dek Operasi] Gagal save history:', e);
+  }
+}
+
+// ── XP LABEL ──
+function xpLabel(task) {
+  if (task.status === 'done') {
+    return `★ ${task.earnedXP != null ? task.earnedXP : task.baseXP} XP`;
+  }
+  if (task.status === 'doing') {
+    const today = new Date();
+    const due = task.dueDate ? new Date(task.dueDate) : null;
+    const canBonus = due && today <= due;
+    return canBonus ? `✦ ${Math.round(task.baseXP * 1.2)} XP ↑` : `✦ ${task.baseXP} XP`;
+  }
+  return `✦ ${task.baseXP} XP`;
+}
+
+// ── SPRINT LIFECYCLE ──
+function commitSprint(weekId, tasks) {
+  const now = new Date();
+  const sprintTasks = tasks.map(t => ({
+    ...t,
+    key: t.rawContent ? _makeKey(t.rawContent, t.assignee) : t.key,
+    committedStatus: t.status,
+    subtasks: (t.subtasks || []).map(st => ({
+      ...st,
+      key: st.rawContent ? _makeKey(st.rawContent, st.assignee) : st.key
+    }))
+  }));
+  const sprintStart = getWeekStart(now);
+  const sprintEnd = new Date(sprintStart);
+  sprintEnd.setDate(sprintEnd.getDate() + 6);
+  // Subtask = pekerjaan nyata → XP subtask juga masuk committed
+  const totalCommittedXP = sprintTasks.reduce((s, t) => {
+    const subXP = (t.subtasks || []).reduce((a, st) => a + (st.baseXP || 0), 0);
+    return s + (t.baseXP || 0) + subXP;
+  }, 0);
+
+  const sprint = {
+    id: weekId,
+    startDate: sprintStart.toISOString().slice(0, 10),
+    endDate: sprintEnd.toISOString().slice(0, 10),
+    committedAt: now.toISOString(),
+    totalCommittedXP,
+    totalEarnedXP: 0,
+    completionRate: 0,
+    tasks: sprintTasks,
+    burndownPoints: [{ date: now.toISOString().slice(0, 10), remainingXP: totalCommittedXP }]
+  };
+
+  STATE.activeSprint = sprint;
+  STATE.committedTasks = JSON.parse(JSON.stringify(sprintTasks));
+  STATE.currentTasks = JSON.parse(JSON.stringify(sprintTasks));
+
+  if (!STATE.history.sprints) STATE.history.sprints = [];
+  const existIdx = STATE.history.sprints.findIndex(s => s.id === weekId);
+  if (existIdx >= 0) STATE.history.sprints[existIdx] = sprint;
+  else STATE.history.sprints.push(sprint);
+
+  STATE.history.meta = { lastUpdated: now.toISOString(), totalMembers: TEAM_REGISTRY.members.length };
+  saveHistory();
+}
+
+function updateSprintFromTasks(tasks) {
+  if (!STATE.activeSprint) return;
+  const now = new Date();
+  const doneTasks = tasks.filter(t => t.status === 'done');
+  // Earned XP = parent XP + subtask XP (subtask = pekerjaan nyata)
+  const totalEarnedXP = tasks.reduce((s, t) => {
+    const parentXP = t.status === 'done' ? (t.earnedXP != null ? t.earnedXP : t.baseXP) : 0;
+    const subXP = (t.subtasks || []).filter(st => st.status === 'done')
+      .reduce((a, st) => a + (st.earnedXP != null ? st.earnedXP : st.baseXP), 0);
+    return s + parentXP + subXP;
+  }, 0);
+  // Completion rate = hanya parent tasks (umbrella unit of work)
+  const totalTaskCount = STATE.committedTasks.filter(t => !t.isSubtask).length;
+  const doneCount = doneTasks.filter(t => !t.isSubtask).length;
+  const completionRate = totalTaskCount > 0 ? Math.round(doneCount / totalTaskCount * 100) / 100 : 0;
+
+  STATE.activeSprint.tasks = tasks;
+  STATE.activeSprint.totalEarnedXP = totalEarnedXP;
+  STATE.activeSprint.completionRate = completionRate;
+
+  const today = now.toISOString().slice(0, 10);
+  const remainingXP = STATE.activeSprint.totalCommittedXP - totalEarnedXP;
+  const existing = STATE.activeSprint.burndownPoints.find(p => p.date === today);
+  if (!existing) STATE.activeSprint.burndownPoints.push({ date: today, remainingXP });
+  else existing.remainingXP = remainingXP;
+
+  // Recompute all-time XP
+  recalcAllTimeXP();
+
+  const idx = STATE.history.sprints.findIndex(s => s.id === STATE.activeSprint.id);
+  if (idx >= 0) STATE.history.sprints[idx] = STATE.activeSprint;
+  STATE.history.meta.lastUpdated = now.toISOString();
+  saveHistory();
+}
+
+function recalcAllTimeXP() {
+  const allTime = {};
+  for (const sprint of (STATE.history.sprints || [])) {
+    for (const task of (sprint.tasks || [])) {
+      if (task.status === 'done') {
+        const recipient = task.recipient || task.assignee || 'Kas Tim';
+        const xp = task.earnedXP != null ? task.earnedXP : task.baseXP;
+        allTime[recipient] = (allTime[recipient] || 0) + xp;
+      }
+      for (const st of (task.subtasks || [])) {
+        if (st.status === 'done') {
+          const stRecipient = st.recipient || st.assignee || task.assignee || 'Kas Tim';
+          const stXP = st.earnedXP != null ? st.earnedXP : st.baseXP;
+          allTime[stRecipient] = (allTime[stRecipient] || 0) + stXP;
+        }
+      }
+    }
+  }
+  STATE.history.members = {};
+  for (const [name, xp] of Object.entries(allTime)) {
+    STATE.history.members[name] = { allTimeXP: xp };
+  }
+}
+
+// ── EXPORT / IMPORT ──
+function exportJSON() {
+  const json = JSON.stringify(STATE.history, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'sprint-history.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function handleJSONImport(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      normalizeHistoryKeys(data);
+      for (const sprint of (data.sprints || [])) {
+        for (const task of (sprint.tasks || [])) {
+          if (task.rawContent) task.key = _makeKey(task.rawContent, task.assignee);
+          for (const st of (task.subtasks || [])) {
+            if (st.rawContent) st.key = _makeKey(st.rawContent, st.assignee);
+          }
+        }
+      }
+      STATE.history = data;
+      if (data.sprints && data.sprints.length > 0) {
+        const last = data.sprints[data.sprints.length - 1];
+        const endDate = last.endDate ? new Date(last.endDate) : null;
+        if (!endDate || endDate >= new Date()) {
+          STATE.activeSprint = last;
+          STATE.currentTasks = JSON.parse(JSON.stringify(last.tasks || []));
+          STATE.committedTasks = JSON.parse(JSON.stringify(last.tasks || []));
+        }
+      }
+      saveHistory();
+      renderAll();
+    } catch {
+      alert('Gagal membaca file JSON. Pastikan format benar.');
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// ── CSV UPLOAD ──
+function handleCSVUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    let tasks;
+    try {
+      tasks = parseCSV(ev.target.result);
+    } catch {
+      alert('Format tidak dikenali. Gunakan export CSV dari Todoist.');
+      event.target.value = '';
+      return;
+    }
+    if (tasks.length === 0) {
+      alert('Tidak ada task ditemukan. Pastikan menggunakan export CSV dari Todoist dan ada task bertipe "task".');
+      event.target.value = '';
+      return;
+    }
+    if (!STATE.activeSprint) {
+      STATE.pendingCSVTasks = tasks;
+      STATE.currentTasks = tasks;
+      const weekId = currentSprintId();
+      document.getElementById('modal-sprint-desc').textContent =
+        `Belum ada sprint aktif. Commit ${tasks.length} task dari CSV sebagai Sprint ${weekId}?`;
+      document.getElementById('modal-no-sprint').classList.add('open');
+    } else {
+      const allNewKeys = parseAllTaskKeys(ev.target.result);
+      const updated = detectCompleted(STATE.committedTasks, tasks, allNewKeys);
+      STATE.currentTasks = updated;
+      STATE.committedTasks = updated;
+      updateSprintFromTasks(updated);
+      renderAll();
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function closeModal() {
+  document.getElementById('modal-no-sprint').classList.remove('open');
+  STATE.pendingCSVTasks = null;
+  STATE.currentTasks = [];
+  renderAll();
+}
+
+function confirmCommitFromModal() {
+  document.getElementById('modal-no-sprint').classList.remove('open');
+  if (STATE.pendingCSVTasks) {
+    const weekId = currentSprintId();
+    commitSprint(weekId, STATE.pendingCSVTasks);
+    STATE.pendingCSVTasks = null;
+    renderAll();
+  }
+}
+
+// ── START SPRINT (button) ──
+function startSprint() {
+  if (STATE.activeSprint) return;
+  if (STATE.currentTasks.length === 0) {
+    alert('Upload CSV Todoist terlebih dahulu sebelum memulai sprint.');
+    return;
+  }
+  const weekId = currentSprintId();
+  if (confirm(`Mulai Sprint ${weekId} dengan ${STATE.currentTasks.length} task?`)) {
+    commitSprint(weekId, STATE.currentTasks);
+    renderAll();
+  }
+}
+
+// ── RENDER FUNCTIONS ──
+function renderAll() {
+  renderSprintHeader();
+  renderKanban();
+  renderLeaderboard();
+  renderHistory();
+  // Metrik only if panel is open
+  if (document.getElementById('panel-metrik').style.display !== 'none') {
+    renderMetrics();
+  }
+  // Onboarding
+  const hasAnyTasks = STATE.currentTasks.length > 0;
+  document.getElementById('onboarding-box').style.display = hasAnyTasks ? 'none' : 'block';
+}
+
+function updateSummaryBar() {
+  if (!STATE.activeSprint) {
+    document.getElementById('stat-tasks').textContent = '—';
+    document.getElementById('stat-earned').textContent = '— XP';
+    document.getElementById('stat-committed').textContent = '— XP';
+    document.getElementById('stat-completion').textContent = '—';
+    document.getElementById('stat-completion').style.color = '';
+    return;
+  }
+
+  const tasks = STATE.currentTasks;
+  const topLevel = tasks.filter(t => !t.isSubtask);
+  const totalTask = topLevel.length;
+  const doneTask = topLevel.filter(t => t.status === 'done').length;
+
+  // Live XP earned: sum from all done tasks + done subtasks
+  const xpEarned = tasks.reduce((sum, t) => {
+    const p = t.status === 'done' ? (t.earnedXP != null ? t.earnedXP : t.baseXP) : 0;
+    const s = (t.subtasks || []).filter(st => st.status === 'done')
+                .reduce((a, st) => a + (st.earnedXP != null ? st.earnedXP : st.baseXP), 0);
+    return sum + p + s;
+  }, 0);
+
+  // Committed XP: fixed at sprint start
+  const xpCommit = STATE.activeSprint.totalCommittedXP || 0;
+
+  const rate = totalTask > 0 ? Math.round(doneTask / totalTask * 100) : 0;
+
+  document.getElementById('stat-tasks').textContent = totalTask > 0 ? doneTask + ' / ' + totalTask : '—';
+  document.getElementById('stat-earned').textContent = xpEarned + ' XP';
+  document.getElementById('stat-committed').textContent = xpCommit ? xpCommit + ' XP' : '—';
+  document.getElementById('stat-completion').textContent = rate + '%';
+  document.getElementById('stat-completion').style.color =
+    rate >= 80 ? 'var(--hijau-laut)' : rate >= 50 ? 'var(--emas)' : 'var(--merah-badai)';
+}
+
+function renderSprintHeader() {
+  const weekId = STATE.activeSprint ? STATE.activeSprint.id : currentSprintId();
+  document.getElementById('sprint-id').textContent = weekId;
+
+  updateSummaryBar();
+
+  const startBtn = document.getElementById('btn-start-sprint');
+  if (STATE.activeSprint) {
+    startBtn.textContent = '✓ Sprint ' + weekId + ' aktif';
+    startBtn.disabled = true;
+    startBtn.style.opacity = '0.5';
+    startBtn.style.cursor = 'default';
+  } else {
+    startBtn.textContent = '⚓ Mulai Sprint ' + weekId;
+    startBtn.disabled = false;
+    startBtn.style.opacity = '1';
+    startBtn.style.cursor = 'pointer';
+  }
+}
+
+// ── SUBTASK HELPERS ──
+function subtaskProgress(subtasks) {
+  if (!subtasks || subtasks.length === 0) return '';
+  const done = subtasks.filter(s => s.status === 'done').length;
+  return `<span class="subtask-badge">📋 ${done}/${subtasks.length}</span>`;
+}
+
+function renderSubtasks(subtasks) {
+  if (!subtasks || subtasks.length === 0) return '';
+  return `<div class="subtask-section">
+    <div class="subtask-label">📋 Sub-tasks</div>
+    ${subtasks.map(st => `
+      <div class="subtask-row ${st.status === 'done' ? 'done' : ''}">
+        <span class="subtask-dot">${st.status === 'done' ? '✓' : '○'}</span>
+        <span class="subtask-title">${escapeHtml(st.title)}</span>
+        <span class="subtask-meta">
+          ${st.assignee ? `<span class="subtask-assignee">${escapeHtml(st.assignee)}</span>` : ''}
+          ${st.dueDate ? `<span class="subtask-date">📅 ${formatDate(st.dueDate)}</span>` : ''}
+          <span class="subtask-xp">+${st.baseXP} XP</span>
+        </span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function buildTaskCardHTML(task) {
+  const mInfo = getMemberInfo(task.assignee);
+  const color = mInfo ? mInfo.color : '--teks-redup';
+  const avatar = mInfo ? mInfo.avatar : (task.assignee ? task.assignee.slice(0,2).toUpperCase() : '?');
+  const xp = xpLabel(task);
+  const xpClass = task.status === 'done' ? 'xp-done' : task.status === 'doing' ? 'xp-doing' : 'xp-todo';
+
+  const dueStr = task.dueDate ? `<span class="task-due">📅 ${formatDate(task.dueDate)}</span>` : '';
+  const waitingBadge = task.hasWaiting ? `<span class="waiting-badge">⚠ Waiting</span>` : '';
+  const progressBadge = subtaskProgress(task.subtasks);
+  const assigneeStr = task.assignee
+    ? `<span class="assignee-chip"><span class="assignee-av" style="background:var(${color})">${avatar}</span>${escapeHtml(task.assignee)}</span>`
+    : `<span class="assignee-chip unassigned">👤 Unassigned</span>`;
+
+  const descHtml = task.description
+    ? `<div class="task-desc">${task.description.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div>`
+    : '';
+  const subtasksHtml = renderSubtasks(task.subtasks);
+  const expandHtml = (descHtml || subtasksHtml)
+    ? `<div class="task-body" style="display:none">${descHtml}${subtasksHtml}</div>`
+    : '';
+
+  return `<div class="task-card status-${task.status}" onclick="toggleCard(this)">
+    <div class="task-header">
+      <span class="prio-badge p${task.priority}">P${task.priority}</span>
+      ${waitingBadge}
+      <span class="task-title">${escapeHtml(task.title) || '(tanpa judul)'}</span>
+    </div>
+    <div class="task-meta">
+      ${assigneeStr}
+      ${dueStr}
+      ${progressBadge}
+      <span class="xp-badge ${xpClass}">${xp}</span>
+    </div>
+    ${expandHtml}
+  </div>`;
+}
+
+function renderKanban() {
+  const topLevel = STATE.currentTasks.filter(t => !t.isSubtask);
+  const todo  = topLevel.filter(t => t.status === 'todo');
+  const doing = topLevel.filter(t => t.status === 'doing');
+  const done  = topLevel.filter(t => t.status === 'done');
+
+  document.getElementById('col-todo-count').textContent = todo.length;
+  document.getElementById('col-doing-count').textContent = doing.length;
+  document.getElementById('col-done-count').textContent = done.length;
+  document.getElementById('col-todo-xp').textContent  = todo.reduce((s,t)=>s+t.baseXP,0) + ' XP';
+  document.getElementById('col-doing-xp').textContent = doing.reduce((s,t)=>s+t.baseXP,0) + ' XP';
+  document.getElementById('col-done-xp').textContent  = done.reduce((s,t)=>s+(t.earnedXP!=null?t.earnedXP:t.baseXP),0) + ' XP';
+
+  const empty = txt => `<div class="col-empty">${txt}</div>`;
+  const noSprint = `<div class="col-empty onboarding">Upload CSV Todoist untuk memuat task</div>`;
+
+  document.getElementById('col-todo-tasks').innerHTML  = todo.length  ? todo.map(buildTaskCardHTML).join('')  : (STATE.activeSprint ? empty('Tidak ada task') : noSprint);
+  document.getElementById('col-doing-tasks').innerHTML = doing.length ? doing.map(buildTaskCardHTML).join('') : empty('Tidak ada task aktif');
+  document.getElementById('col-done-tasks').innerHTML  = done.length  ? done.map(buildTaskCardHTML).join('')  : empty('Belum ada task selesai');
+}
+
+function renderLeaderboard() {
+  const members = TEAM_REGISTRY.members.map(m => {
+    const allTimeXP = STATE.history.members?.[m.name]?.allTimeXP || 0;
+    const sprintXP = STATE.activeSprint
+      ? (STATE.activeSprint.tasks || [])
+          .filter(t => t.status === 'done' && t.assignee === m.name)
+          .reduce((s, t) => s + (t.earnedXP != null ? t.earnedXP : t.baseXP), 0)
+      : 0;
+    return { ...m, allTimeXP, sprintXP };
+  });
+
+  members.sort((a, b) => b.allTimeXP - a.allTimeXP);
+  const maxXP = members[0]?.allTimeXP || 1;
+  const medals = ['🥇', '🥈', '🥉'];
+  const sprintTotal = members.reduce((s, m) => s + m.sprintXP, 0);
+
+  document.getElementById('leaderboard-sprint-label').textContent =
+    STATE.activeSprint && sprintTotal > 0
+      ? `${STATE.activeSprint.id}: +${sprintTotal} XP dikumpulkan`
+      : '';
+
+  document.getElementById('leaderboard-list').innerHTML = members.map((m, i) => {
+    const pct = maxXP > 0 ? Math.round(m.allTimeXP / maxXP * 100) : 0;
+    const rank = i < 3 ? medals[i] : (i + 1).toString();
+    const sprintBadge = m.sprintXP > 0
+      ? `<span class="sprint-xp-badge">+${m.sprintXP} XP</span>`
+      : `<span class="sprint-xp-zero">—</span>`;
+    return `<div class="lb-row">
+      <span class="lb-rank">${rank}</span>
+      <span class="lb-avatar" style="background:var(${m.color})">${m.avatar}</span>
+      <div class="lb-info">
+        <div class="lb-name">${m.name} <span class="lb-role">${m.role}</span></div>
+        <div class="lb-bar-wrap"><div class="lb-bar" style="width:${pct}%;background:var(${m.color})"></div></div>
+      </div>
+      <span class="lb-xp mono">${m.allTimeXP} XP</span>
+      ${sprintBadge}
+    </div>`;
+  }).join('') + (() => {
+    // Kas Tim — pool XP dari task tanpa assignee
+    const kasTimXP = STATE.history.members?.['Kas Tim']?.allTimeXP || 0;
+    if (kasTimXP === 0) return '';
+    const pct = maxXP > 0 ? Math.round(kasTimXP / maxXP * 100) : 0;
+    const kasSprintXP = STATE.activeSprint
+      ? (STATE.activeSprint.tasks || [])
+          .filter(t => t.status === 'done' && (t.recipient === 'Kas Tim' || (!t.assignee && !t.recipient)))
+          .reduce((s, t) => s + (t.earnedXP != null ? t.earnedXP : t.baseXP), 0)
+      : 0;
+    const kasBadge = kasSprintXP > 0
+      ? `<span class="sprint-xp-badge">+${kasSprintXP} XP</span>`
+      : `<span class="sprint-xp-zero">—</span>`;
+    return `<div class="lb-row" style="margin-top:8px;padding-top:12px;border-top:1px solid var(--border-tipis)">
+      <span class="lb-rank">🏴</span>
+      <span class="lb-avatar" style="background:var(--teks-redup);font-size:9px">KT</span>
+      <div class="lb-info">
+        <div class="lb-name">Kas Tim <span class="lb-role">XP dari task tanpa assignee</span></div>
+        <div class="lb-bar-wrap"><div class="lb-bar" style="width:${pct}%;background:var(--teks-redup)"></div></div>
+      </div>
+      <span class="lb-xp mono">${kasTimXP} XP</span>
+      ${kasBadge}
+    </div>`;
+  })();
+}
+
+function renderMetrics() {
+  const sprints = STATE.history.sprints || [];
+
+  // Velocity bar chart
+  const velCtx = document.getElementById('chart-velocity');
+  if (velCtx && sprints.length > 0) {
+    if (STATE.charts.velocity) STATE.charts.velocity.destroy();
+    const labels = sprints.map(s => s.id);
+    const data = sprints.map(s => s.totalEarnedXP || 0);
+    const activeId = STATE.activeSprint?.id;
+    const bgColors = labels.map(id => id === activeId ? '#e8b84b' : '#7ab8d8');
+    STATE.charts.velocity = new Chart(velCtx, {
+      type: 'bar',
+      data: { labels, datasets: [{ data, backgroundColor: bgColors, borderRadius: 4 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { font: { size: 10 } } },
+          y: { grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { font: { size: 10 } } }
+        }
+      }
+    });
+  } else if (velCtx && sprints.length === 0) {
+    const ctx2d = velCtx.getContext('2d');
+    ctx2d.clearRect(0, 0, velCtx.width, velCtx.height);
+  }
+
+  // Completion rate
+  const latestSprint = sprints[sprints.length - 1];
+  const rate = latestSprint ? Math.round((latestSprint.completionRate || 0) * 100) : 0;
+  document.getElementById('metric-completion-rate').textContent = rate + '%';
+  document.getElementById('metric-completion-bar').style.width = rate + '%';
+  document.getElementById('metric-completion-bar').style.background =
+    rate >= 70 ? 'var(--hijau-laut)' : rate >= 50 ? 'var(--emas)' : 'var(--merah-badai)';
+
+  // Burndown line chart
+  const bdCtx = document.getElementById('chart-burndown');
+  if (bdCtx && STATE.activeSprint && (STATE.activeSprint.burndownPoints || []).length > 0) {
+    if (STATE.charts.burndown) STATE.charts.burndown.destroy();
+    const pts = STATE.activeSprint.burndownPoints;
+    const startXP = STATE.activeSprint.totalCommittedXP;
+    const startDate = pts[0].date;
+    const endDate = STATE.activeSprint.endDate || pts[pts.length-1].date;
+
+    const allDates = [...new Set([startDate, ...pts.map(p => p.date), endDate])].sort();
+
+    // Build ideal dataset (linear from startXP to 0)
+    const totalDays = allDates.length;
+    const idealData = allDates.map((d, i) => Math.round(startXP * (1 - i / (totalDays - 1 || 1))));
+
+    // Actual data — only for dates where we have data points
+    const ptMap = Object.fromEntries(pts.map(p => [p.date, p.remainingXP]));
+    const actualData = allDates.map(d => ptMap[d] != null ? ptMap[d] : null);
+
+    STATE.charts.burndown = new Chart(bdCtx, {
+      type: 'line',
+      data: {
+        labels: allDates,
+        datasets: [
+          {
+            label: 'Ideal',
+            data: idealData,
+            borderColor: '#4a5a6a',
+            borderDash: [4, 4],
+            tension: 0,
+            pointRadius: 0,
+            fill: false
+          },
+          {
+            label: 'Aktual',
+            data: actualData,
+            borderColor: '#e8b84b',
+            backgroundColor: 'rgba(232,184,75,0.08)',
+            tension: 0.3,
+            fill: true,
+            pointBackgroundColor: '#e8b84b',
+            spanGaps: false
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            labels: { font: { size: 11 }, color: '#9ba8b5', boxWidth: 14 }
+          }
+        },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { font: { size: 10 } } },
+          y: { grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { font: { size: 10 } } }
+        }
+      }
+    });
+  }
+}
+
+function renderHistory() {
+  const sprints = [...(STATE.history.sprints || [])].reverse();
+  if (sprints.length === 0) {
+    document.getElementById('history-table').innerHTML =
+      '<tr><td colspan="6" style="text-align:center;color:var(--teks-redup);padding:20px">Belum ada histori sprint</td></tr>';
+    return;
+  }
+  document.getElementById('history-table').innerHTML = sprints.map(s => {
+    const rate = Math.round((s.completionRate || 0) * 100);
+    const rateColor = rate >= 70 ? 'var(--hijau-laut)' : rate >= 50 ? 'var(--emas)' : 'var(--merah-badai)';
+    return `<tr>
+      <td class="mono">${s.id}</td>
+      <td class="mono">${s.startDate || '—'}</td>
+      <td class="mono">${s.endDate || '—'}</td>
+      <td class="mono">${s.totalCommittedXP || 0} XP</td>
+      <td class="mono">${s.totalEarnedXP || 0} XP</td>
+      <td class="mono" style="color:${rateColor}">${rate}%</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── UI INTERACTIONS ──
+function toggleCard(el) {
+  const body = el.querySelector('.task-body');
+  if (!body) return;
+  body.style.display = body.style.display === 'none' ? 'block' : 'none';
+}
+
+function toggleSection(panelId) {
+  const panel = document.getElementById(panelId);
+  const hdr = document.getElementById('hdr-' + panelId);
+  if (!panel) return;
+  const willOpen = panel.style.display === 'none';
+  panel.style.display = willOpen ? 'block' : 'none';
+  if (hdr) hdr.classList.toggle('open', willOpen);
+  if (willOpen && panelId === 'panel-metrik') {
+    setTimeout(renderMetrics, 50);
+  }
+}
+
+// ── RESET ──
+function resetAllData() {
+  if (!confirm('Reset semua data sprint? Tindakan ini tidak bisa dibatalkan.')) return;
+  localStorage.removeItem(LS_KEY);
+  STATE.history = { sprints: [], members: {} };
+  STATE.activeSprint = null;
+  STATE.currentTasks = [];
+  STATE.committedTasks = [];
+  STATE.pendingCSVTasks = null;
+  renderAll();
+}
+
+// ── CHART.JS DEFAULTS ──
+Chart.defaults.color = '#9ba8b5';
+Chart.defaults.font.family = 'DM Mono';
+Chart.defaults.plugins.legend.display = false;
+
+// ── INIT ──
+loadHistory();
+renderAll();
+</script>
+
+</body>
+</html>

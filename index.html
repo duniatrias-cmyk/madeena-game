@@ -117,6 +117,7 @@
 .nav-card.prioritas-5::before { background: var(--langit); }
 .nav-card.prioritas-6::before { background: linear-gradient(90deg, var(--langit), var(--emas)); }
 .nav-card.prioritas-7::before { background: linear-gradient(90deg, var(--langit), var(--hijau-laut)); }
+.nav-card.prioritas-8::before { background: linear-gradient(90deg, var(--emas), var(--ungu)); }
 
 .nav-card-num {
   font-family: var(--font-mono);
@@ -322,7 +323,8 @@ html[data-theme="light"] #storm-canvas { opacity: 0.4; }
       <a href="layers/04-muatan.html" class="nav-link">Muatan</a>
       <a href="layers/05-tiktok.html" class="nav-link">Mesin TikTok</a>
       <a href="layers/06-kr-tracker.html" class="nav-link">Kamar Mesin</a>
-      <a href="layers/07-pelabuhan.html" class="nav-link">Pelabuhan<span class="nav-baru">BARU</span></a>
+      <a href="layers/07-pelabuhan.html" class="nav-link">Pelabuhan</a>
+      <a href="layers/08-dek-operasi.html" class="nav-link">Dek Operasi<span class="nav-baru">BARU</span></a>
     </div>
     <button class="dm-toggle" id="dm-toggle" aria-label="Toggle dark/light mode">
       <span id="dm-icon">🌙</span>
@@ -493,6 +495,19 @@ const layers = [
       return Math.round(ok / WSSI.skus.length * 100);
     })(),
     progColor: '#7ab8d8'
+  },
+  {
+    href: 'layers/08-dek-operasi.html',
+    prioritas: 8,
+    num: 'PRIORITAS 08',
+    icon: '🧭',
+    title: 'Dek Operasi',
+    sub: 'Kanban SCRUM · XP Gamifikasi · Sprint board tim Madeena.',
+    bisnis: 'SCRUM · XP · LEADERBOARD',
+    status: 'BARU',
+    statusCls: 'badge-amber',
+    prog: 0,
+    progColor: 'var(--emas)'
   }
 ];
 
@@ -626,6 +641,7 @@ document.getElementById('compass-nav').innerHTML = layers.map(l =>
     <a href="layers/05-tiktok.html" class="bottom-nav-item">       <span class="bottom-nav-icon">⚙️</span><span class="bottom-nav-lbl">Mesin</span></a>
     <a href="layers/06-kr-tracker.html" class="bottom-nav-item">    <span class="bottom-nav-icon">🔧</span><span class="bottom-nav-lbl">K.Mesin</span></a>
     <a href="layers/07-pelabuhan.html" class="bottom-nav-item">    <span class="bottom-nav-icon">⚓</span><span class="bottom-nav-lbl">Pelabuhan</span></a>
+    <a href="layers/08-dek-operasi.html" class="bottom-nav-item"><span class="bottom-nav-icon">🧭</span><span class="bottom-nav-lbl">Dek Ops</span></a>
   </div>
 </nav>
 </body>
