@@ -48,7 +48,7 @@ const DATA = {
   anginBuritan: [
     { nama: 'Ramadan & Lebaran', minggu: [6,7,8,9,10,14], warna: '#f5a623', ikon: '🌙', multiplier: '3–4×', selesai: true },
     { nama: '6.6 Sale',          minggu: [23],             warna: '#5b9cf6', ikon: '⚡', multiplier: '2–3×', selesai: true },
-    { nama: 'Idul Adha',         minggu: [24],             warna: '#3ecf7a', ikon: '🌿', multiplier: '2–3×', selesai: false },
+    { nama: 'Idul Adha',         minggu: [24],             warna: '#3ecf7a', ikon: '🌿', multiplier: '2–3×', selesai: true  },
     { nama: '7.7 Sale',          minggu: [27],             warna: '#a78bfa', ikon: '⚡', multiplier: '2–3×', selesai: false }
   ],
 

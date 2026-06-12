@@ -13,7 +13,7 @@
 /* ── Kanban Board ── */
 .kanban-board {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1.5fr 1fr;
   gap: 16px;
   margin-bottom: 32px;
 }
@@ -32,7 +32,17 @@
 }
 .kanban-col.col-doing {
   border-color: var(--emas);
-  box-shadow: 0 0 12px rgba(232,184,75,0.12);
+  animation: doing-pulse 2.5s ease-in-out infinite;
+}
+@keyframes doing-pulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(232,184,75,0.2), 0 0 28px rgba(232,184,75,0.06);
+    border-color: rgba(232,184,75,0.7);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(232,184,75,0.55), 0 0 60px rgba(232,184,75,0.18), inset 0 0 20px rgba(232,184,75,0.04);
+    border-color: rgba(232,184,75,1);
+  }
 }
 .kanban-col.col-done {
   border-color: var(--hijau-laut);
@@ -95,6 +105,19 @@
 .task-card.status-doing { border-left: 3px solid var(--emas); }
 .task-card.status-done  { border-left: 3px solid var(--hijau-laut); opacity: 0.72; }
 
+.task-breadcrumb {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--teks-redup);
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  display: block;
+}
+
 .task-header {
   display: flex;
   align-items: flex-start;
@@ -106,6 +129,10 @@
   color: var(--teks-primer);
   line-height: 1.45;
   flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .status-done .task-title { text-decoration: line-through; color: var(--teks-kedua); }
 
@@ -959,6 +986,7 @@ function parseCSV(csvText) {
 
   let currentSection = null;
   let lastIndent1Task = null;
+  let lastIndent2Task = null;
   const tasks = [];
 
   for (const row of rows) {
@@ -968,6 +996,7 @@ function parseCSV(csvText) {
     if (row.TYPE === 'section') {
       currentSection = row.CONTENT?.trim() || null;
       lastIndent1Task = null;
+      lastIndent2Task = null;
       continue;
     }
 
@@ -993,7 +1022,7 @@ function parseCSV(csvText) {
       content.startsWith('* **') ||
       /^\* \d+\./.test(content)
     );
-    if (isDecorativeHeader) { lastIndent1Task = null; continue; }
+    if (isDecorativeHeader) { lastIndent1Task = null; lastIndent2Task = null; continue; }
 
     const indent = parseInt(row.INDENT) || 1;
     const assigneeRaw = row.RESPONSIBLE ? row.RESPONSIBLE.trim() : '';
@@ -1012,61 +1041,40 @@ function parseCSV(csvText) {
 
     const taskKey = _makeKey(content, assignee);
 
-    if (indent === 1) {
-      const task = {
-        key: taskKey,
-        title,
-        rawContent: content,
-        assignee,
-        priority,
-        baseXP,
-        dueDate,
-        status,
-        hasWaiting,
-        description: row.DESCRIPTION || '',
-        subtasks: [],
-        isSubtask: false,
-        committedStatus: status,
-        completedDate: null,
-        earnedXP: null,
-        bonusApplied: false
-      };
-      tasks.push(task);
-      lastIndent1Task = task;
-
-    } else if (indent >= 2 && lastIndent1Task) {
-      lastIndent1Task.subtasks.push({
-        key: taskKey,
-        title,
-        rawContent: content,
-        assignee,
-        priority,
-        baseXP,
-        dueDate,
-        hasWaiting,
-        status: 'pending'
-      });
-
-    } else if (indent >= 2 && !lastIndent1Task) {
-      tasks.push({
-        key: taskKey,
-        title,
-        rawContent: content,
-        assignee,
-        priority,
-        baseXP,
-        dueDate,
-        status,
-        hasWaiting,
-        description: row.DESCRIPTION || '',
-        subtasks: [],
-        isSubtask: true,
-        committedStatus: status,
-        completedDate: null,
-        earnedXP: null,
-        bonusApplied: false
-      });
+    // Determine parent reference for visual breadcrumb
+    let parentKey = null;
+    let parentTitle = null;
+    if (indent === 2 && lastIndent1Task) {
+      parentKey = lastIndent1Task.key;
+      parentTitle = lastIndent1Task.title;
+    } else if (indent >= 3) {
+      const ref = lastIndent2Task || lastIndent1Task;
+      if (ref) { parentKey = ref.key; parentTitle = ref.title; }
     }
+
+    const task = {
+      key: taskKey,
+      title,
+      rawContent: content,
+      assignee,
+      priority,
+      baseXP,
+      dueDate,
+      status,
+      hasWaiting,
+      description: row.DESCRIPTION || '',
+      indentLevel: indent,
+      parentKey,
+      parentTitle,
+      committedStatus: status,
+      completedDate: null,
+      earnedXP: null,
+      bonusApplied: false
+    };
+    tasks.push(task);
+
+    if (indent === 1) { lastIndent1Task = task; lastIndent2Task = null; }
+    else if (indent === 2) { lastIndent2Task = task; }
   }
 
   return tasks;
@@ -1087,62 +1095,30 @@ function parseAllTaskKeys(csvText) {
 }
 
 // ── DELTA DETECTION ──
-// allNewKeys (opsional): Set berisi key dari SEMUA section CSV.
-// Jika tidak diberikan, fallback ke newCSVTasks saja (perilaku lama).
+// Setiap task (termasuk mantan sub-task) diperlakukan sebagai independent unit.
+// Tidak ada cascade: parent done ≠ child done. Masing-masing dicek key-nya sendiri.
 function detectCompleted(committedTasks, newCSVTasks, allNewKeys) {
-  // Gunakan allNewKeys jika tersedia, supaya task di section non-TODO/DOING
-  // tidak salah dideteksi sebagai selesai.
-  const newKeySet = allNewKeys || (() => {
-    const s = new Set();
-    for (const t of newCSVTasks) {
-      s.add(t.key);
-      for (const st of (t.subtasks || [])) s.add(st.key);
-    }
-    return s;
-  })();
+  const newKeySet = allNewKeys || new Set(newCSVTasks.map(t => t.key));
   const today = new Date();
 
   return committedTasks.map(task => {
-    const updatedSubtasks = (task.subtasks || []).map(st => {
-      if (st.status === 'done') {
-        if (newKeySet.has(st.key)) return { ...st, status: 'pending', completedDate: null, earnedXP: null };
-        return st;
-      }
-      if (!newKeySet.has(st.key)) {
-        const bonus = st.dueDate && today <= new Date(st.dueDate) ? 0.2 : 0;
-        const earnedXP = Math.round(st.baseXP * (1 + bonus));
-        const recipient = st.assignee || task.assignee || 'Kas Tim';
-        return { ...st, status: 'done', completedDate: today.toISOString(), earnedXP, recipient };
-      }
-      return st;
-    });
-
     if (task.status === 'done') {
-      // Jika task sudah done tapi muncul lagi di CSV baru → restore ke status CSV
+      // Sudah done tapi muncul lagi di CSV → restore ke status CSV
       if (newKeySet.has(task.key)) {
         const csvTask = newCSVTasks.find(t => t.key === task.key);
-        if (csvTask) return { ...task, status: csvTask.status, subtasks: updatedSubtasks, completedDate: null, earnedXP: null };
+        if (csvTask) return { ...task, status: csvTask.status, completedDate: null, earnedXP: null };
       }
-      return { ...task, subtasks: updatedSubtasks };
+      return task;
     }
 
+    // Hilang dari CSV → selesai, dapat XP
     if (!newKeySet.has(task.key)) {
       const dueDate = task.dueDate ? new Date(task.dueDate) : null;
       const bonus = dueDate && today <= dueDate ? 0.2 : 0;
       const earnedXP = Math.round(task.baseXP * (1 + bonus));
       const recipient = task.assignee || 'Kas Tim';
-      // CASCADE: parent done → semua subtask yang belum done ikut selesai + dapat XP sendiri
-      const cascadedSubtasks = updatedSubtasks.map(st => {
-        if (st.status === 'done') return st; // sudah done independen sebelumnya, pertahankan
-        const stDue = st.dueDate ? new Date(st.dueDate) : null;
-        const stBonus = stDue && today <= stDue ? 0.2 : 0;
-        const stEarnedXP = Math.round(st.baseXP * (1 + stBonus));
-        const stRecipient = st.assignee || task.assignee || 'Kas Tim';
-        return { ...st, status: 'done', completedDate: today.toISOString(), earnedXP: stEarnedXP, recipient: stRecipient };
-      });
       return {
         ...task,
-        subtasks: cascadedSubtasks,
         status: 'done',
         completedDate: today.toISOString(),
         earnedXP,
@@ -1151,8 +1127,9 @@ function detectCompleted(committedTasks, newCSVTasks, allNewKeys) {
       };
     }
 
+    // Masih ada di CSV → update status dari CSV
     const updated = newCSVTasks.find(t => t.key === task.key);
-    return { ...task, status: updated ? updated.status : task.status, subtasks: updatedSubtasks };
+    return { ...task, status: updated ? updated.status : task.status };
   });
 }
 
@@ -1164,9 +1141,6 @@ function normalizeHistoryKeys(history) {
   for (const sprint of (history.sprints || [])) {
     for (const task of (sprint.tasks || [])) {
       if (task.key) task.key = normalizeTaskKey(task.key);
-      for (const st of (task.subtasks || [])) {
-        if (st.key) st.key = normalizeTaskKey(st.key);
-      }
     }
   }
 }
@@ -1183,9 +1157,6 @@ function loadHistory() {
     for (const sprint of (parsed.sprints || [])) {
       for (const task of (sprint.tasks || [])) {
         if (task.rawContent) task.key = _makeKey(task.rawContent, task.assignee);
-        for (const st of (task.subtasks || [])) {
-          if (st.rawContent) st.key = _makeKey(st.rawContent, st.assignee);
-        }
       }
     }
     STATE.history = parsed;
@@ -1232,20 +1203,13 @@ function commitSprint(weekId, tasks) {
   const sprintTasks = tasks.map(t => ({
     ...t,
     key: t.rawContent ? _makeKey(t.rawContent, t.assignee) : t.key,
-    committedStatus: t.status,
-    subtasks: (t.subtasks || []).map(st => ({
-      ...st,
-      key: st.rawContent ? _makeKey(st.rawContent, st.assignee) : st.key
-    }))
+    committedStatus: t.status
   }));
   const sprintStart = getWeekStart(now);
   const sprintEnd = new Date(sprintStart);
   sprintEnd.setDate(sprintEnd.getDate() + 6);
-  // Subtask = pekerjaan nyata → XP subtask juga masuk committed
-  const totalCommittedXP = sprintTasks.reduce((s, t) => {
-    const subXP = (t.subtasks || []).reduce((a, st) => a + (st.baseXP || 0), 0);
-    return s + (t.baseXP || 0) + subXP;
-  }, 0);
+  // Semua task flat — XP dihitung langsung
+  const totalCommittedXP = sprintTasks.reduce((s, t) => s + (t.baseXP || 0), 0);
 
   const sprint = {
     id: weekId,
@@ -1276,16 +1240,11 @@ function updateSprintFromTasks(tasks) {
   if (!STATE.activeSprint) return;
   const now = new Date();
   const doneTasks = tasks.filter(t => t.status === 'done');
-  // Earned XP = parent XP + subtask XP (subtask = pekerjaan nyata)
-  const totalEarnedXP = tasks.reduce((s, t) => {
-    const parentXP = t.status === 'done' ? (t.earnedXP != null ? t.earnedXP : t.baseXP) : 0;
-    const subXP = (t.subtasks || []).filter(st => st.status === 'done')
-      .reduce((a, st) => a + (st.earnedXP != null ? st.earnedXP : st.baseXP), 0);
-    return s + parentXP + subXP;
-  }, 0);
-  // Completion rate = hanya parent tasks (umbrella unit of work)
-  const totalTaskCount = STATE.committedTasks.filter(t => !t.isSubtask).length;
-  const doneCount = doneTasks.filter(t => !t.isSubtask).length;
+  // Semua task flat — XP langsung dari tiap task
+  const totalEarnedXP = doneTasks.reduce((s, t) => s + (t.earnedXP != null ? t.earnedXP : t.baseXP), 0);
+  // Completion rate = semua task (flat)
+  const totalTaskCount = STATE.committedTasks.length;
+  const doneCount = doneTasks.length;
   const completionRate = totalTaskCount > 0 ? Math.round(doneCount / totalTaskCount * 100) / 100 : 0;
 
   STATE.activeSprint.tasks = tasks;
@@ -1315,13 +1274,6 @@ function recalcAllTimeXP() {
         const recipient = task.recipient || task.assignee || 'Kas Tim';
         const xp = task.earnedXP != null ? task.earnedXP : task.baseXP;
         allTime[recipient] = (allTime[recipient] || 0) + xp;
-      }
-      for (const st of (task.subtasks || [])) {
-        if (st.status === 'done') {
-          const stRecipient = st.recipient || st.assignee || task.assignee || 'Kas Tim';
-          const stXP = st.earnedXP != null ? st.earnedXP : st.baseXP;
-          allTime[stRecipient] = (allTime[stRecipient] || 0) + stXP;
-        }
       }
     }
   }
@@ -1354,9 +1306,6 @@ function handleJSONImport(event) {
       for (const sprint of (data.sprints || [])) {
         for (const task of (sprint.tasks || [])) {
           if (task.rawContent) task.key = _makeKey(task.rawContent, task.assignee);
-          for (const st of (task.subtasks || [])) {
-            if (st.rawContent) st.key = _makeKey(st.rawContent, st.assignee);
-          }
         }
       }
       STATE.history = data;
@@ -1475,16 +1424,12 @@ function updateSummaryBar() {
   }
 
   const tasks = STATE.currentTasks;
-  const topLevel = tasks.filter(t => !t.isSubtask);
-  const totalTask = topLevel.length;
-  const doneTask = topLevel.filter(t => t.status === 'done').length;
+  const totalTask = tasks.length;
+  const doneTask = tasks.filter(t => t.status === 'done').length;
 
-  // Live XP earned: sum from all done tasks + done subtasks
+  // Semua task flat — XP langsung
   const xpEarned = tasks.reduce((sum, t) => {
-    const p = t.status === 'done' ? (t.earnedXP != null ? t.earnedXP : t.baseXP) : 0;
-    const s = (t.subtasks || []).filter(st => st.status === 'done')
-                .reduce((a, st) => a + (st.earnedXP != null ? st.earnedXP : st.baseXP), 0);
-    return sum + p + s;
+    return sum + (t.status === 'done' ? (t.earnedXP != null ? t.earnedXP : t.baseXP) : 0);
   }, 0);
 
   // Committed XP: fixed at sprint start
@@ -1520,29 +1465,6 @@ function renderSprintHeader() {
   }
 }
 
-// ── SUBTASK HELPERS ──
-function subtaskProgress(subtasks) {
-  if (!subtasks || subtasks.length === 0) return '';
-  const done = subtasks.filter(s => s.status === 'done').length;
-  return `<span class="subtask-badge">📋 ${done}/${subtasks.length}</span>`;
-}
-
-function renderSubtasks(subtasks) {
-  if (!subtasks || subtasks.length === 0) return '';
-  return `<div class="subtask-section">
-    <div class="subtask-label">📋 Sub-tasks</div>
-    ${subtasks.map(st => `
-      <div class="subtask-row ${st.status === 'done' ? 'done' : ''}">
-        <span class="subtask-dot">${st.status === 'done' ? '✓' : '○'}</span>
-        <span class="subtask-title">${escapeHtml(st.title)}</span>
-        <span class="subtask-meta">
-          ${st.assignee ? `<span class="subtask-assignee">${escapeHtml(st.assignee)}</span>` : ''}
-          ${st.dueDate ? `<span class="subtask-date">📅 ${formatDate(st.dueDate)}</span>` : ''}
-          <span class="subtask-xp">+${st.baseXP} XP</span>
-        </span>
-      </div>`).join('')}
-  </div>`;
-}
 
 function buildTaskCardHTML(task) {
   const mInfo = getMemberInfo(task.assignee);
@@ -1553,20 +1475,23 @@ function buildTaskCardHTML(task) {
 
   const dueStr = task.dueDate ? `<span class="task-due">📅 ${formatDate(task.dueDate)}</span>` : '';
   const waitingBadge = task.hasWaiting ? `<span class="waiting-badge">⚠ Waiting</span>` : '';
-  const progressBadge = subtaskProgress(task.subtasks);
   const assigneeStr = task.assignee
     ? `<span class="assignee-chip"><span class="assignee-av" style="background:var(${color})">${avatar}</span>${escapeHtml(task.assignee)}</span>`
     : `<span class="assignee-chip unassigned">👤 Unassigned</span>`;
 
+  const breadcrumb = task.parentTitle
+    ? `<div class="task-breadcrumb">↳ ${escapeHtml(task.parentTitle)}</div>`
+    : '';
+
   const descHtml = task.description
     ? `<div class="task-desc">${task.description.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div>`
     : '';
-  const subtasksHtml = renderSubtasks(task.subtasks);
-  const expandHtml = (descHtml || subtasksHtml)
-    ? `<div class="task-body" style="display:none">${descHtml}${subtasksHtml}</div>`
+  const expandHtml = descHtml
+    ? `<div class="task-body" style="display:none">${descHtml}</div>`
     : '';
 
   return `<div class="task-card status-${task.status}" onclick="toggleCard(this)">
+    ${breadcrumb}
     <div class="task-header">
       <span class="prio-badge p${task.priority}">P${task.priority}</span>
       ${waitingBadge}
@@ -1575,7 +1500,6 @@ function buildTaskCardHTML(task) {
     <div class="task-meta">
       ${assigneeStr}
       ${dueStr}
-      ${progressBadge}
       <span class="xp-badge ${xpClass}">${xp}</span>
     </div>
     ${expandHtml}
@@ -1583,10 +1507,10 @@ function buildTaskCardHTML(task) {
 }
 
 function renderKanban() {
-  const topLevel = STATE.currentTasks.filter(t => !t.isSubtask);
-  const todo  = topLevel.filter(t => t.status === 'todo');
-  const doing = topLevel.filter(t => t.status === 'doing');
-  const done  = topLevel.filter(t => t.status === 'done');
+  const allTasks = STATE.currentTasks;
+  const todo  = allTasks.filter(t => t.status === 'todo');
+  const doing = allTasks.filter(t => t.status === 'doing');
+  const done  = allTasks.filter(t => t.status === 'done');
 
   document.getElementById('col-todo-count').textContent = todo.length;
   document.getElementById('col-doing-count').textContent = doing.length;
@@ -1821,8 +1745,70 @@ Chart.defaults.font.family = 'DM Mono';
 Chart.defaults.plugins.legend.display = false;
 
 // ── INIT ──
-loadHistory();
-renderAll();
+// Helper: apply normalization yang sama seperti loadHistory & handleJSONImport
+function _applyHistoryData(data) {
+  normalizeHistoryKeys(data);
+  for (const sprint of (data.sprints || [])) {
+    for (const task of (sprint.tasks || [])) {
+      if (task.rawContent) task.key = _makeKey(task.rawContent, task.assignee);
+    }
+  }
+  STATE.history = data;
+  if (data.sprints && data.sprints.length > 0) {
+    const last = data.sprints[data.sprints.length - 1];
+    const endDate = last.endDate ? new Date(last.endDate) : null;
+    if (!endDate || endDate >= new Date()) {
+      STATE.activeSprint = last;
+      STATE.currentTasks = JSON.parse(JSON.stringify(last.tasks || []));
+      STATE.committedTasks = JSON.parse(JSON.stringify(last.tasks || []));
+    }
+  }
+}
+
+async function initDashboard() {
+  // 1. Load localStorage dulu sebagai baseline
+  loadHistory();
+  const lsSprintCount = STATE.history.sprints ? STATE.history.sprints.length : 0;
+  const lsUpdated = STATE.history.meta && STATE.history.meta.lastUpdated
+    ? new Date(STATE.history.meta.lastUpdated) : null;
+
+  // 2. Coba fetch dari GitHub
+  try {
+    const res = await fetch('../data/sprint-history.json?_=' + Date.now());
+    if (res.ok) {
+      const ghData = await res.json();
+      const ghSprintCount = ghData.sprints ? ghData.sprints.length : 0;
+      const ghUpdated = ghData.meta && ghData.meta.lastUpdated
+        ? new Date(ghData.meta.lastUpdated) : null;
+
+      // GitHub menang jika: punya data lebih baru (lastUpdated) atau lebih banyak sprint
+      const ghIsNewer = ghSprintCount > 0 && (
+        (ghUpdated && lsUpdated && ghUpdated > lsUpdated) ||
+        (ghUpdated && !lsUpdated) ||
+        (!ghUpdated && ghSprintCount > lsSprintCount)
+      );
+
+      if (ghIsNewer) {
+        _applyHistoryData(ghData);
+        saveHistory(); // sync ke localStorage
+        console.info('[Dek Operasi] Data dimuat dari GitHub (lebih baru).');
+      } else if (ghSprintCount > 0 && lsSprintCount === 0) {
+        // localStorage kosong, pakai GitHub
+        _applyHistoryData(ghData);
+        saveHistory();
+        console.info('[Dek Operasi] Data dimuat dari GitHub (localStorage kosong).');
+      } else {
+        console.info('[Dek Operasi] Menggunakan data localStorage (lebih baru atau sama).');
+      }
+    }
+  } catch (e) {
+    console.info('[Dek Operasi] Tidak bisa fetch dari GitHub, pakai localStorage:', e.message);
+  }
+
+  renderAll();
+}
+
+initDashboard();
 </script>
 
 </body>

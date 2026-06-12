@@ -490,7 +490,7 @@ const trackLeftPx   = 60;
 const trackRightPx  = 80;
 document.getElementById('angin-markers').innerHTML = DATA.anginBuritan.map(a => {
   const wPct = (a.minggu[0] - 1) / 52;
-  const leftCss = `calc(${trackLeftPx}px + ${wPct * (100 - 12)}% - 16px)`;
+  const leftCss = `calc(${trackLeftPx}px + ${wPct * (100 - 12)}%)`;
   const selesai = a.selesai;
   const col = selesai ? a.warna : 'rgba(255,255,255,0.3)';
   return `<div class="angin-marker" style="left:${leftCss};top:28%">
