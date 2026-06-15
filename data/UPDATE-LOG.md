@@ -1,3 +1,79 @@
+# Update Log — 15 Jun 2026
+
+## weekly.js — PROMPT-UPDATE-DATA (W24 final + demand W21–W24)
+
+**Sumber data:** mart_sales_tra_so_rts + mart_inventory via PostgreSQL
+
+| Metrik | Sebelumnya | Sekarang |
+|---|---|---|
+| mingguTerakhir | W24 | W24 (W25 belum ada data) |
+| tanggalUpdate | 12 Jun 2026 | 15 Jun 2026 |
+| W24 GMV total | 141.763.620 | **172.529.544** (+21%) |
+| YTD | ~10,6 M | **~10,63 M** |
+
+### W24 seriMinggu — update final
+
+| Series | Lama | Baru | Δ |
+|---|---|---|---|
+| Reeyana Jaket | 55.922.165 | 68.019.165 | +21,6% |
+| Reeyana HC | 20.266.500 | 24.203.500 | +19,4% |
+| Reeyana BDDA | 6.853.000 | 8.277.000 | +20,8% |
+| Heekaya HC | 3.107.000 | 3.975.000 | +27,9% |
+| Heekaya Jaket | 11.499.000 | 13.378.000 | +16,3% |
+| Reeyana | 7.897.000 | 9.077.000 | +14,9% |
+| Airees DPP | 6.885.000 | 8.291.014 | +20,4% |
+| Heekaya DPP | 7.345.000 | 9.966.000 | +35,7% |
+| Reeyana Prayer Mat | 2.596.000 | 2.714.000 | +4,5% |
+| Zhafira Signature Tasbih New | 1.817.400 | 2.225.400 | +22,5% |
+| Abbasy | 2.288.000 | 2.704.000 | +18,2% |
+| Alamee HC | 3.552.055 | 3.996.055 | +12,5% |
+
+### Demand diperbarui (window W21–W24, sebelumnya W20–W23)
+
+| Series | Demand Lama | Demand Baru | Δ |
+|---|---|---|---|
+| Reeyana Jaket | 888 | 837 | -6% |
+| Reeyana HC | 900 | 754 | -16% |
+| Reeyana BDDA | 203 | 167 | -18% |
+| Heekaya HC | 66 | 58 | -12% |
+| Heekaya Jaket | 78 | 86 | +10% |
+| Reeyana | 102 | 96 | -6% |
+| Airees DPP | 393 | 349 | -11% |
+| Heekaya DPP | 472 | 506 | +7% |
+| Reeyana Prayer Mat | 28 | 31 | +11% |
+| Zhafira Signature Tasbih New | 294 | 236 | -20% |
+| Abbasy | 71 | 52 | -27% |
+| Alamee HC | 31 | 38 | +23% |
+| Lumee | 15 | 6 | -60% |
+
+_Demand turun di banyak series karena W24 (Idul Adha) lebih rendah dari W23 (6.6 Sale)._
+
+### Cover stok (stok per 11 Jun ÷ demand baru)
+
+| Series | Stok | Demand | Cover |
+|---|---|---|---|
+| Reeyana Jaket | 3.229 | 837 | **3,9 mgg** 🔴 |
+| Reeyana HC | 4.523 | 754 | 6,0 mgg |
+| Reeyana | 210 | 96 | **2,2 mgg** 🔴 |
+| Heekaya HC | 208 | 58 | **3,6 mgg** 🔴 |
+| Heekaya Jaket | 611 | 86 | 7,1 mgg |
+| Abbasy | 625 | 52 | 12,0 mgg |
+| Reeyana Prayer Mat | 633 | 31 | 20,4 mgg |
+| Reeyana BDDA | 5.472 | 167 | 32,8 mgg |
+| Airees DPP | 23.746 | 349 | 68,0 mgg |
+| Heekaya DPP | 30.175 | 506 | 59,6 mgg |
+| Zhafira Signature Tasbih New | 2.891 | 236 | 12,2 mgg |
+| Alamee HC | 2.060 | 38 | 54,2 mgg |
+| Lumee | 750 | 6 | 125 mgg |
+| Heekaya per Juz | 4.576 | 0 | ∞ |
+
+**KRITIS — cover < 4 minggu:**
+- **Reeyana**: 210 ÷ 96 = **2,2 minggu** 🔴
+- **Heekaya HC**: 208 ÷ 58 = **3,6 minggu** 🔴
+- **Reeyana Jaket**: 3.229 ÷ 837 = **3,9 minggu** 🔴
+
+---
+
 # Update Log — 12 Jun 2026
 
 ## weekly.js — PROMPT-UPDATE-DATA (stok refresh)
