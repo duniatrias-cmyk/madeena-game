@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Radar Pasar — Shopee Funnel · Kapal Madeena</title>
+<link rel="stylesheet" href="../shared/style.css?v=2">
+<script src="../shared/dm-toggle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="../data/shopee-funnel.js"></script>
+<style>
+/* ── Konsep box ── */
+.konsep-box { background:linear-gradient(135deg,rgba(232,184,75,0.07),rgba(62,207,122,0.04));border:1px solid rgba(232,184,75,0.22);border-radius:var(--r-lg);padding:24px;margin-bottom:24px; }
+.konsep-judul { font-family:var(--font-serif);font-size:18px;font-style:italic;color:var(--emas);margin-bottom:10px; }
+.konsep-isi { font-size:14px;color:var(--teks-kedua);line-height:1.8; }
+.konsep-isi strong { color:var(--teks-primer);font-weight:500; }
+
+/* ── KPI strip ── */
+.kpi-strip { display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:28px; }
+.kpi-tile { background:var(--laut-tengah);border:1px solid var(--border-tipis);border-radius:var(--r-md);padding:16px;text-align:center; }
+.kpi-tile.highlight { border-color:rgba(232,184,75,0.4);background:linear-gradient(135deg,rgba(232,184,75,0.06),rgba(62,207,122,0.03)); }
+.kpi-val { font-family:var(--font-mono);font-size:19px;font-weight:500; }
+.kpi-lbl { font-family:var(--font-mono);font-size:10px;color:var(--teks-redup);letter-spacing:0.5px;margin-top:5px; }
+.kpi-sub { font-family:var(--font-mono);font-size:9px;color:var(--teks-redup);margin-top:3px; }
+
+/* ── Filter bar ── */
+.filter-bar { display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap; }
+.filter-bar label { font-family:var(--font-mono);font-size:10px;color:var(--teks-redup);letter-spacing:0.5px; }
+.filter-select { background:var(--laut-tengah);border:1px solid var(--border-sedang);border-radius:var(--r-sm);color:var(--teks-primer);font-family:var(--font-mono);font-size:11px;padding:6px 10px;cursor:pointer;outline:none; }
+.filter-select:focus { border-color:var(--emas); }
+.search-box { background:var(--laut-tengah);border:1px solid var(--border-sedang);border-radius:var(--r-sm);color:var(--teks-primer);font-family:var(--font-mono);font-size:11px;padding:6px 12px;outline:none;flex:1;min-width:180px;max-width:320px; }
+.search-box::placeholder { color:var(--teks-redup); }
+.search-box:focus { border-color:var(--emas); }
+.filter-count { font-family:var(--font-mono);font-size:10px;color:var(--teks-redup);margin-left:auto; }
+
+/* ── Funnel table ── */
+.funnel-section { margin-bottom:32px; }
+.funnel-section-title { font-family:var(--font-mono);font-size:10px;letter-spacing:1.5px;color:var(--teks-redup);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px; }
+.funnel-section-title::after { content:'';flex:1;height:1px;background:var(--border-tipis); }
+
+.funnel-table { width:100%;border-collapse:collapse; }
+.funnel-table th { font-family:var(--font-mono);font-size:9px;letter-spacing:0.8px;color:var(--teks-redup);text-transform:uppercase;padding:8px 10px;border-bottom:1px solid var(--border-tipis);text-align:right;white-space:nowrap; }
+.funnel-table th:first-child { text-align:left; }
+.funnel-table th.sortable { cursor:pointer;user-select:none; }
+.funnel-table th.sortable:hover { color:var(--teks-kedua); }
+.funnel-table th.sort-asc::after { content:' ▲'; }
+.funnel-table th.sort-desc::after { content:' ▼'; }
+.funnel-table td { padding:9px 10px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle; }
+.funnel-table tr:hover td { background:rgba(255,255,255,0.025); }
+.funnel-table tr:last-child td { border-bottom:none; }
+
+.col-rank { font-family:var(--font-mono);font-size:9px;color:var(--teks-redup);width:28px;text-align:right; }
+.col-name { max-width:280px; }
+.prod-name-cell { font-size:12px;color:var(--teks-primer);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden; }
+.prod-id { font-family:var(--font-mono);font-size:8.5px;color:var(--teks-redup);margin-top:2px; }
+.col-num { font-family:var(--font-mono);font-size:12px;text-align:right;white-space:nowrap; }
+.col-rev { font-family:var(--font-mono);font-size:12px;text-align:right;color:var(--emas);white-space:nowrap; }
+
+/* Funnel bar */
+.funnel-bar-wrap { display:flex;flex-direction:column;gap:2px;min-width:80px;max-width:120px; }
+.funnel-bar { height:5px;border-radius:2px;transition:width 0.8s ease; }
+
+/* CVR badge */
+.cvr-badge { display:inline-block;font-family:var(--font-mono);font-size:10px;padding:2px 6px;border-radius:3px;white-space:nowrap; }
+.cvr-high { background:rgba(62,207,122,0.12);color:var(--hijau-laut);border:1px solid rgba(62,207,122,0.25); }
+.cvr-mid  { background:rgba(232,184,75,0.10);color:var(--emas);border:1px solid rgba(232,184,75,0.25); }
+.cvr-low  { background:rgba(224,90,58,0.08);color:#e05a3a;border:1px solid rgba(224,90,58,0.2); }
+
+/* ── Chart section ── */
+.chart-grid { display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px; }
+.chart-card { background:var(--laut-tengah);border:1px solid var(--border-tipis);border-radius:var(--r-lg);padding:20px; }
+.chart-title { font-family:var(--font-mono);font-size:10px;letter-spacing:1px;color:var(--teks-redup);text-transform:uppercase;margin-bottom:16px; }
+.chart-wrap { height:220px;position:relative; }
+
+/* ── Daily sparkline ── */
+.sparkline-wrap { display:flex;align-items:flex-end;gap:1px;height:28px; }
+.spark-bar { flex:1;border-radius:1px 1px 0 0;min-width:2px; }
+.spark-empty { flex:1;min-width:2px;height:2px;background:var(--border-tipis);border-radius:1px; }
+
+/* ── Top product cards (hero section) ── */
+.hero-prod-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px; }
+.hero-card { background:var(--laut-tengah);border:1px solid var(--border-tipis);border-radius:var(--r-lg);padding:18px;transition:border-color 0.2s,transform 0.15s;cursor:default; }
+.hero-card:hover { transform:translateY(-2px);border-color:var(--border-sedang); }
+.hero-card.gold { border-color:rgba(232,184,75,0.4); }
+.hero-card.silver { border-color:rgba(180,180,200,0.3); }
+.hero-card.bronze { border-color:rgba(180,120,60,0.3); }
+.hero-rank { font-family:var(--font-mono);font-size:22px;font-weight:700;opacity:0.25;float:right;line-height:1; }
+.hero-name { font-family:var(--font-serif);font-size:14px;font-weight:500;line-height:1.4;margin-bottom:12px;min-height:38px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden; }
+.hero-imp { font-family:var(--font-mono);font-size:22px;font-weight:500;color:var(--teks-primer);margin-bottom:2px; }
+.hero-imp-lbl { font-family:var(--font-mono);font-size:8px;color:var(--teks-redup);letter-spacing:1px;margin-bottom:14px; }
+.hero-metrics { display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px; }
+.hero-m-val { font-family:var(--font-mono);font-size:13px;font-weight:500; }
+.hero-m-lbl { font-family:var(--font-mono);font-size:8px;color:var(--teks-redup);margin-top:2px; }
+.hero-rev { font-family:var(--font-mono);font-size:14px;color:var(--emas);padding-top:10px;border-top:1px solid var(--border-tipis); }
+.hero-rev-lbl { font-family:var(--font-mono);font-size:8px;color:var(--teks-redup);letter-spacing:0.5px;margin-bottom:3px; }
+
+/* ── Tab bar ── */
+.tab-bar { display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--border-tipis);padding-bottom:0; }
+.tab-btn { font-family:var(--font-mono);font-size:11px;letter-spacing:0.3px;color:var(--teks-redup);background:none;border:none;padding:8px 16px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color 0.15s,border-color 0.15s; }
+.tab-btn:hover { color:var(--teks-kedua); }
+.tab-btn.active { color:var(--emas);border-bottom-color:var(--emas); }
+
+/* ── Period tag ── */
+.periode-tag { display:inline-block;font-family:var(--font-mono);font-size:11px;color:var(--emas);background:var(--emas-redup);border:1px solid var(--emas-border);border-radius:var(--r-sm);padding:4px 12px;margin-bottom:18px;letter-spacing:0.5px; }
+
+/* Nav baru badge */
+.nav-baru { display:inline-block;font-family:var(--font-mono);font-size:7px;font-weight:500;letter-spacing:0.5px;background:var(--hijau-redup);border:1px solid rgba(62,207,122,0.45);color:var(--hijau-laut);border-radius:3px;padding:1px 4px;margin-left:5px;vertical-align:middle;line-height:1; }
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .kpi-strip { grid-template-columns:repeat(3,1fr); }
+  .hero-prod-grid { grid-template-columns:1fr; }
+  .chart-grid { grid-template-columns:1fr; }
+}
+@media (max-width: 640px) {
+  .kpi-strip { display:flex;flex-wrap:nowrap;overflow-x:auto;gap:8px;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch; }
+  .kpi-strip::-webkit-scrollbar { display:none; }
+  .kpi-tile { min-width:110px;flex-shrink:0;padding:12px; }
+  .kpi-val { font-size:16px; }
+  .funnel-table { font-size:11px; }
+  .col-name { max-width:160px; }
+  .filter-bar { gap:8px; }
+  h1[style] { font-size:22px !important; }
+}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="../index.html" class="nav-brand">⚓ Kapal <em>Madeena</em></a>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="nav-links">
+      <a href="../index.html"  class="nav-link">Peta</a>
+      <a href="01-voyage.html" class="nav-link">Pelayaran</a>
+      <a href="02-misi.html"   class="nav-link">Misi Awak</a>
+      <a href="03-ombak.html"  class="nav-link">Ombak Mingguan</a>
+      <a href="04-muatan.html" class="nav-link">Muatan</a>
+      <a href="05-tiktok.html" class="nav-link">Mesin TikTok</a>
+      <a href="06-kr-tracker.html" class="nav-link">Kamar Mesin</a>
+      <a href="07-pelabuhan.html"  class="nav-link">Pelabuhan</a>
+      <a href="08-dek-operasi.html" class="nav-link">Dek Operasi</a>
+      <a href="09-radar-pasar.html" class="nav-link active">Radar Pasar<span class="nav-baru">BARU</span></a>
+    </div>
+    <button class="dm-toggle" id="dm-toggle" aria-label="Toggle dark/light mode">
+      <span id="dm-icon">🌙</span>
+      <div class="dm-pill"><div class="dm-dot"></div></div>
+      <span id="dm-label">DARK</span>
+    </button>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div style="padding-top:80px;margin-bottom:28px">
+    <h1 style="font-family:var(--font-serif);font-size:32px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px">
+      Radar <em style="color:var(--emas)">Pasar Shopee</em>
+    </h1>
+    <p style="font-size:14px;color:var(--teks-kedua);margin-bottom:16px">
+      Analisis funnel Shopee Ads — dari impresi hingga konversi dan revenue per produk.
+    </p>
+    <div class="periode-tag" id="periode-tag">Memuat data...</div>
+  </div>
+
+  <!-- Konsep box -->
+  <div class="konsep-box">
+    <div class="konsep-judul">Apa yang diukur di Radar Pasar?</div>
+    <div class="konsep-isi">
+      Data ini mencerminkan <strong>performa iklan Shopee</strong> per produk selama satu bulan penuh.
+      Funnel: <strong>Impresi → Klik → Add-to-Cart → Sold (Created) → Sold (RTS) → Revenue</strong>.
+      Produk dengan impresi tinggi tapi konversi rendah menunjukkan masalah pada listing atau harga.
+      Fokus pada <strong>CVR (Click-to-Sold)</strong> untuk menemukan produk yang perlu dioptimasi.
+    </div>
+  </div>
+
+  <!-- KPI Strip -->
+  <div class="kpi-strip" id="kpi-strip"></div>
+
+  <!-- Top 3 Hero Cards -->
+  <div class="funnel-section">
+    <div class="funnel-section-title">Top Produk Bulan Ini</div>
+    <div class="hero-prod-grid" id="hero-cards"></div>
+  </div>
+
+  <!-- Charts -->
+  <div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-title">Top 10 — Impresi</div>
+      <div class="chart-wrap"><canvas id="chart-imp"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Top 10 — Revenue (Rp)</div>
+      <div class="chart-wrap"><canvas id="chart-rev"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Tab bar -->
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="funnel">Funnel Lengkap</button>
+    <button class="tab-btn" data-tab="cvr">CVR Analysis</button>
+    <button class="tab-btn" data-tab="daily">Tren Harian</button>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <label>SORT</label>
+    <select class="filter-select" id="sort-select">
+      <option value="imp">Impresi</option>
+      <option value="clk">Klik</option>
+      <option value="atc">Add-to-Cart</option>
+      <option value="sc">Sold Created</option>
+      <option value="sr">Sold RTS</option>
+      <option value="rev">Revenue</option>
+      <option value="cvr">CVR (Clk→Sold)</option>
+      <option value="ctr">CTR (Imp→Clk)</option>
+    </select>
+    <label>MIN IMP</label>
+    <select class="filter-select" id="min-imp-select">
+      <option value="0">Semua</option>
+      <option value="1000">≥ 1K</option>
+      <option value="10000" selected>≥ 10K</option>
+      <option value="50000">≥ 50K</option>
+      <option value="100000">≥ 100K</option>
+    </select>
+    <input class="search-box" id="search-box" placeholder="Cari nama produk..." type="text">
+    <span class="filter-count" id="filter-count"></span>
+  </div>
+
+  <!-- Funnel table (tab: funnel) -->
+  <div id="tab-funnel" class="funnel-section">
+    <table class="funnel-table" id="funnel-table">
+      <thead>
+        <tr>
+          <th class="col-rank">#</th>
+          <th class="col-name" style="text-align:left">Produk</th>
+          <th class="sortable" data-col="imp">IMP</th>
+          <th class="sortable" data-col="clk">CLK</th>
+          <th class="sortable" data-col="atc">ATC</th>
+          <th class="sortable" data-col="sc">SOLD-C</th>
+          <th class="sortable" data-col="sr">SOLD-R</th>
+          <th class="sortable" data-col="rev">REVENUE</th>
+          <th>FUNNEL</th>
+        </tr>
+      </thead>
+      <tbody id="funnel-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- CVR Analysis (tab: cvr) -->
+  <div id="tab-cvr" class="funnel-section" style="display:none">
+    <table class="funnel-table" id="cvr-table">
+      <thead>
+        <tr>
+          <th class="col-rank">#</th>
+          <th class="col-name" style="text-align:left">Produk</th>
+          <th class="sortable" data-col="ctr">CTR</th>
+          <th class="sortable" data-col="atcr">ATC Rate</th>
+          <th class="sortable" data-col="cvr">CVR (Clk→Sold)</th>
+          <th class="sortable" data-col="roas">Rev/Sold</th>
+          <th class="sortable" data-col="imp">IMP</th>
+          <th class="sortable" data-col="rev">REVENUE</th>
+        </tr>
+      </thead>
+      <tbody id="cvr-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- Daily trend (tab: daily) -->
+  <div id="tab-daily" class="funnel-section" style="display:none">
+    <p style="font-size:12px;color:var(--teks-kedua);margin-bottom:16px">
+      Sparkline harian (Mei 2026) — impresi per hari. Hanya produk dengan data harian tersedia.
+    </p>
+    <table class="funnel-table" id="daily-table">
+      <thead>
+        <tr>
+          <th class="col-rank">#</th>
+          <th class="col-name" style="text-align:left">Produk</th>
+          <th style="text-align:left;min-width:200px">Tren Impresi Harian</th>
+          <th class="sortable" data-col="imp">Total IMP</th>
+          <th class="sortable" data-col="rev">Total REV</th>
+        </tr>
+      </thead>
+      <tbody id="daily-tbody"></tbody>
+    </table>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ── Helpers ──
+const fmt  = n => n >= 1e6 ? (n/1e6).toFixed(1)+'jt' : n >= 1e3 ? (n/1e3).toFixed(1)+'K' : String(n);
+const fmtR = n => n >= 1e9 ? 'Rp '+(n/1e9).toFixed(2)+'B' : n >= 1e6 ? 'Rp '+(n/1e6).toFixed(1)+'jt' : n >= 1e3 ? 'Rp '+(n/1e3).toFixed(0)+'K' : 'Rp '+n;
+const pct  = (a,b) => b > 0 ? ((a/b)*100).toFixed(1)+'%' : '—';
+
+// ── Data ──
+const D = SHOPEE_FUNNEL;
+const allProds = D.products; // already sorted by imp desc
+
+// ── Period tag ──
+document.getElementById('periode-tag').textContent = 'Periode: ' + D.period + ' · Generated ' + D.generated;
+
+// ── KPI Strip ──
+const totImp = allProds.reduce((s,p)=>s+p.imp,0);
+const totClk = allProds.reduce((s,p)=>s+p.clk,0);
+const totAtc = allProds.reduce((s,p)=>s+p.atc,0);
+const totSc  = allProds.reduce((s,p)=>s+p.sc,0);
+const totRev = allProds.reduce((s,p)=>s+p.rev,0);
+const avgCvr = totClk > 0 ? (totSc/totClk*100).toFixed(2) : 0;
+const avgCtr = totImp > 0 ? (totClk/totImp*100).toFixed(2) : 0;
+
+document.getElementById('kpi-strip').innerHTML = [
+  { val: fmt(totImp),   lbl: 'TOTAL IMPRESI',   sub: allProds.length+' produk', cls: '' },
+  { val: fmt(totClk),   lbl: 'TOTAL KLIK',       sub: 'CTR '+avgCtr+'%', cls: '' },
+  { val: fmt(totAtc),   lbl: 'ADD-TO-CART',      sub: 'ATC Rate '+pct(totAtc,totClk), cls: '' },
+  { val: fmt(totSc),    lbl: 'SOLD (CREATED)',   sub: 'CVR '+avgCvr+'%', cls: '' },
+  { val: fmtR(totRev),  lbl: 'TOTAL REVENUE',    sub: 'Rev/Sold '+fmtR(totSc>0?Math.round(totRev/totSc):0), cls: 'highlight' }
+].map(k=>`<div class="kpi-tile ${k.cls}">
+  <div class="kpi-val">${k.val}</div>
+  <div class="kpi-lbl">${k.lbl}</div>
+  <div class="kpi-sub">${k.sub}</div>
+</div>`).join('');
+
+// ── Hero cards (top 3) ──
+const top3 = allProds.slice(0,3);
+const medalClass = ['gold','silver','bronze'];
+const medalLabel = ['#1','#2','#3'];
+document.getElementById('hero-cards').innerHTML = top3.map((p,i) => `
+<div class="hero-card ${medalClass[i]}">
+  <div class="hero-rank">${medalLabel[i]}</div>
+  <div class="hero-name">${p.name}</div>
+  <div class="hero-imp">${fmt(p.imp)}</div>
+  <div class="hero-imp-lbl">IMPRESI</div>
+  <div class="hero-metrics">
+    <div><div class="hero-m-val" style="color:var(--langit)">${fmt(p.clk)}</div><div class="hero-m-lbl">KLIK</div></div>
+    <div><div class="hero-m-val" style="color:var(--ungu)">${fmt(p.atc)}</div><div class="hero-m-lbl">ATC</div></div>
+    <div><div class="hero-m-val" style="color:var(--hijau-laut)">${fmt(p.sr)}</div><div class="hero-m-lbl">SOLD</div></div>
+  </div>
+  <div class="hero-rev">
+    <div class="hero-rev-lbl">REVENUE (RTS)</div>
+    ${fmtR(p.rev)}
+  </div>
+</div>`).join('');
+
+// ── Charts ──
+function getThemeColor(varName) {
+  return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+}
+
+function buildCharts() {
+  const top10 = allProds.slice(0,10);
+  const labels = top10.map(p => {
+    const words = p.name.split(' ');
+    return words.slice(0,4).join(' ') + (words.length > 4 ? '...' : '');
+  });
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  const tickColor = isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)';
+
+  const commonOpts = {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ display:false }, tooltip:{ callbacks:{
+      label: ctx => ' ' + (ctx.dataset.label||'') + ': ' + fmt(ctx.raw)
+    }}},
+    scales:{
+      x:{ ticks:{ color:tickColor, font:{ family:'monospace', size:9 }, maxRotation:35 },
+          grid:{ color:gridColor } },
+      y:{ ticks:{ color:tickColor, font:{ family:'monospace', size:9 },
+                  callback: v => fmt(v) },
+          grid:{ color:gridColor } }
+    }
+  };
+
+  // Impresi chart
+  const ctxImp = document.getElementById('chart-imp').getContext('2d');
+  if (window._chartImp) window._chartImp.destroy();
+  window._chartImp = new Chart(ctxImp, {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        data: top10.map(p=>p.imp),
+        backgroundColor:'rgba(232,184,75,0.55)',
+        borderColor:'rgba(232,184,75,0.8)',
+        borderWidth:1,
+        borderRadius:3
+      },{
+        label:'Klik',
+        data: top10.map(p=>p.clk),
+        backgroundColor:'rgba(122,184,216,0.5)',
+        borderColor:'rgba(122,184,216,0.8)',
+        borderWidth:1,
+        borderRadius:3
+      },{
+        label:'Sold RTS',
+        data: top10.map(p=>p.sr),
+        backgroundColor:'rgba(62,207,122,0.55)',
+        borderColor:'rgba(62,207,122,0.8)',
+        borderWidth:1,
+        borderRadius:3
+      }]
+    },
+    options:{ ...commonOpts,
+      plugins:{ ...commonOpts.plugins,
+        legend:{ display:true, labels:{ color:tickColor, font:{family:'monospace',size:9}, boxWidth:10, boxHeight:10 },
+                 position:'top' },
+        tooltip:{ callbacks:{ label: ctx => ' '+ctx.dataset.label+': '+fmt(ctx.raw) } }
+      }
+    }
+  });
+
+  // Revenue chart
+  const ctxRev = document.getElementById('chart-rev').getContext('2d');
+  if (window._chartRev) window._chartRev.destroy();
+  window._chartRev = new Chart(ctxRev, {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'Revenue',
+        data: top10.map(p=>p.rev),
+        backgroundColor:'rgba(167,139,250,0.55)',
+        borderColor:'rgba(167,139,250,0.8)',
+        borderWidth:1,
+        borderRadius:3
+      }]
+    },
+    options:{ ...commonOpts,
+      scales:{ ...commonOpts.scales,
+        y:{ ...commonOpts.scales.y,
+            ticks:{ ...commonOpts.scales.y.ticks,
+                    callback: v => fmtR(v) } }
+      },
+      plugins:{ ...commonOpts.plugins,
+        tooltip:{ callbacks:{ label: ctx => ' Revenue: '+fmtR(ctx.raw) } }
+      }
+    }
+  });
+}
+buildCharts();
+
+// Rebuild on theme change
+const observer = new MutationObserver(() => buildCharts());
+observer.observe(document.documentElement, { attributes:true, attributeFilter:['data-theme'] });
+
+// ── State ──
+let sortCol = 'imp';
+let sortDir = 'desc';
+let minImp = 10000;
+let searchQ = '';
+let activeTab = 'funnel';
+
+// ── Filtered & sorted data ──
+function getFiltered() {
+  let data = allProds.filter(p => {
+    if (p.imp < minImp) return false;
+    if (searchQ && !p.name.toLowerCase().includes(searchQ.toLowerCase())) return false;
+    return true;
+  });
+
+  // Add computed cols
+  data = data.map(p => ({
+    ...p,
+    ctr:  p.imp  > 0 ? p.clk/p.imp : 0,
+    atcr: p.clk  > 0 ? p.atc/p.clk : 0,
+    cvr:  p.clk  > 0 ? p.sr/p.clk  : 0,
+    roas: p.sr   > 0 ? p.rev/p.sr   : 0
+  }));
+
+  data.sort((a,b) => {
+    const va = a[sortCol] ?? 0, vb = b[sortCol] ?? 0;
+    return sortDir === 'desc' ? vb - va : va - vb;
+  });
+  return data;
+}
+
+// ── Funnel bar SVG ──
+function sparkFunnel(p) {
+  const max = p.imp || 1;
+  const bars = [
+    { v:p.imp, c:'rgba(232,184,75,0.7)',  w:100 },
+    { v:p.clk, c:'rgba(122,184,216,0.7)', w:Math.round(p.clk/max*100) },
+    { v:p.atc, c:'rgba(167,139,250,0.7)', w:Math.round(p.atc/max*100) },
+    { v:p.sr,  c:'rgba(62,207,122,0.7)',  w:Math.round(p.sr/max*100)  }
+  ];
+  return `<div class="funnel-bar-wrap">${
+    bars.map(b=>`<div class="funnel-bar" style="width:${Math.max(b.w,2)}%;background:${b.c}"></div>`).join('')
+  }</div>`;
+}
+
+// ── Sparkline (daily) ──
+function sparkDaily(p) {
+  if (!p.daily || p.daily.length === 0) return '<span style="font-family:monospace;font-size:9px;color:var(--teks-redup)">—</span>';
+  const vals = p.daily.map(d => d.imp);
+  const mx = Math.max(...vals) || 1;
+  return `<div class="sparkline-wrap">${
+    vals.map(v => {
+      const h = Math.max(Math.round(v/mx*28), 2);
+      const alpha = 0.3 + (v/mx)*0.7;
+      return `<div class="spark-bar" style="height:${h}px;background:rgba(232,184,75,${alpha.toFixed(2)})"></div>`;
+    }).join('')
+  }</div>`;
+}
+
+// ── CVR badge ──
+function cvrBadge(val, type) {
+  const pctVal = (val*100).toFixed(1)+'%';
+  // For CVR (clk→sold): high >= 10%, mid >= 3%, low < 3%
+  const [hi, mid] = type === 'ctr' ? [0.15, 0.05] : type === 'atcr' ? [0.10, 0.03] : [0.10, 0.02];
+  const cls = val >= hi ? 'cvr-high' : val >= mid ? 'cvr-mid' : 'cvr-low';
+  return `<span class="cvr-badge ${cls}">${pctVal}</span>`;
+}
+
+// ── Render tables ──
+function renderFunnel(data) {
+  document.getElementById('funnel-tbody').innerHTML = data.map((p,i)=>`
+  <tr>
+    <td class="col-rank">${i+1}</td>
+    <td class="col-name">
+      <div class="prod-name-cell">${p.name}</div>
+      <div class="prod-id">${p.id}</div>
+    </td>
+    <td class="col-num">${fmt(p.imp)}</td>
+    <td class="col-num" style="color:var(--langit)">${fmt(p.clk)}</td>
+    <td class="col-num" style="color:var(--ungu)">${fmt(p.atc)}</td>
+    <td class="col-num">${fmt(p.sc)}</td>
+    <td class="col-num" style="color:var(--hijau-laut)">${fmt(p.sr)}</td>
+    <td class="col-rev">${fmtR(p.rev)}</td>
+    <td>${sparkFunnel(p)}</td>
+  </tr>`).join('');
+}
+
+function renderCvr(data) {
+  document.getElementById('cvr-tbody').innerHTML = data.map((p,i)=>`
+  <tr>
+    <td class="col-rank">${i+1}</td>
+    <td class="col-name">
+      <div class="prod-name-cell">${p.name}</div>
+      <div class="prod-id">${p.id}</div>
+    </td>
+    <td style="text-align:right">${p.ctr  > 0 ? cvrBadge(p.ctr,  'ctr')  : '<span style="color:var(--teks-redup)">—</span>'}</td>
+    <td style="text-align:right">${p.atcr > 0 ? cvrBadge(p.atcr, 'atcr') : '<span style="color:var(--teks-redup)">—</span>'}</td>
+    <td style="text-align:right">${p.cvr  > 0 ? cvrBadge(p.cvr,  'cvr')  : '<span style="color:var(--teks-redup)">—</span>'}</td>
+    <td class="col-num">${p.roas > 0 ? fmtR(Math.round(p.roas)) : '—'}</td>
+    <td class="col-num">${fmt(p.imp)}</td>
+    <td class="col-rev">${fmtR(p.rev)}</td>
+  </tr>`).join('');
+}
+
+function renderDaily(data) {
+  const withDaily = data.filter(p => p.daily && p.daily.length > 0);
+  document.getElementById('daily-tbody').innerHTML = withDaily.map((p,i)=>`
+  <tr>
+    <td class="col-rank">${i+1}</td>
+    <td class="col-name">
+      <div class="prod-name-cell">${p.name}</div>
+      <div class="prod-id">${p.id}</div>
+    </td>
+    <td>${sparkDaily(p)}</td>
+    <td class="col-num">${fmt(p.imp)}</td>
+    <td class="col-rev">${fmtR(p.rev)}</td>
+  </tr>`).join('');
+}
+
+// ── Header sort indicator ──
+function updateSortHeaders(tableId) {
+  document.querySelectorAll('#'+tableId+' th.sortable').forEach(th => {
+    th.classList.remove('sort-asc','sort-desc');
+    if (th.dataset.col === sortCol) th.classList.add(sortDir==='desc'?'sort-desc':'sort-asc');
+  });
+}
+
+function render() {
+  const data = getFiltered();
+  document.getElementById('filter-count').textContent = data.length + ' produk';
+  if (activeTab === 'funnel') {
+    renderFunnel(data);
+    updateSortHeaders('funnel-table');
+  } else if (activeTab === 'cvr') {
+    renderCvr(data);
+    updateSortHeaders('cvr-table');
+  } else if (activeTab === 'daily') {
+    renderDaily(data);
+    updateSortHeaders('daily-table');
+  }
+}
+
+render();
+
+// ── Sort click (all tables) ──
+document.querySelectorAll('th.sortable').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (sortCol === col) sortDir = sortDir === 'desc' ? 'asc' : 'desc';
+    else { sortCol = col; sortDir = 'desc'; }
+    render();
+  });
+});
+
+// ── Filter controls ──
+document.getElementById('sort-select').addEventListener('change', e => {
+  sortCol = e.target.value;
+  render();
+});
+document.getElementById('min-imp-select').addEventListener('change', e => {
+  minImp = Number(e.target.value);
+  render();
+});
+document.getElementById('search-box').addEventListener('input', e => {
+  searchQ = e.target.value;
+  render();
+});
+
+// ── Tabs ──
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    activeTab = btn.dataset.tab;
+    ['funnel','cvr','daily'].forEach(t => {
+      document.getElementById('tab-'+t).style.display = t === activeTab ? '' : 'none';
+    });
+    render();
+  });
+});
+</script>
+</body>
+</html>
