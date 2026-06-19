@@ -1,3 +1,76 @@
+# Update Log — 19 Jun 2026
+
+## weekly.js — PROMPT-UPDATE-DATA (W25 + W24 final Idul Adha)
+
+**Sumber data:** mart_sales_tra_so_rts + mart_inventory via PostgreSQL (stok per 18 Jun 2026)
+
+| Metrik | Sebelumnya | Sekarang |
+|---|---|---|
+| mingguTerakhir | W24 | **W25** |
+| tanggalUpdate | 15 Jun 2026 | 19 Jun 2026 |
+| W23 GMV (koreksi) | 432.617.031 | **445.517.031** (+12.9M, Reeyana HC settled) |
+| W24 GMV (final!) | 172.529.544 | **307.884.315** (+135M — Idul Adha settled!) |
+| W25 GMV (baru, parsial) | — | **184.979.374** (Jun 15–19, 5 hari) |
+| YTD | ~10,63 M | **~10,94 Miliar** |
+
+### W24 final — Idul Adha boost besar
+
+| Series | W24 Lama | W24 Final | Δ |
+|---|---|---|---|
+| Reeyana Jaket | 68.019.165 | 133.250.105 | +96% |
+| Reeyana HC | 24.203.500 | 44.028.122 | +82% |
+| Heekaya Jaket | 13.378.000 | 22.839.000 | +71% |
+| Reeyana BDDA | 8.277.000 | 13.083.000 | +58% |
+| Alamee HC | 3.996.055 | 7.548.055 | +89% |
+| Heekaya DPP | 9.966.000 | 14.981.014 | +50% |
+| Heekaya HC | 3.975.000 | 5.968.000 | +50% |
+| Heekaya per Juz | — | 2.743.000 | baru! |
+| Lumee | 450.000 | 1.575.000 | +250% |
+
+### Stok diperbarui (per 18 Jun 2026)
+
+| Series | Stok Lama | Stok Baru | Δ |
+|---|---|---|---|
+| Reeyana Jaket | 3.229 | **4.455** | +1.226 ✅ restok |
+| Reeyana HC | 4.523 | **5.075** | +552 ✅ restok |
+| Heekaya Jaket | 611 | **768** | +157 ✅ restok |
+| Reeyana Prayer Mat | 633 | **665** | +32 ✅ restok |
+| Zhafira Signature Tasbih New | 2.891 | **3.344** | +453 ✅ restok |
+| Alamee HC | 2.060 | **2.111** | +51 ✅ restok |
+| Lumee | 750 | **786** | +36 ✅ restok |
+| **Reeyana** | 210 | **147** | -63 🔴🔴 KRITIS |
+| Reeyana BDDA | 5.472 | 4.965 | -507 |
+| Heekaya HC | 208 | **190** | -18 🔴 |
+| Heekaya DPP | 30.175 | 29.916 | -259 |
+
+### Demand diperbarui (window W21–W24 final)
+
+| Series | Demand Lama | Demand Baru | Δ |
+|---|---|---|---|
+| Reeyana Jaket | 837 | **961** | +15% (W24 Adha besar) |
+| Reeyana HC | 754 | **832** | +10% |
+| Reeyana BDDA | 167 | **181** | +8% |
+| Heekaya Jaket | 86 | **99** | +15% |
+| Heekaya HC | 58 | **61** | +5% |
+| Reeyana | 96 | **106** | +10% |
+| Airees DPP | 349 | **389** | +11% |
+| Heekaya DPP | 506 | **563** | +11% |
+| Prayer Mat | 31 | **33** | +6% |
+| ZS Tasbih New | 236 | **250** | +6% |
+| Abbasy | 52 | **55** | +6% |
+| Alamee HC | 38 | **44** | +16% |
+| Lumee | 6 | **8** | +33% |
+
+### Cover stok kritis
+
+| Series | Stok | Demand | Cover |
+|---|---|---|---|
+| **Reeyana** | 147 | 106 | **1,4 minggu** 🔴🔴 SUPER KRITIS |
+| **Heekaya HC** | 190 | 61 | **3,1 minggu** 🔴 |
+| Reeyana Jaket | 4.455 | 961 | 4,6 minggu (membaik) |
+
+---
+
 # Update Log — 15 Jun 2026
 
 ## weekly.js — PROMPT-UPDATE-DATA (W24 final + demand W21–W24)
