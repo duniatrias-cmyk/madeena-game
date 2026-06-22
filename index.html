@@ -303,9 +303,89 @@ html[data-theme="light"] #storm-canvas { opacity: 0.4; }
   .scroll-hint { margin-top: 12px; }
   .hero-eyebrow { margin-bottom: 12px; }
 }
+
+/* PASSWORD GATE */
+#pg-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--laut-dalam);
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.35s ease;
+}
+#pg-overlay.pg-fade-out { opacity: 0; pointer-events: none; }
+#pg-card {
+  background: var(--laut-surface);
+  border: 1px solid var(--border-sedang);
+  border-radius: var(--r-lg);
+  padding: 40px 36px;
+  width: 360px; max-width: 92vw;
+  text-align: center;
+  display: flex; flex-direction: column; gap: 12px;
+}
+#pg-icon { font-size: 2.4rem; }
+#pg-title {
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  color: var(--teks-primer);
+  margin: 0;
+}
+#pg-sub {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: var(--teks-redup);
+  margin: 0;
+}
+#pg-input {
+  background: var(--laut-tengah);
+  border: 1px solid var(--border-sedang);
+  border-radius: var(--r-md);
+  color: var(--teks-primer);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  padding: 10px 14px;
+  width: 100%; box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s;
+}
+#pg-input:focus { border-color: var(--emas); }
+#pg-btn {
+  background: var(--emas-redup);
+  border: 1px solid var(--emas-border);
+  border-radius: var(--r-md);
+  color: var(--emas);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  padding: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+#pg-btn:hover { background: rgba(232,184,75,0.25); }
+#pg-error {
+  color: var(--merah-badai);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  min-height: 1.2em;
+  margin: 0;
+}
+@keyframes pg-shake {
+  0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)}
+}
+.pg-shake { animation: pg-shake 0.4s ease; }
 </style>
 </head>
 <body>
+
+<!-- PASSWORD GATE -->
+<div id="pg-overlay">
+  <div id="pg-card">
+    <div id="pg-icon">⚓</div>
+    <h1 id="pg-title">Kapal <em>Madeena</em></h1>
+    <p id="pg-sub">AKSES TERBATAS</p>
+    <input type="password" id="pg-input" placeholder="Masukkan password..." autocomplete="current-password">
+    <button id="pg-btn">Masuk</button>
+    <p id="pg-error"></p>
+  </div>
+</div>
 
 <!-- Storm layers -->
 <div id="storm-overlay"></div>
@@ -644,5 +724,38 @@ document.getElementById('compass-nav').innerHTML = layers.map(l =>
     <a href="layers/08-dek-operasi.html" class="bottom-nav-item"><span class="bottom-nav-icon">🧭</span><span class="bottom-nav-lbl">Dek Ops</span></a>
   </div>
 </nav>
+
+<script>
+(function() {
+  const HASH = '3c5893d547dd0b1366b596821f3d4c5e4e2ea0714e540ad157bebd0dae2bdab4';
+  const KEY = 'madeena_auth';
+  const overlay = document.getElementById('pg-overlay');
+  const input   = document.getElementById('pg-input');
+  const btn     = document.getElementById('pg-btn');
+  const errEl   = document.getElementById('pg-error');
+
+  if (sessionStorage.getItem(KEY)) { overlay.style.display = 'none'; return; }
+
+  async function tryLogin() {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input.value));
+    const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    if (hash === HASH) {
+      sessionStorage.setItem(KEY, '1');
+      overlay.classList.add('pg-fade-out');
+      setTimeout(() => overlay.style.display = 'none', 350);
+    } else {
+      errEl.textContent = 'Password salah. Coba lagi.';
+      input.classList.add('pg-shake');
+      input.value = '';
+      setTimeout(() => input.classList.remove('pg-shake'), 500);
+      setTimeout(() => input.focus(), 50);
+    }
+  }
+
+  btn.addEventListener('click', tryLogin);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+  input.focus();
+})();
+</script>
 </body>
 </html>
