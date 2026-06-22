@@ -736,19 +736,34 @@ document.getElementById('compass-nav').innerHTML = layers.map(l =>
 
   if (sessionStorage.getItem(KEY)) { overlay.style.display = 'none'; return; }
 
+  const FALLBACK = 'bismillah!';
+
+  function onSuccess() {
+    sessionStorage.setItem(KEY, '1');
+    overlay.classList.add('pg-fade-out');
+    setTimeout(() => overlay.style.display = 'none', 350);
+  }
+
+  function onFail() {
+    errEl.textContent = 'Password salah. Coba lagi.';
+    input.classList.add('pg-shake');
+    input.value = '';
+    setTimeout(() => input.classList.remove('pg-shake'), 500);
+    setTimeout(() => input.focus(), 50);
+  }
+
   async function tryLogin() {
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input.value));
-    const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-    if (hash === HASH) {
-      sessionStorage.setItem(KEY, '1');
-      overlay.classList.add('pg-fade-out');
-      setTimeout(() => overlay.style.display = 'none', 350);
+    const val = input.value;
+    if (crypto && crypto.subtle) {
+      try {
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(val));
+        const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+        hash === HASH ? onSuccess() : onFail();
+      } catch(e) {
+        val === FALLBACK ? onSuccess() : onFail();
+      }
     } else {
-      errEl.textContent = 'Password salah. Coba lagi.';
-      input.classList.add('pg-shake');
-      input.value = '';
-      setTimeout(() => input.classList.remove('pg-shake'), 500);
-      setTimeout(() => input.focus(), 50);
+      val === FALLBACK ? onSuccess() : onFail();
     }
   }
 
