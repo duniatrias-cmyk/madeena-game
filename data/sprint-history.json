@@ -1,28 +1,37 @@
 {
   "meta": {
-    "lastUpdated": "2026-06-22T02:04:49.584Z",
+    "lastUpdated": "2026-06-26T09:07:02.000Z",
     "totalMembers": 11
   },
   "members": {
     "Kas Tim": {
-      "allTimeXP": 50
+      "allTimeXP": 150
     },
     "Balqis": {
-      "allTimeXP": 10
+      "allTimeXP": 50
     },
     "Salsa": {
-      "allTimeXP": 10
+      "allTimeXP": 40
     },
     "Trias": {
-      "allTimeXP": 20
+      "allTimeXP": 100
     },
     "fathiya": {
-      "allTimeXP": 30
+      "allTimeXP": 150
     },
     "Talitha": {
       "allTimeXP": 20
     },
     "millatiqr": {
+      "allTimeXP": 20
+    },
+    "Khania": {
+      "allTimeXP": 20
+    },
+    "dinaa": {
+      "allTimeXP": 10
+    },
+    "Hisyam": {
       "allTimeXP": 10
     }
   },
@@ -1089,8 +1098,8 @@
       "endDate": "2026-06-28",
       "committedAt": "2026-06-22T02:04:49.584Z",
       "totalCommittedXP": 500,
-      "totalEarnedXP": 0,
-      "completionRate": 0,
+      "totalEarnedXP": 420,
+      "completionRate": 0.84,
       "tasks": [
         {
           "key": "* ⛳️ **Sprint Goal** : Ledak 3 Alamee sukses sambil bangun aset web & rapikan op_",
@@ -1100,16 +1109,17 @@
           "priority": "4",
           "baseXP": 10,
           "dueDate": null,
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "",
           "indentLevel": 1,
           "parentKey": null,
           "parentTitle": null,
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-24T09:09:06.000Z",
+          "earnedXP": 10,
+          "bonusApplied": false,
+          "recipient": "Kas Tim"
         },
         {
           "key": "A3-S1 |`SPRINT 1` Buat Konten Instagram Tentang Guru._millatiqr",
@@ -1119,16 +1129,17 @@
           "priority": "4",
           "baseXP": 10,
           "dueDate": "today",
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "🎯 OUTCOME\nProduksi konten di Instagram Feed +informasi bahwa madeena menyediakan mushaf custom nama jika Deenamates sedang mempertimbangkan hadiah untuk guru. Tidak harus gurunya anak-anak. Deenamates bisa mengirim hadiah untuk dosen di tempat kuliah dulu, SMA, SMP bahkan guru SD.",
           "indentLevel": 1,
           "parentKey": null,
           "parentTitle": null,
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-22T11:33:45.588036Z",
+          "earnedXP": 10,
+          "bonusApplied": false,
+          "recipient": "millatiqr"
         },
         {
           "key": "🎥[LV] S6-E1 Eksekusi Ledak 3 Alamee — Konten & Live Intensif (24–25 Juni)_Hisyam",
@@ -1138,16 +1149,17 @@
           "priority": "4",
           "baseXP": 10,
           "dueDate": "in 3 days",
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "🎯 OUTCOME\nLedak 3 meledak 24-25 Juni — live marathon sukses.\n\n✅ DONE WHEN\n\n- Live marathon terlaksana 24 & 25 Juni (tanggal 24 durasi normal, tanggal 25 durasi payday)\n\n📤 OUTPUT → ESTAFET KE\nTidak ada estafet — ini endpoint sprint.\n\n👤 PIC\nHisyam\n\n📅 DUE DATE\n2026-06-25",
           "indentLevel": 1,
           "parentKey": null,
           "parentTitle": null,
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-26T09:07:02.000Z",
+          "earnedXP": 10,
+          "bonusApplied": false,
+          "recipient": "Hisyam"
         },
         {
           "key": "[S6] Update IG Stories Alamee 24 Juni to Shopee Live_millatiqr",
@@ -1195,16 +1207,17 @@
           "priority": "4",
           "baseXP": 10,
           "dueDate": "in 4 days",
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "🎯 OUTCOME\nSemua afiliasi siap posting serentak 29 Juni sebagai final push Alamee sebelum closing.\n\n✅ DONE WHEN\n\n- Brief terkirim ke semua afiliasi aktif\n- Berisi angka kolektif dan instruksi posting serentak 29 Juni\n\n📤 OUTPUT → ESTAFET KE\nTidak ada estafet — ini endpoint sprint.\n\n👤 PIC\nKhania\n\n📅 DUE DATE\n2026-06-27",
           "indentLevel": 1,
           "parentKey": null,
           "parentTitle": null,
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-26T09:07:02.000Z",
+          "earnedXP": 10,
+          "bonusApplied": false,
+          "recipient": "Khania"
         },
         {
           "key": "[S6] Kirim brief afiliasi: materi + instruksi posting serentak 29 Juni_Khania",
@@ -1214,16 +1227,17 @@
           "priority": "4",
           "baseXP": 10,
           "dueDate": "in 4 days",
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "",
           "indentLevel": 2,
           "parentKey": "🌱[AF] S6-E5 Koordinasi Final Push Afiliasi Alamee — Posting Serentak 29 Juni_Khania",
           "parentTitle": "🌱[AF] S6-E5 Koordinasi Final Push Afiliasi Alamee — Posting Serentak 29 Juni",
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-22T11:33:45.588036Z",
+          "earnedXP": 10,
+          "bonusApplied": false,
+          "recipient": "Khania"
         },
         {
           "key": "A2-S2 | Foto seluruh produk web sesuai brief_Balqis",
@@ -1271,16 +1285,17 @@
           "priority": "4",
           "baseXP": 10,
           "dueDate": null,
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "Untuk di section shop bisa ditambahkan per series, seperti hampers series, alamee series",
           "indentLevel": 1,
           "parentKey": null,
           "parentTitle": null,
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-24T09:09:06.000Z",
+          "earnedXP": 10,
+          "bonusApplied": false,
+          "recipient": "Trias"
         },
         {
           "key": "Siapkan **BANNER SEARCH AD SHOPEE** Alamee dan Lumee_Balqis",
@@ -1290,16 +1305,17 @@
           "priority": "3",
           "baseXP": 30,
           "dueDate": "today",
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "Requirement banner ada di komen.\nOutput : 2 banner Alamee, 2 Banner Lumee (total 4 banner)\n\nKalau udah beres, attach ke todo ini [Todoist task: sebagai digital marketer, saya ingin **BANNER SEARCH AD SHOPEE** untuk Alamee dan Lumee tayang, sehingga traffic ke toko dapat bertambah](https://app.todoist.com/app/task/sebagai-digital-marketer-saya-ingin-BANNER-SEARCH-AD-SHOPEE-untuk-Alamee-dan-Lum-6gwH6VMW2R9F5fHc)",
           "indentLevel": 1,
           "parentKey": null,
           "parentTitle": null,
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-24T09:09:06.000Z",
+          "earnedXP": 30,
+          "bonusApplied": false,
+          "recipient": "Balqis"
         },
         {
           "key": "sebagai digital marketer, saya ingin **BANNER SEARCH AD SHOPEE** untuk Alamee da_Trias",
@@ -1309,16 +1325,17 @@
           "priority": "3",
           "baseXP": 30,
           "dueDate": null,
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "",
           "indentLevel": 1,
           "parentKey": null,
           "parentTitle": null,
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-24T09:09:06.000Z",
+          "earnedXP": 30,
+          "bonusApplied": false,
+          "recipient": "Trias"
         },
         {
           "key": "ubah diksi 'kain' menjadi 'zipper' di semua katalog Marketplace_dinaa",
@@ -1328,16 +1345,17 @@
           "priority": "4",
           "baseXP": 10,
           "dueDate": "today at 14:30",
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "🎯 OUTCOME\nDiksi 'zipper' digunakan secara konsisten di semua marketplace Madina Quran — brand dinilai profesional dan tidak membingungkan customer.\n\ncontoh : Reeyana **KAIN** --> diubah menjadi Reeyana **ZIPPER**\n\n📦 OUTPUT\nReport perubahan diksi: daftar semua lokasi yang sudah diubah + screenshot sebagai bukti, disubmit di komentar task ini.\n\n✅ DONE WHEN\nReport disubmit di komentar task ini: screenshot katalog sudah diubah diksinya.",
           "indentLevel": 1,
           "parentKey": null,
           "parentTitle": null,
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-22T11:33:45.588Z",
+          "earnedXP": 10,
+          "bonusApplied": false,
+          "recipient": "dinaa"
         },
         {
           "key": "ubah diksi 'kain' menjadi 'zipper' di semua katalog website_Salsa",
@@ -1347,16 +1365,17 @@
           "priority": "4",
           "baseXP": 10,
           "dueDate": "tomorrow",
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "🎯 OUTCOME\nDiksi 'zipper' digunakan secara konsisten di semua marketplace Madina Quran — brand dinilai profesional dan tidak membingungkan customer.\n\ncontoh : Reeyana **KAIN** --> diubah menjadi Reeyana **ZIPPER**\n\n📦 OUTPUT\nReport perubahan diksi: daftar semua lokasi yang sudah diubah + screenshot sebagai bukti, disubmit di komentar task ini.\n\n✅ DONE WHEN\nReport disubmit di komentar task ini: screenshot katalog sudah diubah diksinya.",
           "indentLevel": 1,
           "parentKey": null,
           "parentTitle": null,
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-24T09:09:06.000Z",
+          "earnedXP": 10,
+          "bonusApplied": false,
+          "recipient": "Salsa"
         },
         {
           "key": "Todoin buat take decision perpanjangan kerjasama qisthi & reina_Trias",
@@ -1366,16 +1385,17 @@
           "priority": "4",
           "baseXP": 10,
           "dueDate": null,
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "",
           "indentLevel": 1,
           "parentKey": null,
           "parentTitle": null,
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-24T09:09:06.000Z",
+          "earnedXP": 10,
+          "bonusApplied": false,
+          "recipient": "Trias"
         },
         {
           "key": "⭐️ Rapikan WLA di teamup (all team) Operasional\\ ⚙️_Trias",
@@ -1404,16 +1424,17 @@
           "priority": "3",
           "baseXP": 30,
           "dueDate": null,
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "",
           "indentLevel": 2,
           "parentKey": "⭐️ Rapikan WLA di teamup (all team) Operasional\\ ⚙️_Trias",
           "parentTitle": "⭐️ Rapikan WLA di teamup (all team)   ⚙️",
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-24T09:09:06.000Z",
+          "earnedXP": 30,
+          "bonusApplied": false,
+          "recipient": "Trias"
         },
         {
           "key": "Rapikan WLA Hisyam_Trias",
@@ -1442,16 +1463,17 @@
           "priority": "3",
           "baseXP": 30,
           "dueDate": null,
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "Buka TeamUp, filter ke view Dina & Hisyam. Tandai semua timeblock yang: (1) ada 2 task di slot yang sama, atau (2) judulnya tidak jelas/tidak informatif/belum di-close. Buat daftar temuan sebelum melakukan perubahan apapun.",
           "indentLevel": 2,
           "parentKey": "⭐️ Rapikan WLA di teamup (all team) Operasional\\ ⚙️_Trias",
           "parentTitle": "⭐️ Rapikan WLA di teamup (all team)   ⚙️",
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-24T09:09:06.000Z",
+          "earnedXP": 30,
+          "bonusApplied": false,
+          "recipient": "Kas Tim"
         },
         {
           "key": "Sprint 2: Perbaiki timeblock bermasalah di TeamUp & update task terkait di Todoi_",
@@ -1461,16 +1483,17 @@
           "priority": "3",
           "baseXP": 30,
           "dueDate": null,
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "Berdasarkan daftar Sprint 1: pisahkan timeblock overlap ke slot kosong, atau hapus yang duplikat. Update juga task di Todoist yang terdampak perubahan distribusi. Blocked by Sprint 1.",
           "indentLevel": 2,
           "parentKey": "⭐️ Rapikan WLA di teamup (all team) Operasional\\ ⚙️_Trias",
           "parentTitle": "⭐️ Rapikan WLA di teamup (all team)   ⚙️",
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-24T09:09:06.000Z",
+          "earnedXP": 30,
+          "bonusApplied": false,
+          "recipient": "Kas Tim"
         },
         {
           "key": "Sprint 3: Verifikasi — data WLA TeamUp dan Todoist sudah bersih & konsisten Oper_",
@@ -1480,16 +1503,17 @@
           "priority": "3",
           "baseXP": 30,
           "dueDate": null,
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "Cross-check akhir: pastikan tidak ada overlap tersisa di TeamUp, dan task di Todoist sudah sesuai distribusi yang baru. Tandai task ini selesai jika sudah clean. Blocked by Sprint 2.",
           "indentLevel": 2,
           "parentKey": "⭐️ Rapikan WLA di teamup (all team) Operasional\\ ⚙️_Trias",
           "parentTitle": "⭐️ Rapikan WLA di teamup (all team)   ⚙️",
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-24T09:09:06.000Z",
+          "earnedXP": 30,
+          "bonusApplied": false,
+          "recipient": "Kas Tim"
         },
         {
           "key": "❓Analisa Profile IG Affiliate Madina (pake Manus / Claude)_fathiya",
@@ -1499,16 +1523,17 @@
           "priority": "3",
           "baseXP": 30,
           "dueDate": null,
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "🎯 OUTCOME\nTim affiliate & KOL Madina tahu persis 'affiliate type' yang paling cocok — berdasarkan pola dari 8 top affiliate by GMV — sehingga Khania bisa fokus merekrut affiliate yang benar-benar convert.\n\n📦 OUTPUT\nDokumen analisa profil: ringkasan audience, niche, gaya konten, engagement style, dan pola kesamaan dari 8 akun. Diakhiri dengan rekomendasi kriteria rekrutmen affiliate ke depannya.\n\n👤 PIC\nFathiya (analisa menggunakan Claude/Manus) → hasil diserahkan ke Khania untuk implementasi rekrutmen Affiliate & Fathiya untuk implementasi pemilihan KOL.\n\n✅ DONE WHEN\nDokumen analisa selesai: pola kesamaan 8 profil teridentifikasi, 'affiliate type Madina' terumuskan, dan rekomendasi kriteria rekrutmen sudah siap diserahkan.\n\n📌 KONTEKS\n8 top affiliate by GMV (bukan akun produk muslim biasa — perlu dianalisa apa kesamaan mereka):\n1. instagram.com/daraarafah\n2. instagram.com/iranndha\n3. instagram.com/narinkovilda\n4. instagram.com/hassanalaydrus\n5. instagram.com/keanuagl\n6. instagram.com/sabrinaanggraini\n7. instagram.com/nandaarsynt\n8. instagram.com/real.hanummegaa\n\n🚧 CONSTRAINT\nData engagement IG tidak bisa diakses langsung — gunakan estimasi visual dari profil publik. Gunakan Claude atau Manus untuk mempercepat analisa.\n\n---\n✅ ACTION",
           "indentLevel": 1,
           "parentKey": null,
           "parentTitle": null,
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-24T09:09:06.000Z",
+          "earnedXP": 30,
+          "bonusApplied": false,
+          "recipient": "fathiya"
         },
         {
           "key": "Step 1 : Analisa 8 profil IG affiliate top GMV: niche, follower count, engagemen_fathiya",
@@ -1518,16 +1543,17 @@
           "priority": "3",
           "baseXP": 30,
           "dueDate": null,
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "🎯 OUTCOME: Profile sheet 8 affiliate terisi lengkap — jadi bahan analisa pola di Sprint 2.\n\n⚡ ACTIONS:\nAnalisa masing-masing akun ini:\n1. instagram.com/daraarafah\n2. instagram.com/iranndha\n3. instagram.com/narinkovilda\n4. instagram.com/hassanalaydrus\n5. instagram.com/keanuagl\n6. instagram.com/sabrinaanggraini\n7. instagram.com/nandaarsynt\n8. instagram.com/real.hanummegaa\n\nUntuk setiap akun catat: niche utama, jumlah follower, engagement rate, jenis konten terbanyak, audience demografis.\n\n✅ DONE WHEN: Spreadsheet profil 8 affiliate selesai terisi.",
           "indentLevel": 2,
           "parentKey": "❓Analisa Profile IG Affiliate Madina (pake Manus / Claude)_fathiya",
           "parentTitle": "❓Analisa Profile IG Affiliate Madina (pake Manus / Claude)",
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-22T11:33:45.588036Z",
+          "earnedXP": 30,
+          "bonusApplied": false,
+          "recipient": "fathiya"
         },
         {
           "key": "Step 2 : Identifikasi pola: apa yang membuat 8 affiliate ini jadi top GMV untuk_fathiya",
@@ -1537,16 +1563,17 @@
           "priority": "3",
           "baseXP": 30,
           "dueDate": null,
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "🎯 OUTCOME: Insight: affiliate Madina bukan tipe 'akun muslim biasa' — lalu siapa tipe mereka sesungguhnya?\n\n⚡ ACTIONS:\n1. Baca data Sprint 1\n2. Cari persamaan: niche yang overlap, engagement style, audience yang sama\n3. Rumuskan 'affiliate type Madina': profile ideal yang paling likely convert\n\n✅ DONE WHEN: Tersedia deskripsi 1–2 paragraf 'affiliate type Madina' + didukung data.",
           "indentLevel": 2,
           "parentKey": "❓Analisa Profile IG Affiliate Madina (pake Manus / Claude)_fathiya",
           "parentTitle": "❓Analisa Profile IG Affiliate Madina (pake Manus / Claude)",
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-22T11:33:45.588036Z",
+          "earnedXP": 30,
+          "bonusApplied": false,
+          "recipient": "fathiya"
         },
         {
           "key": "Step 3 : Buat kriteria rekrutmen affiliate baru berdasarkan pola yang ditemukan_fathiya",
@@ -1556,16 +1583,17 @@
           "priority": "3",
           "baseXP": 30,
           "dueDate": null,
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "✅ DONE WHEN: Tersedia dokumen kriteria affiliate Madina (min follower, niche, engagement rate, content type) — siap dipakai Khania untuk prospek affiliate baru.",
           "indentLevel": 2,
           "parentKey": "❓Analisa Profile IG Affiliate Madina (pake Manus / Claude)_fathiya",
           "parentTitle": "❓Analisa Profile IG Affiliate Madina (pake Manus / Claude)",
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-22T11:33:45.588036Z",
+          "earnedXP": 30,
+          "bonusApplied": false,
+          "recipient": "fathiya"
         },
         {
           "key": "Input 13 SKU micro sebagai Checkout Bonus_Salsa",
@@ -1575,16 +1603,17 @@
           "priority": "4",
           "baseXP": 10,
           "dueDate": null,
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "**Outcome:** 13 SKU stok micro aktif di katalog Shopify.\n\n**Actions:**\n\n- Buat katalog \"Reward\" dengan varian daftar SKU yang ada di komen.\n- input SKU dan detail lainnya mengacu pada file di excel\n- foto akan diupload balqis (kalau balqis nanya, jangan lupa kasih akses Shopify ke Balqis)\n\n**Done when:**\n✅ 13 SKU ada di katalog.\n✅ Screenshoot dikirim ke todo ini",
           "indentLevel": 1,
           "parentKey": null,
           "parentTitle": null,
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-26T09:07:02.000Z",
+          "earnedXP": 10,
+          "bonusApplied": false,
+          "recipient": "Salsa"
         },
         {
           "key": "Upload foto produk untuk semua 15 SKU reward_Balqis",
@@ -1594,16 +1623,17 @@
           "priority": "4",
           "baseXP": 10,
           "dueDate": null,
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "**Outcome:** Setiap SKU reward punya foto bersih yang merepresentasikan brand premium.\n\n**Actions:**\n\n- Siapkan foto per SKU: background putih/netral, portrait, min 800x800px\n- output 1 image cukup untuk setiap SKU\n- Tidak ada watermark harga lama, tidak ada stiker diskon\n- Upload ke masing-masing produk di Shopify\n- Pastikan foto muncul di halaman reward loyalty app\n- untuk upload, minta akses Shopify ke Azra yaa.\n\n**Done when:**\n✅ 15 SKU masing-masing punya minimal 1 foto bersih yang tampil di reward catalog.\n✅ Set due date todo [Todoist task: Kembalikan SKU Deadstock ke Lodi (dalam keadaan ter-shrink)](https://app.todoist.com/app/task/kembalikan-sku-deadstock-ke-lodi-dalam-keadaan-ter-shrink-6gVCcfh8qMVvfFQg) menjadi today",
           "indentLevel": 1,
           "parentKey": null,
           "parentTitle": null,
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-24T09:09:06.000Z",
+          "earnedXP": 10,
+          "bonusApplied": false,
+          "recipient": "Balqis"
         },
         {
           "key": "Kembalikan SKU Deadstock ke Lodi (dalam keadaan ter-shrink)_Salsa",
@@ -1613,22 +1643,23 @@
           "priority": "4",
           "baseXP": 10,
           "dueDate": null,
-          "status": "doing",
+          "status": "done",
           "hasWaiting": false,
           "description": "**Outcome:** Lodi menerima SKU deadstock kembali\n\n**Actions:**\n\n- Ambil produk dari Balqis\n- request shrink ke kang Arif kemudian minta mereka antarkan ke deal\n- Katakankan bahwa produk-produk ini akan jadi bonus untuk pembeli di website. jadi harus sampai di deal karena khawatir customer sudah claim bonus, tapi ketika akan dikirim produknya tidak ada.\n- selesai\n\n**Done when:**\nrequest berhasil dilakukan ke kang Arif",
           "indentLevel": 1,
           "parentKey": null,
           "parentTitle": null,
           "committedStatus": "doing",
-          "completedDate": null,
-          "earnedXP": null,
-          "bonusApplied": false
+          "completedDate": "2026-06-24T09:09:06.000Z",
+          "earnedXP": 10,
+          "bonusApplied": false,
+          "recipient": "Salsa"
         }
       ],
       "burndownPoints": [
         {
           "date": "2026-06-22",
-          "remainingXP": 500
+          "remainingXP": 380
         }
       ]
     }
