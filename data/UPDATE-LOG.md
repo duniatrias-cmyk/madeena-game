@@ -1,3 +1,64 @@
+# Update Log — 26 Jun 2026
+
+## weekly.js — PROMPT-UPDATE-DATA (W26 + switch ke MCP-MRM)
+
+**Sumber data:** mv_daily_sales_performance + mv_weekly_inventory_performance (MCP-MRM)
+**Catatan penting:** MCP postgres disconnect — switch ke MCP-MRM. View ini menggunakan tanggal order created (bukan RTS date), sehingga angka W22-W25 berbeda ~5-10% dari data sebelumnya. Tidak dilakukan rewrite histori; hanya update W25 (koreksi final) dan W26 (baru).
+
+| Metrik | Sebelumnya | Sekarang |
+|---|---|---|
+| mingguTerakhir | W25 | **W26** |
+| tanggalUpdate | 19 Jun 2026 | 26 Jun 2026 |
+| W25 GMV (koreksi final) | 184.979.374 | **301.402.689** (+63%) |
+| W26 GMV (baru, parsial) | — | **115.913.906** (Jun 22–26, 5 hari) |
+| YTD | ~10,94 M | **~11,54 Miliar** |
+
+### W25 koreksi signifikan (data sebelumnya parsial)
+
+| Series | W25 Lama | W25 Final (MRM) | Δ |
+|---|---|---|---|
+| Reeyana Jaket | 68.865.643 | 107.245.092 | +56% |
+| Reeyana HC | 30.067.571 | 65.417.010 | +117% |
+| Abbasy | 3.118.000 | 12.478.000 | +300% |
+| Heekaya HC | 3.202.000 | 11.468.496 | +258% |
+| Alamee HC | 5.180.000 | 9.324.000 | +80% |
+| Heekaya DPP | 9.196.000 | 13.807.000 | +50% |
+
+### Stok diperbarui (snapshot W25-end dari mv_weekly_inventory_performance)
+
+| Series | Stok Lama | Stok Baru | Δ |
+|---|---|---|---|
+| Reeyana Jaket | 4.455 | **3.429** | -1.026 (terjual) |
+| Reeyana HC | 5.075 | **4.378** | -697 |
+| Reeyana BDDA | 4.965 | **5.472** | +507 ✅ restok |
+| Heekaya Jaket | 768 | **570** | -198 |
+| Heekaya per Juz | 4.518 | **4.342** | -176 |
+| **Reeyana** | 147 | **184** | +37 (sedikit restok, masih KRITIS) |
+| ZS Tasbih | 3.344 | **2.874** | -470 |
+
+### Demand diperbarui (window W22–W25, dari mv_daily_sales_performance qty)
+
+| Series | Demand Lama | Demand Baru |
+|---|---|---|
+| Reeyana Jaket | 961 | **958** |
+| Reeyana HC | 832 | **759** |
+| Heekaya DPP | 563 | **606** |
+| Abbasy | 55 | **67** |
+| Alamee HC | 44 | **55** |
+
+### Cover stok kritis
+
+| Series | Stok | Demand | Cover |
+|---|---|---|---|
+| **Reeyana** | 184 | 91 | **2,0 minggu** 🔴🔴 |
+| **Heekaya HC** | 201 | 66 | **3,0 minggu** 🔴 |
+| **Reeyana Jaket** | 3.429 | 958 | **3,6 minggu** 🔴 |
+| Heekaya Jaket | 570 | 93 | 6,1 minggu |
+
+**Lumee:** tidak ada di mv_daily_sales_performance — stok/GMV W26 tidak diupdate.
+
+---
+
 # Update Log — 19 Jun 2026
 
 ## weekly.js — PROMPT-UPDATE-DATA (W25 + W24 final Idul Adha)
