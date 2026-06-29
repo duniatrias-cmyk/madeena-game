@@ -1,3 +1,58 @@
+# Update Log — 29 Jun 2026
+
+## weekly.js — PROMPT-UPDATE-DATA (W26 final, efek 7.7 sale)
+
+**Sumber data:** mv_daily_sales_performance + mv_weekly_inventory_performance (MCP-MRM)
+**Catatan:** W26 kini full (Jun 22–28). 7.7 sale masuk ke W26, menyebabkan lonjakan besar.
+
+| Metrik | Sebelumnya | Sekarang |
+|---|---|---|
+| mingguTerakhir | W26 (parsial) | **W26 (full)** |
+| tanggalUpdate | 26 Jun 2026 | **29 Jun 2026** |
+| W26 GMV | 115.913.906 (5 hari) | **309.780.264** (full, +167%) |
+| YTD | ~11,54 Miliar | **~11,72 Miliar** |
+
+### W26 seriMinggu (7.7 sale effect)
+
+| Series | W26 Sebelumnya | W26 Final | Δ |
+|---|---|---|---|
+| Reeyana Jaket | 43.824.111 | 121.875.497 | +178% |
+| Reeyana HC | 19.507.288 | 57.167.345 | +193% |
+| Reeyana BDDA | 10.235.000 | 17.990.183 | +76% |
+| Heekaya HC | 8.319.550 | 23.357.704 | +181% |
+| Heekaya Jaket | 4.144.000 | 13.694.000 | +231% |
+| Reeyana | 2.769.000 | 10.895.000 | +294% |
+| Airees DPP | 3.005.000 | 7.988.000 | +166% |
+| Heekaya DPP | 5.358.228 | 11.172.228 | +108% |
+| Prayer Mat | 590.000 | 2.478.000 | +320% |
+| ZS Tasbih | 1.683.600 | 4.562.553 | +171% |
+| Abbasy | 1.143.000 | 2.078.000 | +82% |
+| Alamee HC | 3.996.000 | 9.619.318 | +141% |
+
+### Demand diperbarui (avg W23–W26, 4 minggu penuh)
+
+| Series | Demand Lama | Demand Baru |
+|---|---|---|
+| Reeyana Jaket | 958 | **1029** |
+| Reeyana HC | 759 | **667** |
+| Reeyana BDDA | 168 | **179** |
+| Heekaya HC | 66 | **92** |
+| Heekaya per Juz | 8 | **10** |
+| Heekaya Jaket | 93 | **89** |
+| Airees DPP | 395 | **416** |
+| Heekaya DPP | 606 | **617** |
+| Prayer Mat | 33 | **30** |
+| ZS Tasbih | 231 | **203** |
+| Abbasy | 67 | **59** |
+| Alamee HC | 55 | **61** |
+
+### Cover kritis (stok W25 / demand W23-W26)
+- 🔴🔴 Reeyana: 184/91 = **2.0 minggu**
+- 🔴🔴 Heekaya HC: 201/92 = **2.2 minggu**
+- 🔴 Reeyana Jaket: 3429/1029 = **3.3 minggu**
+
+---
+
 # Update Log — 26 Jun 2026
 
 ## weekly.js — PROMPT-UPDATE-DATA (W26 + switch ke MCP-MRM)
