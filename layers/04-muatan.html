@@ -171,7 +171,7 @@
       <button class="btn" onclick="closeDetail()">✕ Tutup</button>
     </div>
     <div class="detail-grid">
-      <div><div style="font-family:var(--font-mono);font-size:9px;color:var(--teks-redup);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">GMV per minggu — W1–W22</div><div class="detail-chart-wrap"><canvas id="detail-chart"></canvas></div></div>
+      <div><div id="dp-chart-lbl" style="font-family:var(--font-mono);font-size:9px;color:var(--teks-redup);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">GMV per minggu — W1–W22</div><div class="detail-chart-wrap"><canvas id="detail-chart"></canvas></div></div>
       <div class="detail-stats" id="dp-stats"></div>
     </div>
   </div>
@@ -233,8 +233,9 @@ function buildMetrics() {
     const cover = stok.demandPerMinggu > 0
       ? stok.stok / stok.demandPerMinggu
       : stok.stok > 0 ? 999 : 0;
-    const trend4 = rows.filter(r=>r.w>=18&&r.w<=21).map(r=>r.gmv);
-    const prev4  = rows.filter(r=>r.w>=14&&r.w<=17).map(r=>r.gmv);
+    const mT = DATA.meta.mingguTerakhir;
+    const trend4 = rows.filter(r=>r.w>=mT-3&&r.w<=mT).map(r=>r.gmv);
+    const prev4  = rows.filter(r=>r.w>=mT-7&&r.w<=mT-4).map(r=>r.gmv);
     const t4avg  = trend4.length ? trend4.reduce((a,b)=>a+b,0)/trend4.length : 0;
     const p4avg  = prev4.length  ? prev4.reduce((a,b)=>a+b,0)/prev4.length  : 0;
     const delta  = p4avg>0 ? (t4avg-p4avg)/p4avg : 0;
@@ -319,7 +320,8 @@ function renderPalka() {
 
   setTimeout(() => {
     ALL.forEach((m, idx) => {
-      const spark4 = m.rows.filter(r=>r.w>=19&&r.w<=22).map(r=>r.gmv/1e6);
+      const mT = DATA.meta.mingguTerakhir;
+      const spark4 = m.rows.filter(r=>r.w>=mT-3&&r.w<=mT).map(r=>r.gmv/1e6);
       if (spark4.length) drawSpark('spark-'+idx, spark4, m.color);
       // Pulsing border untuk palka kritis (OOS risk)
       if (m.health === 'kritis') {
@@ -351,12 +353,14 @@ function openDetail(idx) {
   document.getElementById('dp-sub').textContent   =
     `${m.health==='penuh'?'Muatan penuh':m.health==='menipis'?'Muatan menipis':'⚠ OOS Risk'} · Stock cover ${Math.round(m.cover*10)/10} mgg · Demand ${fmtN(m.stok.demandPerMinggu)} unit/mgg`;
 
+  const mT = DATA.meta.mingguTerakhir;
+  document.getElementById('dp-chart-lbl').textContent = `GMV per minggu — W1–W${mT}`;
   const gmvAll = [];
-  for (let w=1;w<=22;w++) { const r=m.rows.find(r=>r.w===w); gmvAll.push(r?Math.round(r.gmv/1e6):0); }
+  for (let w=1;w<=mT;w++) { const r=m.rows.find(r=>r.w===w); gmvAll.push(r?Math.round(r.gmv/1e6):0); }
   if (detailChart) detailChart.destroy();
   detailChart = new Chart(document.getElementById('detail-chart').getContext('2d'), {
     type:'bar',
-    data:{ labels:gmvAll.map((_,i)=>'W'+(i+1)), datasets:[{ data:gmvAll, backgroundColor:gmvAll.map((_,i)=>i>=18?m.color:m.color+'66'), borderRadius:3 }] },
+    data:{ labels:gmvAll.map((_,i)=>'W'+(i+1)), datasets:[{ data:gmvAll, backgroundColor:gmvAll.map((_,i)=>i>=mT-4?m.color:m.color+'66'), borderRadius:3 }] },
     options:{ responsive:true,maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:(()=>{const o=chartOpts04();return{backgroundColor:o.bgTip,borderColor:'rgba(232,184,75,0.2)',borderWidth:1,titleColor:o.titlC,bodyColor:o.bodyC,callbacks:{label:c=>c.raw+'jt'}}})()},
       scales:(()=>{const o=chartOpts04();return{x:{grid:{color:o.gridC},ticks:{font:{size:9,family:'DM Mono'},color:o.tickC}},y:{grid:{color:o.gridC},ticks:{font:{size:9,family:'DM Mono'},color:o.tickC,callback:v=>v+'jt'}}}})() }
   });
@@ -367,8 +371,8 @@ function openDetail(idx) {
   document.getElementById('dp-stats').innerHTML = [
     {lbl:'Panen YTD',          val:fmtB(m.ytd),         sub:`${(m.share*100).toFixed(1)}% dari total kapal`},
     {lbl:'Stock cover',        val:Math.round(m.cover*10)/10+' minggu', sub:m.health==='kritis'?'⚠ Restock segera':m.health==='menipis'?'Pantau ketat':'Aman'},
-    {lbl:'Rata-rata 4W',       val:fmtB(m.rows.filter(r=>r.w>=18&&r.w<=21).reduce((s,r)=>s+r.gmv,0)/Math.max(m.rows.filter(r=>r.w>=18&&r.w<=21).length,1)), sub:(m.delta>=0?'+':'')+Math.round(m.delta*100)+'% vs 4W sebelumnya'},
-    {lbl:'Stok unit',          val:fmtN(m.stok.stok)+' unit', sub:'Estimasi per 24 Mei 2026'}
+    {lbl:'Rata-rata 4W',       val:fmtB(m.rows.filter(r=>r.w>=mT-3&&r.w<=mT).reduce((s,r)=>s+r.gmv,0)/Math.max(m.rows.filter(r=>r.w>=mT-3&&r.w<=mT).length,1)), sub:(m.delta>=0?'+':'')+Math.round(m.delta*100)+'% vs 4W sebelumnya'},
+    {lbl:'Stok unit',          val:fmtN(m.stok.stok)+' unit', sub:`Estimasi per ${DATA.meta.tanggalUpdate}`}
   ].map(s=>`<div class="ds"><div class="ds-lbl">${s.lbl}</div><div class="ds-val" style="color:${m.color}">${s.val}</div><div class="ds-sub">${s.sub}</div></div>`).join('');
 
   document.querySelectorAll('.palka-card').forEach((c,i)=>c.classList.toggle('selected',i===idx));
@@ -384,7 +388,8 @@ renderSummary();
 renderPalka();
 window.onThemeChange = function() {
   ALL.forEach((m, idx) => {
-    const spark4 = m.rows.filter(r => r.w >= 19 && r.w <= 22).map(r => r.gmv / 1e6);
+    const mT = DATA.meta.mingguTerakhir;
+    const spark4 = m.rows.filter(r => r.w >= mT-3 && r.w <= mT).map(r => r.gmv / 1e6);
     if (spark4.length) drawSpark('spark-' + idx, spark4, m.color);
   });
   if (openIdx >= 0) openDetail(openIdx);

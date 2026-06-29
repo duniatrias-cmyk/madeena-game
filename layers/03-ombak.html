@@ -184,7 +184,7 @@
     <div class="arena-card" id="arena-card"></div>
     <div class="log-card">
       <div class="log-header">
-        <span style="font-family:var(--font-mono);font-size:10px;color:var(--teks-redup);letter-spacing:0.5px">BATTLE LOG W1–W22</span>
+        <span id="battle-log-lbl" style="font-family:var(--font-mono);font-size:10px;color:var(--teks-redup);letter-spacing:0.5px">BATTLE LOG W1–W22</span>
         <span style="font-family:var(--font-mono);font-size:9px;color:var(--teks-redup)">KLIK BARIS → DETAIL</span>
       </div>
       <div class="log-hdr"><span>MG</span><span style="text-align:left">Ombak</span><span>GMV</span><span>Target</span><span>Hasil</span></div>
@@ -194,7 +194,7 @@
 
   <div class="chart-card">
     <div style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-      <div style="font-family:var(--font-mono);font-size:10px;color:var(--teks-redup);letter-spacing:1px;text-transform:uppercase">GMV vs Target — W1–W22</div>
+      <div id="ombak-chart-lbl" style="font-family:var(--font-mono);font-size:10px;color:var(--teks-redup);letter-spacing:1px;text-transform:uppercase">GMV vs Target — W1–W22</div>
       <div style="display:flex;gap:14px;font-size:11px;color:var(--teks-redup);font-family:var(--font-mono)">
         <span>■ <span style="color:var(--hijau-laut)">tembus</span></span>
         <span>■ <span style="color:var(--merah-badai)">hempas</span></span>
@@ -223,9 +223,10 @@ const OMBAK = [
   'Nyala Ramadan','Puncak Ramadan I','Puncak Ramadan II','Tenang Sebelum Badai',
   '"Kebangkitan Pasca-Eid"','Badai Lebaran I','Badai Lebaran II','Badai Lebaran III',
   '"Surut Pasca-Eid"','Mode Pemulihan','Kebangkitan Mei','Ujian Konsistensi',
-  '"Surut Akhir Mei"','Ombak W22 (parsial)'
+  '"Surut Akhir Mei"','Ombak W22 (parsial)',
+  '6.6 Flash Sale','Idul Adha','Pasca Idul Adha','Menuju 7.7 Sale'
 ];
-const OMBAK_ICON = ['🌊','⚙','❄','📋','💨','⚡','🌙','☀','🔥','👑','🏆','👁','🚀','❤','🛡','💎','👻','🔄','🌿','🎯','📉','⏳'];
+const OMBAK_ICON = ['🌊','⚙','❄','📋','💨','⚡','🌙','☀','🔥','👑','🏆','👁','🚀','❤','🛡','💎','👻','🔄','🌿','🎯','📉','⏳','⚡','🌿','📊','🎯'];
 
 let activeIdx = 7;
 let chartInst = null;
@@ -371,6 +372,8 @@ window.selectWeek = function(i) {
 };
 
 recompute();
+document.getElementById('ombak-chart-lbl').textContent = `GMV vs Target — W1–W${DATA.meta.mingguTerakhir}`;
+document.getElementById('battle-log-lbl').textContent = `BATTLE LOG W1–W${DATA.meta.mingguTerakhir}`;
 window.onThemeChange = function() { recompute(); };
 </script>
 
